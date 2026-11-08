@@ -1,0 +1,13 @@
+{
+  "name": "gestor-proyectos",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "dev": "npm run dev -w @gestor/app",
+    "build": "npm run build -w @gestor/app",
+    "test": "npm test -w @gestor/core -w @gestor/app -w @gestor/desktop",
+    "typecheck": "npm run typecheck -w @gestor/core -w @gestor/app -w @gestor/desktop",
+    "escritorio": "npm run build -w @gestor/app && npm run iniciar -w @gestor/desktop",
+    "escritorio:dist": "npm run build -w @gestor/app && npm run dist -w @gestor/desktop"
+  }
+}

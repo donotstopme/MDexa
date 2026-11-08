@@ -1,0 +1,40 @@
+appId: mx.gestor.proyectos
+productName: Gestor Proyectos
+electronVersion: 41.10.7
+copyright: Gestor Proyectos
+artifactName: gestor-proyectos-${version}-${os}-${arch}.${ext}
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**
+  - package.json
+  - build/icon.png
+extraResources:
+  - from: ../app/dist
+    to: app
+asar: true
+mac:
+  category: public.app-category.productivity
+  target:
+    - { target: dmg, arch: [x64, arm64] }
+    - { target: zip, arch: [x64, arm64] }
+win:
+  target:
+    - { target: nsis, arch: [x64] }
+    - { target: portable, arch: [x64] }
+nsis:
+  artifactName: gestor-proyectos-${version}-instalador-windows.${ext}
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+linux:
+  executableName: gestor-proyectos
+  category: Office
+  target: [AppImage, deb]
+  maintainer: Gestor Proyectos
+  synopsis: Gestor de actividades con un archivo .md compartido
+deb:
+  packageName: gestor-proyectos
+portable:
+  artifactName: gestor-proyectos-${version}-portable-windows.${ext}

@@ -1,0 +1,31 @@
+{
+  "name": "@gestor/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Gestor Proyectos: gestor de actividades con un archivo .md compartido",
+  "author": {
+    "name": "Gestor Proyectos",
+    "email": "soporte@example.com"
+  },
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "iniciar": "npm run build && electron .",
+    "dist": "npm run build && electron-builder",
+    "dist:mac": "npm run build && electron-builder --mac --x64 --arm64",
+    "dist:win": "npm run build && electron-builder --win --x64",
+    "dist:linux": "npm run build && electron-builder --linux --x64",
+    "dist:dir": "npm run build && electron-builder --dir"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "electron": "41.10.7",
+    "electron-builder": "^26.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  },
+  "homepage": "https://example.com/gestor-proyectos",
+  "desktopName": "gestor-proyectos.desktop"
+}
