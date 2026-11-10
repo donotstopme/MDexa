@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { addDias, dias, etqUnidad, filasAvance, geometriaAvance, resumenAvance, type DatosAvance, type UnidadAvance } from '@gestor/core';
+import { addDias, dias, etqUnidad, filasAvance, geometriaAvance, resumenAvance, type DatosAvance, type UnidadAvance } from '@mdexa/core';
 import { fmtCorta, fmtTxt } from '../original/piezas';
 
 const R = 'var(--av-real,#079455)', I = 'var(--av-ideal,#2f6fed)';

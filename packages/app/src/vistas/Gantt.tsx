@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ESTADOS, EST, PX_DIA, addDias, avanceSubs, choqueFechas, cerrada, conDependencia, descRepite, deps, dias, diaEn, metaGrupo, moverBarra, negocioDe, nomCorto, palabras,
   problemaEnlace, programarPorClic, rangoGantt, rutaFlecha, sinDependencia, vencida, xDe, type Actividad, type Asa, type Bloque, type Documento, type Novedades, type Zoom,
-} from '@gestor/core';
+} from '@mdexa/core';
 import { Estrella, Ico } from '../original/iconos';
 import { BotonNotas, MarcaNov, PriBadge, Resaltar, TamBadge, colorEstado, fmtTxt } from '../original/piezas';
 import type { Edicion } from './Lista';

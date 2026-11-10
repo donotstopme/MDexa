@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ESTADOS, PRIORIDADES, SIN_ETQ, SIN_NEGOCIO, SIN_PRI, SIN_RESP, SIN_TAM, TAMANOS, colorEtq, etqs, negocioDe, todasEtq, unicos, type Agrupar, type Documento } from '@gestor/core';
+import { ESTADOS, PRIORIDADES, SIN_ETQ, SIN_NEGOCIO, SIN_PRI, SIN_RESP, SIN_TAM, TAMANOS, colorEtq, etqs, negocioDe, todasEtq, unicos, type Agrupar, type Documento } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { COLS_OPC, VISTAS, type UI, type Vista } from '../estado/ui';
 import { Msel } from './Msel';

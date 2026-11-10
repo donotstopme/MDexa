@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { actividadNueva, conEstado, parseMD, VERSION_GESTOR } from '@gestor/core';
+import { actividadNueva, conEstado, parseMD, VERSION_MDEXA } from '@mdexa/core';
 import type { Almacenamiento } from '../src/almacenamiento/tipos';
 import { Sesion } from '../src/estado/sesion';
 
@@ -23,7 +23,7 @@ const disco = (texto: string) => {
   });
   return { d, almacen };
 };
-const MD = `# P\n\n- Proyecto: P\n- Meta inicio: 2026-10-01\n- Meta fin: 2026-12-01\n- Versión del gestor: ${VERSION_GESTOR} (v1.34.1)\n\n| ID | Actividad | Estado | Repite |\n|---|---|---|---|\n| 1 | Uno | Planeado | |\n| 2 | Dos | Backlog | |\n`;
+const MD = `# P\n\n- Proyecto: P\n- Meta inicio: 2026-10-01\n- Meta fin: 2026-12-01\n- Versión de MDexa: ${VERSION_MDEXA} (v1.34.1)\n\n| ID | Actividad | Estado | Repite |\n|---|---|---|---|\n| 1 | Uno | Planeado | |\n| 2 | Dos | Backlog | |\n`;
 
 const persona = (almacen: Almacenamiento, usuario: string, confirmar = true) => {
   const avisos: string[] = [];
@@ -94,7 +94,7 @@ describe('Sesion', () => {
   });
 
   it('no deja tomar un archivo de una versión más nueva', async () => {
-    const md = MD.replace(`${VERSION_GESTOR} (v1.34.1)`, `${VERSION_GESTOR + 1} (v9.0.0)`);
+    const md = MD.replace(`${VERSION_MDEXA} (v1.34.1)`, `${VERSION_MDEXA + 1} (v9.0.0)`);
     const { d, almacen } = disco(md);
     const { s, avisos } = persona(almacen(), 'Ana');
     await s.abrir(); await s.tomar();
@@ -140,7 +140,7 @@ describe('Sesion', () => {
   });
 });
 
-import { agregarNota, agregarSubtarea } from '@gestor/core';
+import { agregarNota, agregarSubtarea } from '@mdexa/core';
 describe('Sesion: notas sin tomar el archivo', () => {
   it('escribe la nota directo, sin dejar candado', async () => {
     const { d, almacen } = disco(MD);
@@ -252,7 +252,7 @@ describe('Sesion: novedades y respaldos', () => {
   });
 });
 
-import { crearSprint, documentoNuevo } from '@gestor/core';
+import { crearSprint, documentoNuevo } from '@mdexa/core';
 describe('Sesion: archivo nuevo', () => {
   it('un sprint nuevo: suelta el archivo actual, crea el nuevo, lo toma y deja respaldos', async () => {
     const { d, almacen } = disco(MD);

@@ -1,4 +1,4 @@
-import { datosAvance, ESTADOS, NOMBRE_APP, ORDEN_TAMANOS, TAMANOS, VERSION_TXT, addDias, dias, negocioDe, quienTermino, resultado, situacion, type ActR, type AnalisisReporte, type Documento, type Resumen } from '@gestor/core';
+import { datosAvance, ESTADOS, NOMBRE_APP, ORDEN_TAMANOS, TAMANOS, VERSION_TXT, addDias, dias, negocioDe, quienTermino, resultado, situacion, type ActR, type AnalisisReporte, type Documento, type Resumen } from '@mdexa/core';
 import { GraficaAvance, LeyendaAvance, ResumenAvance, TablaAvance } from './GraficaAvance';
 import { TamBadge, colorEstado, fmtHora, fmtTxt } from '../original/piezas';
 

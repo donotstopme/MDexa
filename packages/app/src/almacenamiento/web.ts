@@ -87,7 +87,7 @@ export function crearAlmacenamientoWeb(local?: Local): Almacenamiento {
       if (!manejador || !w.showDirectoryPicker) return { ok: false, aviso: 'Las imágenes necesitan Chrome o Edge y el archivo abierto desde una carpeta (no funciona con la copia del navegador).' };
       try {
         if (carpeta && !carpetaOk) { carpetaOk = (await carpeta.requestPermission({ mode: 'readwrite' })) === 'granted'; if (carpetaOk) return { ok: true }; }
-        const d = await w.showDirectoryPicker({ id: 'gestor-imagenes', mode: 'readwrite', startIn: manejador });
+        const d = await w.showDirectoryPicker({ id: 'mdexa-imagenes', mode: 'readwrite', startIn: manejador });
         const ruta = await d.resolve(manejador);
         if (!ruta || ruta.length !== 1) return { ok: false, aviso: `Elige la carpeta donde está "${ruta?.[0] ?? 'el archivo'}" (no una subcarpeta ni otra carpeta).` };
         carpeta = d; carpetaOk = true; urls.forEach(u => u && URL.revokeObjectURL(u)); urls.clear();

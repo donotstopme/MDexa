@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { CAMPOS_CSV, PLANTILLA_CSV, filasImportar, mapaInicial, parseCSV, unicos, type Documento, type FilaImp, type Mapa } from '@gestor/core';
+import { CAMPOS_CSV, PLANTILLA_CSV, filasImportar, mapaInicial, parseCSV, unicos, type Documento, type FilaImp, type Mapa } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { ChipEstado, EtqPill, Fecha, PriBadge, TamBadge } from '../original/piezas';
 import { Dialogo } from './Dialogo';

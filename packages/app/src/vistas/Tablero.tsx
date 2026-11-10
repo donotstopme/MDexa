@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   ESTADOS, EST, aplicarSoltar, metaGrupo, nomCorto, palabras, pendientesAlMover, valorDeGrupo, type Actividad, type Agrupar, type Bloque, type Documento, type Estado, type Novedades,
-} from '@gestor/core';
+} from '@mdexa/core';
 import { Estrella, Ico } from '../original/iconos';
 import { colorEstado } from '../original/piezas';
 import type { Edicion } from './Lista';

@@ -20,7 +20,7 @@ describe('ics', () => {
     expect(ics).toContain('X-WR-CALNAME:Lanzamiento Portal de Clientes');
     expect((ics.match(/BEGIN:VEVENT/g) || []).length).toBe(2);
     expect(ics).toContain('DTSTART;VALUE=DATE:20261104'); expect(ics).toContain('DTEND;VALUE=DATE:20261105');
-    expect(ics).toContain('UID:lanzamiento-portal-de-clientes-5@gestor-proyectos'); expect(ics).toContain('DTSTAMP:20261106T183015Z');
+    expect(ics).toContain('UID:lanzamiento-portal-de-clientes-5@mdexa'); expect(ics).toContain('DTSTAMP:20261106T183015Z');
   });
   it('terminadas con ✓ y sin recordatorio; abiertas con recordatorio de 15 h antes', () => {
     expect(ics).toContain('✓'); expect((ics.match(/BEGIN:VALARM/g) || []).length).toBe(1); expect(ics).toContain('TRIGGER:-PT15H');

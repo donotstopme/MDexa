@@ -1,4 +1,4 @@
-import { CAMPOS_NOV, EST, autoresDesde, claveNota, mencionesEn, negocioDe, nomCorto, personasConocidas, SIN_NEGOCIO, type Documento, type Novedades, type Nota } from '@gestor/core';
+import { CAMPOS_NOV, EST, autoresDesde, claveNota, mencionesEn, negocioDe, nomCorto, personasConocidas, SIN_NEGOCIO, type Documento, type Novedades, type Nota } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { colorEstado, fmtHora, fmtTxt, haceLargo } from '../original/piezas';
 import { Dialogo } from './Dialogo';

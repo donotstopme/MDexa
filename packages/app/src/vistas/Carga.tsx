@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { EST, TAMANOS, calcularCarga, lunesDe, negocioDe, nivelCarga, nomCorto, type Actividad, type CeldaCarga, type Documento } from '@gestor/core';
+import { EST, TAMANOS, calcularCarga, lunesDe, negocioDe, nivelCarga, nomCorto, type Actividad, type CeldaCarga, type Documento } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { ChipEstado, fmtCorta } from '../original/piezas';
 
@@ -9,8 +9,8 @@ const leerNum = (k: string, def: number) => { try { return parseFloat(localStora
 const guardar = (k: string, v: number) => { try { localStorage.setItem(k, String(v)); } catch { /* sin almacenamiento local */ } };
 
 export function Carga({ doc, lista, hoy, onIr, msgVacio }: { doc: Documento; lista: Actividad[]; hoy: string; onIr(id: number): void; msgVacio: string }) {
-  const [cap, setCap] = useState(() => Math.max(1, leerNum('gestor.capacidad', 40)));
-  const [nSem, setNSem] = useState(() => (SEMANAS.includes(leerNum('gestor.cargaSem', 6)) ? leerNum('gestor.cargaSem', 6) : 6));
+  const [cap, setCap] = useState(() => Math.max(1, leerNum('mdexa.capacidad', 40)));
+  const [nSem, setNSem] = useState(() => (SEMANAS.includes(leerNum('mdexa.cargaSem', 6)) ? leerNum('mdexa.cargaSem', 6) : 6));
   const [sel, setSel] = useState<string | null>(null);
   if (!doc.actividades.length) return <div className="carga"><div className="vacio">{msgVacio}</div></div>;
   const { semanas, filas } = calcularCarga(lista, hoy, nSem), l0 = lunesDe(hoy);
@@ -29,8 +29,8 @@ export function Carga({ doc, lista, hoy, onIr, msgVacio }: { doc: Documento; lis
   return (
     <div className="carga">
       <div className="cg-barra">
-        <label>Capacidad por persona <input type="number" min={1} max={80} step={1} value={cap} onChange={e => { const v = Math.max(1, +e.target.value || 40); setCap(v); guardar('gestor.capacidad', v); }} /> h/semana</label>
-        <label>Semanas <select value={nSem} onChange={e => { setNSem(+e.target.value); guardar('gestor.cargaSem', +e.target.value); }}>{SEMANAS.map(n => <option key={n}>{n}</option>)}</select></label>
+        <label>Capacidad por persona <input type="number" min={1} max={80} step={1} value={cap} onChange={e => { const v = Math.max(1, +e.target.value || 40); setCap(v); guardar('mdexa.capacidad', v); }} /> h/semana</label>
+        <label>Semanas <select value={nSem} onChange={e => { setNSem(+e.target.value); guardar('mdexa.cargaSem', +e.target.value); }}>{SEMANAS.map(n => <option key={n}>{n}</option>)}</select></label>
         <span className="cg-ley"><i className="c1" />hasta 50%<i className="c2" />hasta 85%<i className="c3" />lleno<i className="c4" />saturado (más de {cap} h)</span>
       </div>
       {!filas.length

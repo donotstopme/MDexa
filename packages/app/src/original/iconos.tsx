@@ -1,6 +1,6 @@
 import type { SVGProps } from 'react';
 
-/** Iconografía del gestor original (trazos de 24 px) */
+/** Iconografía de MDexa original (trazos de 24 px) */
 export const IC: Record<string, string> = {
   expandir: 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',
   contraer: 'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5',

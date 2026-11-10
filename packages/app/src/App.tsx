@@ -4,7 +4,7 @@ import {
   borrarEtiqueta, crearSprint, documentoNuevo, normaliza, renombrarEtiqueta, renombrarNegocio, type OpcionesSprint,
   aplicarImportacion, bloqueadasAlMover, exportarCsv, loteEliminar, loteEstado, loteFechas, loteNegocio, lotePrioridad, loteResponsable, loteTamano, rangoSeleccion, type Estado, type Prioridad, type Tamano, type FilaImp, type Mapa,
   nomCorto, pendientesAlMover, personasConocidas, ponerEtiqueta, quitarNota, subtareasDe, negocioDe, type Nota, type Subtarea, EST, fechaISO, filtrar, statsNegocios, unicos, type Bloque, type Documento,
-} from '@gestor/core';
+} from '@mdexa/core';
 import { crearAlmacenamientoWeb } from './almacenamiento/web';
 import { crearAlmacenamientoEscritorio, localEscritorio } from './almacenamiento/escritorio';
 import { localWeb } from './almacenamiento/local';
@@ -47,17 +47,17 @@ import type { Acciones, Seleccion } from './vistas/acciones';
 import { Tablero } from './vistas/Tablero';
 
 const AUTO_REFRESCO = 15e3;
-const leerUsuario = () => { try { return localStorage.getItem('gestor.usuario') || ''; } catch { return ''; } };
+const leerUsuario = () => { try { return localStorage.getItem('mdexa.usuario') || ''; } catch { return ''; } };
 
 export function App() {
   const [toast, setToast] = useState('');
   const [pideUsuario, setPideUsuario] = useState<{ resolver(n: string | null): void } | null>(null);
   const t = useRef<ReturnType<typeof setTimeout>>();
-  const sesion = useMemo(() => { const api = window.gestorEscritorio, local = api ? localEscritorio(api) : localWeb(); return new Sesion({
+  const sesion = useMemo(() => { const api = window.mdexaEscritorio, local = api ? localEscritorio(api) : localWeb(); return new Sesion({
     almacen: api ? crearAlmacenamientoEscritorio(api) : crearAlmacenamientoWeb(local),
     local,
     usuario: leerUsuario(),
-    guardarUsuario: u => { try { localStorage.setItem('gestor.usuario', u); } catch { /* sin almacenamiento local */ } },
+    guardarUsuario: u => { try { localStorage.setItem('mdexa.usuario', u); } catch { /* sin almacenamiento local */ } },
     ui: {
       confirmar: async m => window.confirm(m),
       avisar: m => { setToast(m); clearTimeout(t.current); t.current = setTimeout(() => setToast(''), 3500); },
@@ -82,7 +82,7 @@ export function App() {
   const [form, setForm] = useState<{ id: number | null; preset?: Preset } | null>(null);
   const [formMeta, setFormMeta] = useState<'editar' | 'nuevo' | null>(null);
   const [pres, setPres] = useState(false);
-  const [presZoom, setPresZoom] = useState(() => { try { return Math.min(2, Math.max(1, parseFloat(localStorage.getItem('gestor.presZoom') || '') || 1.3)); } catch { return 1.3; } });
+  const [presZoom, setPresZoom] = useState(() => { try { return Math.min(2, Math.max(1, parseFloat(localStorage.getItem('mdexa.presZoom') || '') || 1.3)); } catch { return 1.3; } });
   const presNeg = useRef<string[] | null>(null), presFs = useRef(false);
   const [, setReloj] = useState(0);
   const [renNeg, setRenNeg] = useState<string | undefined>(undefined);
@@ -238,7 +238,7 @@ export function App() {
   };
   const zoomPres = (d: number) => {
     const z = Math.round(Math.min(2, Math.max(1, presZoom + d)) * 10) / 10;
-    setPresZoom(z); try { localStorage.setItem('gestor.presZoom', String(z)); } catch { /* sin almacenamiento local */ }
+    setPresZoom(z); try { localStorage.setItem('mdexa.presZoom', String(z)); } catch { /* sin almacenamiento local */ }
     sesion.avisar(`Tamaño ${Math.round(z * 100)}%`);
   };
   useEffect(() => {

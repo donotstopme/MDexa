@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { armarBloques, filtrar, filtrosVacios, parseMD, type Agrupar } from '@gestor/core';
+import { armarBloques, filtrar, filtrosVacios, parseMD, type Agrupar } from '@mdexa/core';
 import { Calendario } from '../src/vistas/Calendario';
 import { Carga } from '../src/vistas/Carga';
 import { Gantt } from '../src/vistas/Gantt';

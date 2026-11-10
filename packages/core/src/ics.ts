@@ -16,18 +16,18 @@ export function icsLinea(l: string): string {
 /** Archivo .ics: cada actividad con fecha fin es un evento de todo el día; con `alarma`, un recordatorio la tarde anterior */
 export function generarICS(d: Documento, acts: Actividad[], alarma: boolean, archivo: string, ahora: Date = new Date()): string {
   const sello = ahora.toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
-  const proy = d.meta.proyecto || archivo.replace(/\.md$/i, ''), uidBase = normaliza(proy).replace(/[^a-z0-9]+/g, '-') || 'gestor';
+  const proy = d.meta.proyecto || archivo.replace(/\.md$/i, ''), uidBase = normaliza(proy).replace(/[^a-z0-9]+/g, '-') || 'mdexa';
   const ev = acts.map(a => {
     const dia = a.fin.replace(/-/g, ''), dia2 = addDias(a.fin, 1).replace(/-/g, '');
     const desc = [`${negocioDe(a)} · ${EST(a)}`, a.responsable && `Responsable: ${a.responsable}`, a.inicio && `Inicio: ${fmtTxt(a.inicio)}`, a.prioridad && `Prioridad: ${a.prioridad}`,
       a.tamano && `Tamaño: ${a.tamano}`, a.repite && `Se repite: ${descRepite(a)}`, etqs(a).length && `Etiquetas: ${etqs(a).join(', ')}`,
       subtareasDe(a).length && `Subtareas (${txtSubsDe(a)}):\n${subtareasDe(a).map(x => (x.ok ? '[x] ' : '[ ] ') + x.t).join('\n')}`,
       a.actividad.includes('\n') && `\n${a.actividad}`, `\n${proy} · ${NOMBRE_APP}`].filter(Boolean).join('\n');
-    return ['BEGIN:VEVENT', `UID:${uidBase}-${a.id}@gestor-proyectos`, `DTSTAMP:${sello}`, `DTSTART;VALUE=DATE:${dia}`, `DTEND;VALUE=DATE:${dia2}`,
+    return ['BEGIN:VEVENT', `UID:${uidBase}-${a.id}@mdexa`, `DTSTAMP:${sello}`, `DTSTART;VALUE=DATE:${dia}`, `DTEND;VALUE=DATE:${dia2}`,
       `SUMMARY:${icsEsc(`#${a.id} ${nomCorto(a)}${EST(a) === 'Terminado' ? ' ✓' : ''}`)}`, `DESCRIPTION:${icsEsc(desc)}`, `CATEGORIES:${icsEsc(negocioDe(a))}`,
       'TRANSP:TRANSPARENT', ...(alarma && !cerrada(a) ? ['BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc('Vence: ' + nomCorto(a))}`, 'TRIGGER:-PT15H', 'END:VALARM'] : []), 'END:VEVENT'].map(icsLinea).join('\r\n');
   });
-  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Gestor Proyectos//ES', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', icsLinea(`X-WR-CALNAME:${icsEsc(proy)}`), ...ev, 'END:VCALENDAR'].join('\r\n') + '\r\n';
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//MDexa//ES', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', icsLinea(`X-WR-CALNAME:${icsEsc(proy)}`), ...ev, 'END:VCALENDAR'].join('\r\n') + '\r\n';
 }
 
 /** Qué actividades se exportan: sólo las mías, las visibles o todas; con o sin las cerradas. `sinFin` cuenta las que no tienen fecha fin. */

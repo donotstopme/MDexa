@@ -1,4 +1,4 @@
-import type { AnalisisMeta, DatosAvance, Documento, UnidadAvance } from '@gestor/core';
+import type { AnalisisMeta, DatosAvance, Documento, UnidadAvance } from '@mdexa/core';
 import { BloqueAvance } from './GraficaAvance';
 import { Ico } from '../original/iconos';
 import { fmtTxt } from '../original/piezas';

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { claveNota, calcularNovedades, foto, parseMD, agregarNota, conEstado } from '@gestor/core';
+import { claveNota, calcularNovedades, foto, parseMD, agregarNota, conEstado } from '@mdexa/core';
 import { DialogoNotas } from '../src/componentes/DialogoNotas';
 import { DialogoNovedades } from '../src/componentes/DialogoNovedades';
 import { PopEtiquetas } from '../src/componentes/PopEtiquetas';

@@ -1,4 +1,4 @@
-import { PRIORIDADES, TAMANOS } from '@gestor/core';
+import { PRIORIDADES, TAMANOS } from '@mdexa/core';
 import { IC } from './iconos';
 import { MANUAL_PLANTILLA } from './manualPlantilla';
 

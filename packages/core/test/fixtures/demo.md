@@ -3,7 +3,7 @@
 - Proyecto: Lanzamiento Portal de Clientes
 - Meta inicio: 2026-10-05
 - Meta fin: 2026-12-18
-- Versión del gestor: 18 (v1.34.1)
+- Versión de MDexa: 18 (v1.34.1)
 
 | ID | Negocio | Actividad | Tamaño | Prioridad | Responsable | Inicio | Fin | Estado | Terminada | Etiquetas | Depende de | Repite |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|

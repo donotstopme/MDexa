@@ -27,7 +27,7 @@ describe('datosSemana', () => {
 });
 
 describe('textoSemanal', () => {
-  const o = { archivo: 'proyecto-demo.md', nombreApp: 'Gestor Proyectos', hoy: HOY };
+  const o = { archivo: 'proyecto-demo.md', nombreApp: 'MDexa', hoy: HOY };
   const s = datosSemana(doc, 0, HOY);
   it('texto plano con título, resumen y secciones', () => {
     const t = textoSemanal(doc, s, false, o);
@@ -35,7 +35,7 @@ describe('textoSemanal', () => {
     expect(t.cuerpo).toMatch(/Avance del proyecto: 25% \(3 de 12 actividades terminadas\) · meta al 18.dic.2026 · Atrasado\./);
     for (const x of ['TERMINADAS ESTA SEMANA (0)', 'ATRASADAS (2)', 'BLOQUEADAS POR OTRA ACTIVIDAD', 'EN PROGRESO (1)', 'QUÉ VIENE']) expect(t.cuerpo).toContain(x);
     expect(t.cuerpo).toMatch(/• Autenticación y roles — Desarrollo · Marta · vencía 04.nov · 2 días de atraso · En progreso/);
-    expect(t.cuerpo.endsWith('— Generado con Gestor Proyectos')).toBe(true);
+    expect(t.cuerpo.endsWith('— Generado con MDexa')).toBe(true);
   });
   it('HTML con estilos en línea y escapado', () => {
     const d2 = { ...doc, actividades: doc.actividades.map(a => (a.id === 5 ? { ...a, actividad: 'Probar <b>&</b>' } : a)) };

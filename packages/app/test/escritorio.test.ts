@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ApiEscritorio } from '@gestor/core';
+import type { ApiEscritorio } from '@mdexa/core';
 import { crearAlmacenamientoEscritorio, localEscritorio } from '../src/almacenamiento/escritorio';
 
 /** API de escritorio simulada en memoria (lo que haría el proceso principal de Electron) */

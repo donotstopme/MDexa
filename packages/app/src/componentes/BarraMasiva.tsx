@@ -1,4 +1,4 @@
-import { ESTADOS, PRIORIDADES, TAMANOS, type Estado, type Prioridad, type Tamano } from '@gestor/core';
+import { ESTADOS, PRIORIDADES, TAMANOS, type Estado, type Prioridad, type Tamano } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 
 export interface AccionesMasivas {

@@ -1,8 +1,8 @@
 import type { Estado, Tamano, Prioridad, Repite, ColorEtiqueta } from './tipos';
 
-export const NOMBRE_APP = 'Gestor Proyectos';
+export const NOMBRE_APP = 'MDexa';
 /** Número de compatibilidad del formato del .md: sólo sube cuando cambia lo que se guarda. */
-export const VERSION_GESTOR = 18;
+export const VERSION_MDEXA = 18;
 export const VERSION_TXT = '1.34.1';
 
 export const SIN_NEGOCIO = 'Sin negocio';

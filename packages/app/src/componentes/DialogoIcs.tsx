@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { actividadesIcs, generarICS, normaliza, type Actividad, type Documento } from '@gestor/core';
+import { actividadesIcs, generarICS, normaliza, type Actividad, type Documento } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { Dialogo } from './Dialogo';
 

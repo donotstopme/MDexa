@@ -27,7 +27,7 @@ export interface Meta {
   proyecto: string;
   inicio: string;
   fin: string;
-  version: number;       // VERSION_GESTOR con que se guardó el archivo (0 si no la trae)
+  version: number;       // VERSION_MDEXA con que se guardó el archivo (0 si no la trae)
   versionTxt?: string;   // "1.34.1"
 }
 

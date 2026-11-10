@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { datosAvance, analizarMeta, armarBloques, filtrar, filtrosVacios, parseMD, statsNegocios, type Agrupar } from '@gestor/core';
+import { datosAvance, analizarMeta, armarBloques, filtrar, filtrosVacios, parseMD, statsNegocios, type Agrupar } from '@mdexa/core';
 import { Lista } from '../src/vistas/Lista';
 import { Banner } from '../src/componentes/Banner';
 import { PanelNegocios } from '../src/componentes/PanelNegocios';

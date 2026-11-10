@@ -1,4 +1,4 @@
-import { ALIAS_ESTADO, ALIAS_PRI, COLORES_ETQ, MAX_BITACORA, REPITE, TAMANOS, VERSION_GESTOR, VERSION_TXT } from './constantes';
+import { ALIAS_ESTADO, ALIAS_PRI, COLORES_ETQ, MAX_BITACORA, REPITE, TAMANOS, VERSION_MDEXA, VERSION_TXT } from './constantes';
 import type { Actividad, ColorEtiqueta, Documento, Estado, Tamano } from './tipos';
 import { detalleBit, leerEntradaBit } from './bitacora';
 import { leerDeps, txtDeps } from './dependencias';
@@ -68,7 +68,8 @@ export function parseMD(txt: string): Documento {
       if (k === 'proyecto') meta.proyecto = v;
       else if (k === 'meta inicio') meta.inicio = v;
       else if (k === 'meta fin') meta.fin = v;
-      else if (k === 'version del gestor') { meta.version = parseInt(v, 10) || 0; meta.versionTxt = (v.match(/v(\d+\.\d+\.\d+)/) || [])[1] || ''; }
+      else if (k === 'version de mdexa' || k === 'version del gestor') { // la 2.ª es la clave anterior: se sigue leyendo
+        meta.version = parseInt(v, 10) || 0; meta.versionTxt = (v.match(/v(\d+\.\d+\.\d+)/) || [])[1] || ''; }
       else if (k === 'en edicion') {
         const p = v.split('|').map(s => s.trim());
         if (p[0]) candado = { usuario: p[0], desde: p[1] || '', latido: p[2] || p[1] || '' };
@@ -101,11 +102,11 @@ export function parseMD(txt: string): Documento {
   return { actividades: acts, meta, candado, notas, bitacora, extra, coloresEtq, imagenes };
 }
 
-export function toMD(doc: Documento, version: { num: number; txt: string } = { num: VERSION_GESTOR, txt: VERSION_TXT }): string {
+export function toMD(doc: Documento, version: { num: number; txt: string } = { num: VERSION_MDEXA, txt: VERSION_TXT }): string {
   const { actividades, meta, candado, notas, bitacora, extra, coloresEtq, imagenes } = doc;
   const limpia = (s: unknown) => String(s ?? '').replace(/\|/g, '/').trim().replace(/\r?\n/g, '<br>');
   let md = `# ${limpia(meta.proyecto) || 'Actividades'}\n\n`;
-  md += `- Proyecto: ${limpia(meta.proyecto)}\n- Meta inicio: ${meta.inicio || ''}\n- Meta fin: ${meta.fin || ''}\n- Versión del gestor: ${version.num} (v${version.txt})\n`;
+  md += `- Proyecto: ${limpia(meta.proyecto)}\n- Meta inicio: ${meta.inicio || ''}\n- Meta fin: ${meta.fin || ''}\n- Versión de MDexa: ${version.num} (v${version.txt})\n`;
   if (candado) md += `- En edición: ${limpia(candado.usuario)} | ${candado.desde} | ${candado.latido}\n`;
   md += '\n| ID | Negocio | Actividad | Tamaño | Prioridad | Responsable | Inicio | Fin | Estado | Terminada | Etiquetas | Depende de | Repite |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|\n';
   for (const a of [...actividades].sort((x, y) => x.id - y.id))

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   ESTADOS, EST, abrevNeg, cerrada, diasDelMes, mesMas, moverFin, negocioDe, nomCorto, vencida, descRepite, type Actividad, type Documento, type Novedades,
-} from '@gestor/core';
+} from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { PriBadge, colorEstado, fmtTxt } from '../original/piezas';
 import type { Edicion } from './Lista';

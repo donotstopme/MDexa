@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   EST, ESTADOS, PRIORIDADES, REPITE, TAMANOS, actividadNueva, avanceSubs, cerrada, colorEtq, conEstado, creaCiclo, dependientesDe, descRepite, deps, etqs,
   hoy, leerEtqs, limpiaEtq, limpiaSub, negocioDe, nomCorto, normaliza, pendientesAlMover, todasEtq, unicos, type Actividad, type Documento, type Estado, type Repite,
-} from '@gestor/core';
+} from '@mdexa/core';
 import { Ico } from '../original/iconos';
 
 export interface Preset { negocio?: string; responsable?: string; fin?: string }

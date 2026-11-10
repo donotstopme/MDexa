@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { EST, normaliza, resumenMias, type Actividad, type Documento, type Estado, type Novedades } from '@gestor/core';
+import { EST, normaliza, resumenMias, type Actividad, type Documento, type Estado, type Novedades } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { fmtCorta } from '../original/piezas';
 import type { Edicion } from './Lista';
 import type { Acciones, Seleccion } from './acciones';
 import { TarjetaK } from './TarjetaK';
-import { conEstado, nomCorto, pendientesAlMover } from '@gestor/core';
+import { conEstado, nomCorto, pendientesAlMover } from '@mdexa/core';
 
 const SEC: Record<string, { ic: string; c: string }> = {
   venc: { ic: 'alerta', c: 'rojo' }, hoy: { ic: 'reloj', c: 'amar' }, sem: { ic: 'calendario', c: 'azul' }, prox: { ic: 'calendario', c: 'azul' },

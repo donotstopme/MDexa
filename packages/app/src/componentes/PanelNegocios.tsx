@@ -1,4 +1,4 @@
-import { abrevNeg, type StatsNegocio } from '@gestor/core';
+import { abrevNeg, type StatsNegocio } from '@mdexa/core';
 import { Ico, Estrella } from '../original/iconos';
 
 export interface Props {

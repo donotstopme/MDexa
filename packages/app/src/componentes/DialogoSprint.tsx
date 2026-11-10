@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ESTADOS, EST, fechasSprintSugeridas, negocioDe, nombreSprintSugerido, seleccionSprint, unicos, type Documento, type OpcionesSprint } from '@gestor/core';
+import { ESTADOS, EST, fechasSprintSugeridas, negocioDe, nombreSprintSugerido, seleccionSprint, unicos, type Documento, type OpcionesSprint } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { colorEstado } from '../original/piezas';
 import { Dialogo } from './Dialogo';

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CAMPOS_NOV, EST, negocioDe, nomCorto, type Respaldo } from '@gestor/core';
+import { CAMPOS_NOV, EST, negocioDe, nomCorto, type Respaldo } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import type { Sesion } from '../estado/sesion';
 import { colorEstado, fmtHora, fmtTxt, haceLargo } from '../original/piezas';

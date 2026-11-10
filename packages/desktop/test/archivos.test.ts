@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { escrituraAtomica, guardarDato, leerDato, nombreSeguro, rutaImagenSegura } from '../src/archivos';
 
 let dir = '';
-beforeEach(() => { dir = mkdtempSync(path.join(tmpdir(), 'gestor-')); });
+beforeEach(() => { dir = mkdtempSync(path.join(tmpdir(), 'mdexa-')); });
 afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
 describe('escrituraAtomica', () => {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { COLORES_ETQ, colorEtq, limpiaEtq, normaliza, tieneEtq, todasEtq, type ColorEtiqueta, type Documento } from '@gestor/core';
+import { COLORES_ETQ, colorEtq, limpiaEtq, normaliza, tieneEtq, todasEtq, type ColorEtiqueta, type Documento } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { EtqPill } from '../original/piezas';
 import { PopFlotante } from './PopFlotante';

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   EST, colorAutor, iniciales, insertarMencion, mencionaA, mencionesEn, negocioDe, nomCorto, notasDe, personasConocidas, sugerirMencion, claveNota,
   type Documento, type Nota,
-} from '@gestor/core';
+} from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { colorEstado, fmtHora, haceLargo } from '../original/piezas';
 import { Dialogo } from './Dialogo';

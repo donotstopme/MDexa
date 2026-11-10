@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ACCIONES_BIT, addDias, autoresBit, bitacoraCsv, colorAutor, filtrarBitacora, hoy, iniciales, nombreActBit, type Documento } from '@gestor/core';
+import { ACCIONES_BIT, addDias, autoresBit, bitacoraCsv, colorAutor, filtrarBitacora, hoy, iniciales, nombreActBit, type Documento } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { colorEstado, fmtTxt } from '../original/piezas';
 import { Dialogo } from './Dialogo';

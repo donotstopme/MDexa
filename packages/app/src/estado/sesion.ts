@@ -2,8 +2,8 @@ import {
   agregarImagenes, carpetaImagenes, filtrarImagenes, nombreVisible, quitarImagen, rutaImagen,
   absorberPropios, calcularNovedades, claveNota, compararRespaldo, hashTxt, restaurarRespaldo, sinCandado, sinNovedades,
   type Novedades, type Respaldo, candadoNuevo, decidirEscritura, decidirToma, deshacer, foto, historialVacio, parseMD, puedeSoltar, rehacer,
-  registrarDeshacer, toMD, VERSION_GESTOR, VERSION_TXT, type Documento, type Foto, type Historial,
-} from '@gestor/core';
+  registrarDeshacer, toMD, VERSION_MDEXA, VERSION_TXT, type Documento, type Foto, type Historial,
+} from '@mdexa/core';
 import type { Almacenamiento, ArchivoAbierto } from '../almacenamiento/tipos';
 import { localEnMemoria, type Local } from '../almacenamiento/local';
 
@@ -86,7 +86,7 @@ export class Sesion {
     const doc = parseMD(texto);
     this.textoCargado = texto; this.previo = foto(doc.actividades);
     this.historial = registrarDeshacer(historialVacio(), doc);   // estado base: el primer cambio también se puede deshacer
-    this.set({ doc, nombre, masNuevo: (doc.meta.version || 0) > VERSION_GESTOR, error: '' });
+    this.set({ doc, nombre, masNuevo: (doc.meta.version || 0) > VERSION_MDEXA, error: '' });
     this.flags();
     this.recalcular();
     return doc;
@@ -194,7 +194,7 @@ export class Sesion {
       const a = await this.alm.releer();
       if (!a) return;
       const d = parseMD(a.texto);
-      if ((d.meta.version || 0) > VERSION_GESTOR) { this.aplicar(a.texto); this.ui.avisar(this.avisoVersion(d)); return; }
+      if ((d.meta.version || 0) > VERSION_MDEXA) { this.aplicar(a.texto); this.ui.avisar(this.avisoVersion(d)); return; }
       if (d.candado && d.candado.usuario === this.estado.usuario) {
         const doc = { ...d, candado: null };
         await this.escribir(doc); this.aplicar(toMD(doc));
@@ -212,7 +212,7 @@ export class Sesion {
       const a = await this.alm.releer();
       if (!a) return;
       const d = parseMD(a.texto);
-      if (!puedeSoltar(d, this.estado.usuario)) { if ((d.meta.version || 0) > VERSION_GESTOR) this.aplicar(a.texto); return; }
+      if (!puedeSoltar(d, this.estado.usuario)) { if ((d.meta.version || 0) > VERSION_MDEXA) this.aplicar(a.texto); return; }
       const doc = { ...this.estado.doc!, candado: null };
       this.set({ doc });
       await this.escribir(doc);
@@ -225,7 +225,7 @@ export class Sesion {
   }
 
   private avisoVersion(d: Documento) {
-    return `Este archivo lo guardó una versión más nueva del gestor (v${d.meta.versionTxt || d.meta.version}) y tú tienes la v${VERSION_TXT}. Puedes ver todo, pero no se permite guardar cambios.`;
+    return `Este archivo lo guardó una versión más nueva de MDexa (v${d.meta.versionTxt || d.meta.version}) y tú tienes la v${VERSION_TXT}. Puedes ver todo, pero no se permite guardar cambios.`;
   }
 
   private perderCandado(d: Documento, texto: string) {
@@ -495,7 +495,7 @@ export class Sesion {
   /** Restaura un respaldo: pide confirmación, toma el archivo si hace falta y deja todo anotado en la bitácora */
   async restaurar(r: Respaldo): Promise<boolean> {
     const rd = parseMD(r.texto);
-    if ((rd.meta.version || 0) > VERSION_GESTOR) { this.ui.avisar('Este respaldo es de una versión más nueva del gestor.'); return false; }
+    if ((rd.meta.version || 0) > VERSION_MDEXA) { this.ui.avisar('Este respaldo es de una versión más nueva de MDexa.'); return false; }
     const cuando = fmtHora(r.fecha);
     if (!(await this.ui.confirmar(`¿Restaurar el respaldo del ${cuando}?\n\nLas actividades y la meta regresarán a como estaban en ese momento. Las notas y la bitácora actuales se conservan, y antes se guarda un respaldo de la versión actual.`))) return false;
     if (this.estado.modo !== 'edicion') { await this.tomar(); if (this.getSnapshot().modo !== 'edicion') return false; }

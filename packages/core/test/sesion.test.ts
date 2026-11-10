@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   absorberPropios, actividadNueva, candadoNuevo, conEstado, decidirEscritura, decidirToma, deshacer, foto, historialVacio,
-  parseMD, puedeSoltar, rehacer, registrarDeshacer, toMD, VERSION_GESTOR,
+  parseMD, puedeSoltar, rehacer, registrarDeshacer, toMD, VERSION_MDEXA,
 } from '../src';
 import type { Documento } from '../src';
 
-const base = (extra = '') => parseMD(`# P\n\n- Proyecto: P\n- Versión del gestor: ${VERSION_GESTOR} (v1.0.0)\n${extra}\n| ID | Actividad | Estado | Repite |\n|---|---|---|---|\n| 1 | Uno | Planeado | Cada semana |\n| 2 | Dos | Backlog | |\n`);
+const base = (extra = '') => parseMD(`# P\n\n- Proyecto: P\n- Versión de MDexa: ${VERSION_MDEXA} (v1.0.0)\n${extra}\n| ID | Actividad | Estado | Repite |\n|---|---|---|---|\n| 1 | Uno | Planeado | Cada semana |\n| 2 | Dos | Backlog | |\n`);
 const t0 = Date.parse('2026-11-05T10:00:00Z');
 
 describe('candado', () => {
@@ -22,7 +22,7 @@ describe('candado', () => {
     expect(decidirToma(d, 'Ana', t0)).toMatchObject({ tipo: 'abandonado', por: 'Luis' });
   });
   it('archivo de versión más nueva → masNuevo, y no se escribe ni se suelta', () => {
-    const d = parseMD(`- Versión del gestor: ${VERSION_GESTOR + 1} (v9.9.9)\n| Actividad |\n|---|\n| x |`);
+    const d = parseMD(`- Versión de MDexa: ${VERSION_MDEXA + 1} (v9.9.9)\n| Actividad |\n|---|\n| x |`);
     expect(decidirToma(d, 'Ana', t0)).toEqual({ tipo: 'masNuevo' });
     expect(decidirEscritura(d, 'Ana', t0)).toBe('masNuevo');
     expect(puedeSoltar(d, 'Ana')).toBe(false);

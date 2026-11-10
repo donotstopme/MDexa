@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gestor Proyectos</title>
-<script>try { const t = localStorage.getItem('gestor.tema'); if (t === 'claro' || t === 'oscuro') document.documentElement.dataset.tema = t; } catch {}</script>
+<title>MDexa</title>
+<script>try { const t = localStorage.getItem('mdexa.tema'); if (t === 'claro' || t === 'oscuro') document.documentElement.dataset.tema = t; } catch {}</script>
 <style>
   :root{--bg:#f5f6f8;--card:#fff;--text:#1c2430;--muted:#667085;--line:#e3e6eb;--line2:#cfd4dc;--accent:#2f6fed;--danger:#d92d20;--ok:#079455;--warn:#dc6803;--grupo:#e9edf5;
         --c-gris:#8a94a6;--c-azul:#2f6fed;--c-amar:#e0a800;--c-verde:#079455;--c-rojo:#d92d20;--t-amar:#946200}
@@ -937,9 +937,9 @@
 <div class="wrap">
   <header>
     <div class="cabeza">
-      <div class="marca" title="Gestor Proyectos">
+      <div class="marca" title="MDexa">
         <img src="bm.png" alt="" class="marca-logo" onerror="this.remove()">
-        <span class="marca-txt"><b id="marcaNombre">Gestor Proyectos</b><span class="marca-ver" id="marcaVersion"></span></span>
+        <span class="marca-txt"><b id="marcaNombre">MDexa</b><span class="marca-ver" id="marcaVersion"></span></span>
       </div>
       <div class="cabeza-proy">
         <h1 id="titulo">Sin proyecto abierto</h1>
@@ -1456,16 +1456,16 @@ const ESTADOS = [
   { v: 'Cancelado',   c: 'rojo',  d: 'Ya no se hará. No cuenta para el avance.' },
 ];
 const colorEstado = v => (ESTADOS.find(e => e.v === (ALIAS_ESTADO[normaliza(v || '')] || v)) || ESTADOS[0]).c;
-/* ---- Versión del gestor ----
+/* ---- Versión de MDexa ----
    El .md guarda la versión que lo escribió. Si el archivo es de una versión MÁS NUEVA que este HTML,
    aquí solo se puede ver: no se escribe nada, para no borrar datos que esta versión no conoce. */
-// VERSION_GESTOR es el número de compatibilidad del formato del archivo (las versiones 14 en adelante lo comparan):
+// VERSION_MDEXA es el número de compatibilidad del formato del archivo (las versiones 14 en adelante lo comparan):
 // sólo sube cuando cambia lo que se guarda en el .md. VERSION_TXT es la versión que se muestra.
-const NOMBRE_APP = 'Gestor Proyectos', VERSION_GESTOR = 18, VERSION_TXT = '1.34.1', VERSION_FECHA = '3 nov 2026';
+const NOMBRE_APP = 'MDexa', VERSION_MDEXA = 18, VERSION_TXT = '1.34.1', VERSION_FECHA = '3 nov 2026';
 const verTxt = n => n >= 14 ? `v1.${n}.0` : `v${n}`;
 let versionArchivo = 0, versionArchivoTxt = '';
-const archivoMasNuevo = () => versionArchivo > VERSION_GESTOR;
-const avisoVersion = (v, txt) => `Este archivo lo guardó una versión más nueva del gestor (${txt ? 'v' + txt : verTxt(v)}) y tú tienes la v${VERSION_TXT}. Puedes ver todo, pero para no borrar información no se permite guardar cambios. Pide al equipo el HTML más reciente.`;
+const archivoMasNuevo = () => versionArchivo > VERSION_MDEXA;
+const avisoVersion = (v, txt) => `Este archivo lo guardó una versión más nueva de MDexa (${txt ? 'v' + txt : verTxt(v)}) y tú tienes la v${VERSION_TXT}. Puedes ver todo, pero para no borrar información no se permite guardar cambios. Pide al equipo el HTML más reciente.`;
 
 const ALIAS_ESTADO = { '': 'Backlog', 'sin estado': 'Backlog', 'pendiente': 'Backlog', 'por iniciar': 'Backlog', 'backlog': 'Backlog',
   'planeado': 'Planeado', 'planeada': 'Planeado', 'en proceso': 'En progreso', 'en progreso': 'En progreso',
@@ -1595,13 +1595,13 @@ let actividades = [], meta = { proyecto: '', inicio: '', fin: '' }, candado = nu
 let modo = 'lectura', editId = null, sucio = false, ultimoGuardado = null;
 let orden = { k: 'inicio', asc: true };
 const colapsados = new Set();
-let usuario = ''; try { usuario = localStorage.getItem('gestor.usuario') || ''; } catch {}
+let usuario = ''; try { usuario = localStorage.getItem('mdexa.usuario') || ''; } catch {}
 let timerLatido = null, cola = Promise.resolve();
 
 /* ---- Favoritas: sólo en este navegador, por archivo ---- */
 const ESTRELLA = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg>';
 let favs = new Set(), claveFavs = '';
-const claveDeFavs = () => `gestor.favoritas|${nombreArchivo}|${meta.proyecto}`;
+const claveDeFavs = () => `mdexa.favoritas|${nombreArchivo}|${meta.proyecto}`;
 function cargarFavs() {
   const k = claveDeFavs(); if (k === claveFavs) return;
   claveFavs = k;
@@ -1663,7 +1663,7 @@ const VISITA_MIN = 60e3;   // si estuviste al menos 1 minuto en el archivo, al s
 const foto = acts => Object.fromEntries(acts.map(a => [a.id, Object.fromEntries(Object.keys(CAMPOS_NOV).map(k => [k, k === 'estado' ? EST(a) : k === 'etiquetas' ? etqs(a).join(', ') : k === 'depende' ? txtDeps(a) : k === 'subtareas' ? txtSubs(a) : k === 'repite' ? (REPITE[a.repite] || '') : (a[k] || '')]))]));
 let visto = null, vistoFecha = '', previoLocal = {}, inicioVisita = 0, notasVistas = new Set();
 let novedades = { nuevas: [], cambios: [], borradas: [], notas: [], total: 0 }, novIds = new Map(), notasNuevasPorAct = new Map();
-const claveVisto = () => `gestor.visto|${nombreArchivo}`;
+const claveVisto = () => `mdexa.visto|${nombreArchivo}`;
 const claveNota = n => `${n.act}|${n.fecha}|${n.autor}`;
 function guardarVisto() { try { localStorage.setItem(claveVisto(), JSON.stringify({ fecha: vistoFecha, acts: visto, notas: [...notasVistas] })); } catch {} }
 function cargarVisto(reiniciar = false) {
@@ -1995,7 +1995,7 @@ function parseMD(txt) {
     const l = linea.trim();
     if (/^#{1,6}\s/.test(l)) {
       const t = normaliza(l); enNotas = /^##\s+notas\b/.test(t); enBit = /^##\s+bitacora\b/.test(t); enEtq = /^##\s+etiquetas\s*$/.test(t); enImg = /^##\s+imagenes\s*$/.test(t); enSub = /^##\s+subtareas\s*$/.test(t);
-      // Una sección ## que el gestor no conoce se conserva tal cual (por ejemplo, una agregada a mano)
+      // Una sección ## que MDexa no conoce se conserva tal cual (por ejemplo, una agregada a mano)
       enOtra = /^##\s/.test(l) && !enNotas && !enBit && !enEtq && !enImg && !enSub;
       if (enOtra) extra.push(linea.replace(/\s+$/, ''));
       continue;
@@ -2033,7 +2033,8 @@ function parseMD(txt) {
       if (k === 'proyecto') m.proyecto = v;
       else if (k === 'meta inicio') m.inicio = v;
       else if (k === 'meta fin') m.fin = v;
-      else if (k === 'version del gestor') { m.version = parseInt(v, 10) || 0; m.versionTxt = (v.match(/v(\d+\.\d+\.\d+)/) || [])[1] || ''; }
+      else if (k === 'version de mdexa' || k === 'version del gestor') { // la 2.ª es la clave anterior: se sigue leyendo
+        m.version = parseInt(v, 10) || 0; m.versionTxt = (v.match(/v(\d+\.\d+\.\d+)/) || [])[1] || ''; }
       else if (k === 'en edicion') {
         const p = v.split('|').map(s => s.trim());
         if (p[0]) c = { usuario: p[0], desde: p[1] || '', latido: p[2] || p[1] || '' };
@@ -2064,7 +2065,7 @@ function parseMD(txt) {
 function toMD() {
   const limpia = s => String(s ?? '').replace(/\|/g, '/').trim().replace(/\r?\n/g, '<br>');
   let md = `# ${limpia(meta.proyecto) || 'Actividades'}\n\n`;
-  md += `- Proyecto: ${limpia(meta.proyecto)}\n- Meta inicio: ${meta.inicio || ''}\n- Meta fin: ${meta.fin || ''}\n- Versión del gestor: ${VERSION_GESTOR} (v${VERSION_TXT})\n`;
+  md += `- Proyecto: ${limpia(meta.proyecto)}\n- Meta inicio: ${meta.inicio || ''}\n- Meta fin: ${meta.fin || ''}\n- Versión de MDexa: ${VERSION_MDEXA} (v${VERSION_TXT})\n`;
   if (candado) md += `- En edición: ${limpia(candado.usuario)} | ${candado.desde} | ${candado.latido}\n`;
   md += '\n| ID | Negocio | Actividad | Tamaño | Prioridad | Responsable | Inicio | Fin | Estado | Terminada | Etiquetas | Depende de | Repite |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|\n';
   for (const a of [...actividades].sort((x, y) => x.id - y.id))
@@ -2103,7 +2104,7 @@ function aplicar(d) { actividades = d.actividades; meta = d.meta; candado = d.ca
 const idb = (() => {
   let p;
   const abrirDB = () => p || (p = new Promise((res, rej) => {
-    const r = indexedDB.open('gestor-actividades', 1);
+    const r = indexedDB.open('mdexa', 1);
     r.onupgradeneeded = () => r.result.createObjectStore('kv');
     r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
   }));
@@ -2181,13 +2182,13 @@ function asegurarUsuario() {
   if (usuario) return true;
   const n = prompt('¿Cómo te llamas? Tu nombre se usa para marcar quién está editando el archivo.');
   if (!n || !n.trim()) return false;
-  usuario = n.trim(); try { localStorage.setItem('gestor.usuario', usuario); } catch {}
+  usuario = n.trim(); try { localStorage.setItem('mdexa.usuario', usuario); } catch {}
   render(); return true;
 }
 function cambiarUsuario() {
   if (modo === 'edicion') { alert('Suelta el archivo antes de cambiar de usuario.'); return; }
   const n = prompt('Tu nombre:', usuario);
-  if (n && n.trim()) { usuario = n.trim(); try { localStorage.setItem('gestor.usuario', usuario); } catch {} render(); }
+  if (n && n.trim()) { usuario = n.trim(); try { localStorage.setItem('mdexa.usuario', usuario); } catch {} render(); }
 }
 
 async function abrir() {
@@ -2203,7 +2204,7 @@ $('inputArchivo').onchange = async e => {
   respaldar('Al abrir el archivo', t);
 };
 // Navegadores sin acceso a archivos: se guarda una copia del último .md para mostrarla al recargar
-function guardarCopiaLocal(t) { try { localStorage.setItem('gestor.ultimo', JSON.stringify({ nombre: nombreArchivo, texto: t, fecha: new Date().toISOString() })); } catch {} }
+function guardarCopiaLocal(t) { try { localStorage.setItem('mdexa.ultimo', JSON.stringify({ nombre: nombreArchivo, texto: t, fecha: new Date().toISOString() })); } catch {} }
 
 async function refrescar({ silencioso = false } = {}) {
   if (!fileHandle) {
@@ -2251,7 +2252,7 @@ async function tomar() {
   } catch (e) { alert('Vuelve a dar clic en "Tomar para editar". (' + e.message + ')'); return; }
   if (!asegurarUsuario()) return;
   const { t, d } = await leerDisco();
-  if ((d.meta.version || 0) > VERSION_GESTOR) { textoCargado = t; aplicar(d); render(); alert(avisoVersion(d.meta.version, d.meta.versionTxt)); return; }
+  if ((d.meta.version || 0) > VERSION_MDEXA) { textoCargado = t; aplicar(d); render(); alert(avisoVersion(d.meta.version, d.meta.versionTxt)); return; }
   if (d.candado && !esMio(d.candado)) {
     if (candadoVigente(d.candado)) {
       textoCargado = t; aplicar(d); render();
@@ -2283,7 +2284,7 @@ async function soltar() {
   respaldar('Al soltar el archivo');
   cola = cola.then(async () => {
     const { d } = await leerDisco();
-    if ((d.meta.version || 0) > VERSION_GESTOR) { aplicar(d); return; }   // alguien lo guardó con una versión más nueva: no se toca
+    if ((d.meta.version || 0) > VERSION_MDEXA) { aplicar(d); return; }   // alguien lo guardó con una versión más nueva: no se toca
     if (!d.candado || esMio(d.candado)) { candado = null; await escribir(toMD()); }
   }).catch(e => alert('No se pudo soltar el archivo: ' + e.message));
   await cola;
@@ -2298,13 +2299,13 @@ async function liberarPropio() {
   try {
     if (await fileHandle.requestPermission({ mode: 'readwrite' }) !== 'granted') return;
     const { d } = await leerDisco();
-    if ((d.meta.version || 0) > VERSION_GESTOR) { aplicar(d); render(); alert(avisoVersion(d.meta.version, d.meta.versionTxt)); return; }
+    if ((d.meta.version || 0) > VERSION_MDEXA) { aplicar(d); render(); alert(avisoVersion(d.meta.version, d.meta.versionTxt)); return; }
     if (d.candado && esMio(d.candado)) { aplicar(d); candado = null; await escribir(toMD()); }
     render(); aviso('Archivo liberado');
   } catch (e) { alert('No se pudo liberar: ' + e.message); }
 }
 
-// Mientras editabas, alguien guardó el archivo con una versión más nueva del gestor: se deja de escribir
+// Mientras editabas, alguien guardó el archivo con una versión más nueva de MDexa: se deja de escribir
 function perderPorVersion(d) {
   clearInterval(timerLatido); modo = 'lectura'; editId = null; selec.clear();
   document.querySelectorAll('dialog[open]').forEach(x => { if (!x.classList.contains('grande')) x.close(); });
@@ -2381,7 +2382,7 @@ async function escribirAhora(sinVerificar = false) {
   if (modo !== 'edicion') return;
   if (!sinVerificar) {
     const { d } = await leerDisco();
-    if ((d.meta.version || 0) > VERSION_GESTOR) return perderPorVersion(d);
+    if ((d.meta.version || 0) > VERSION_MDEXA) return perderPorVersion(d);
     if (d.candado && !esMio(d.candado) && candadoVigente(d.candado)) return perderCandado(d);
   }
   candado.latido = new Date().toISOString();
@@ -2399,7 +2400,7 @@ async function nuevo() {
     catch (e) { if (e.name !== 'AbortError') alert(e.message); return; }
     nombreArchivo = fileHandle.name;
   } else nombreArchivo = 'actividades.md';
-  actividades = []; notas = []; bitacora = []; seccionesExtra = []; versionArchivo = VERSION_GESTOR; meta = m; colapsados.clear(); limpiarDeshacer(); modo = 'edicion'; copiaLocal = false; ultimoPendiente = null;
+  actividades = []; notas = []; bitacora = []; seccionesExtra = []; versionArchivo = VERSION_MDEXA; meta = m; colapsados.clear(); limpiarDeshacer(); modo = 'edicion'; copiaLocal = false; ultimoPendiente = null;
   cargarVisto(true);
   if (soportaFS) {
     const ahora = new Date().toISOString();
@@ -2510,9 +2511,9 @@ opcionesMsel('qPri', [...ORDEN_PRI.map(p => ({ v: p, cls: 'pri-punto pri-' + p }
 opcionesMsel('qEst', [...ESTADOS.map(e => ({ v: e.v, c: e.c })), { v: 'Otros', sep: true }, 'Vencida', 'Bloqueada', 'Recurrente', 'Con novedades']);
 opcionesMsel('qTam', [...ORDEN_TAM, SIN_TAM]);
 /* ---- Mostrar u ocultar el Backlog (preferencia local) ---- */
-let verBacklog = true; try { verBacklog = localStorage.getItem('gestor.verBacklog') !== '0'; } catch {}
+let verBacklog = true; try { verBacklog = localStorage.getItem('mdexa.verBacklog') !== '0'; } catch {}
 $('qBacklog').checked = verBacklog;
-$('qBacklog').onchange = () => { verBacklog = $('qBacklog').checked; try { localStorage.setItem('gestor.verBacklog', verBacklog ? '1' : '0'); } catch {} render(); };
+$('qBacklog').onchange = () => { verBacklog = $('qBacklog').checked; try { localStorage.setItem('mdexa.verBacklog', verBacklog ? '1' : '0'); } catch {} render(); };
 // El backlog se oculta salvo que se pida explícitamente en el filtro de estado
 const backlogOculto = () => !verBacklog && !fsel('qEst').has('Backlog');
 
@@ -2739,7 +2740,7 @@ function renderEstado() {
             <div class="barra"><button data-acc="recientes">Otros recientes…</button><button class="prim" data-acc="reabrir">Abrir ${esc(ultimoPendiente.name)}</button></div>`;
   } else if (nombreArchivo && archivoMasNuevo()) {
     cls = 'otro';
-    html = `<div><b>Solo lectura: tu versión del gestor es más vieja que el archivo.</b> Lo guardó la ${versionArchivoTxt ? 'v' + versionArchivoTxt : verTxt(versionArchivo)} y tú tienes la v${VERSION_TXT}.
+    html = `<div><b>Solo lectura: tu versión de MDexa es más vieja que el archivo.</b> Lo guardó la ${versionArchivoTxt ? 'v' + versionArchivoTxt : verTxt(versionArchivo)} y tú tienes la v${VERSION_TXT}.
               <div class="det">Para no borrar información que esta versión no conoce, no se permite editar, comentar ni restaurar. Pide al equipo el HTML más reciente.</div></div>`;
   } else if (!nombreArchivo) {
     html = `<div>Abre el <b>.md</b> compartido o crea uno nuevo para empezar. <span class="det">¿Primera vez? Consulta el <a href="#" data-acc="manual">manual de uso</a>.</span></div>`;
@@ -2820,8 +2821,8 @@ function renderMeta(x) {
   iconizar(card);
   const bm = card.querySelector('[data-acc="meta"]'); if (bm) bm.onclick = () => editarMeta();
   const ba = card.querySelector('[data-acc="avance"]');
-  if (ba) ba.onclick = () => { verAvance = !verAvance; try { localStorage.setItem('gestor.verAvance', verAvance ? '1' : '0'); } catch {} render(); };
-  card.querySelectorAll('[data-av-u]').forEach(b => b.onclick = () => { unidadAvance = b.dataset.avU; try { localStorage.setItem('gestor.avanceUnidad', unidadAvance); } catch {} render(); });
+  if (ba) ba.onclick = () => { verAvance = !verAvance; try { localStorage.setItem('mdexa.verAvance', verAvance ? '1' : '0'); } catch {} render(); };
+  card.querySelectorAll('[data-av-u]').forEach(b => b.onclick = () => { unidadAvance = b.dataset.avU; try { localStorage.setItem('mdexa.avanceUnidad', unidadAvance); } catch {} render(); });
   if (verAvance) activarHoverAvance(card);
 }
 
@@ -3012,10 +3013,10 @@ function renderLateral(lista) {
   lat.innerHTML = html; lat._ultimo = null;
 }
 
-let panelCompacto = false; try { panelCompacto = localStorage.getItem('gestor.panelCompacto') === '1'; } catch {}
+let panelCompacto = false; try { panelCompacto = localStorage.getItem('mdexa.panelCompacto') === '1'; } catch {}
 $('lateral').addEventListener('click', e => {
   if (e.target.closest('.lat-toggle')) {
-    panelCompacto = !panelCompacto; try { localStorage.setItem('gestor.panelCompacto', panelCompacto ? '1' : '0'); } catch {}
+    panelCompacto = !panelCompacto; try { localStorage.setItem('mdexa.panelCompacto', panelCompacto ? '1' : '0'); } catch {}
     render(); return;
   }
   const b = e.target.closest('.nav-neg'); if (!b) return;
@@ -3081,7 +3082,7 @@ $('gantt').addEventListener('scroll', () => { if (!spyRaf) spyRaf = requestAnima
 
 /* ============ Línea de tiempo (Gantt) ============ */
 let vista = 'lista', zoom = 'semana';
-try { const v = localStorage.getItem('gestor.vista'); vista = ['gantt', 'kanban', 'mias', 'cal', 'carga'].includes(v) ? v : 'lista'; zoom = localStorage.getItem('gestor.zoom') || 'semana'; } catch {}
+try { const v = localStorage.getItem('mdexa.vista'); vista = ['gantt', 'kanban', 'mias', 'cal', 'carga'].includes(v) ? v : 'lista'; zoom = localStorage.getItem('mdexa.zoom') || 'semana'; } catch {}
 const PX_DIA = { dia: 34, semana: 15, mes: 5 };
 const addDias = (f, n) => { const d = new Date(f + 'T00:00'); d.setDate(d.getDate() + n); return d.toLocaleDateString('en-CA'); };
 let ganttRango = null, ganttCentrado = false;
@@ -3332,7 +3333,7 @@ function tarjetaK(a, tagNeg, { arrastrable = false, rapidas = false, mostrarEsta
 }
 
 /* ============ Mis actividades ============ */
-let persona = ''; try { persona = localStorage.getItem('gestor.persona') || ''; } catch {}
+let persona = ''; try { persona = localStorage.getItem('mdexa.persona') || ''; } catch {}
 function renderMias(lista, msgVacio) {
   const cont = $('mias'), ed = modo === 'edicion', h = hoy();
   const quien = $('qPersona').value;
@@ -3396,7 +3397,7 @@ $('mias').addEventListener('click', e => {
   if (t) { const k = t.dataset.sec; colapsados.has(k) ? colapsados.delete(k) : colapsados.add(k); render(); return; }
   const c = e.target.closest('.k-tarjeta'); if (c && modo === 'edicion') abrirForm(+c.dataset.id);
 });
-$('qPersona').onchange = () => { persona = $('qPersona').value; try { localStorage.setItem('gestor.persona', persona); } catch {} render(); };
+$('qPersona').onchange = () => { persona = $('qPersona').value; try { localStorage.setItem('mdexa.persona', persona); } catch {} render(); };
 
 /* ============ Calendario mensual (por fecha fin) ============ */
 let calMes = hoy().slice(0, 7), cArr = null;
@@ -3573,18 +3574,18 @@ $('kanban').addEventListener('click', e => {
 
 $('segVista').addEventListener('click', e => {
   const b = e.target.closest('button[data-vista]'); if (!b || b.dataset.vista === vista) return;
-  vista = b.dataset.vista; try { localStorage.setItem('gestor.vista', vista); } catch {}
+  vista = b.dataset.vista; try { localStorage.setItem('mdexa.vista', vista); } catch {}
   ganttCentrado = false; render();
 });
 $('qZoom').value = zoom;
-$('qZoom').onchange = () => { zoom = $('qZoom').value; try { localStorage.setItem('gestor.zoom', zoom); } catch {} ganttCentrado = false; render(); };
+$('qZoom').onchange = () => { zoom = $('qZoom').value; try { localStorage.setItem('mdexa.zoom', zoom); } catch {} ganttCentrado = false; render(); };
 window.addEventListener('resize', () => { if (vista === 'gantt') { clearTimeout(window._rg); window._rg = setTimeout(render, 200); } });
 window.addEventListener('scroll', () => { if (!spyRaf) spyRaf = requestAnimationFrame(actualizarSpy); }, { passive: true });
 window.addEventListener('resize', () => { if (!spyRaf) spyRaf = requestAnimationFrame(actualizarSpy); });
 
 /* ============ Avance acumulado contra la meta (burn-up) ============ */
 let unidadAvance = 'act', verAvance = false;
-try { unidadAvance = localStorage.getItem('gestor.avanceUnidad') === 'h' ? 'h' : 'act'; verAvance = localStorage.getItem('gestor.verAvance') === '1'; } catch {}
+try { unidadAvance = localStorage.getItem('mdexa.avanceUnidad') === 'h' ? 'h' : 'act'; verAvance = localStorage.getItem('mdexa.verAvance') === '1'; } catch {}
 const etqUnidad = (v, u) => u === 'h' ? `${Math.round(v)} h` : `${Math.round(v * 10) / 10}`;
 function datosAvance(unidad = 'act') {
   if (!meta.inicio || !meta.fin || meta.fin < meta.inicio) return null;
@@ -4034,7 +4035,7 @@ const colorAutor = s => { let h = 0; for (const ch of String(s)) h = (h * 31 + c
 // ¿Se puede escribir una nota ahora? (con el archivo tomado, o libre si nadie lo está editando)
 function estadoEscrituraNotas() {
   if (!nombreArchivo) return { ok: false, msg: 'Abre un archivo primero.' };
-  if (archivoMasNuevo()) return { ok: false, msg: `El archivo es de una versión más nueva del gestor (${verTxt(versionArchivo)}); actualiza tu HTML para agregar notas.` };
+  if (archivoMasNuevo()) return { ok: false, msg: `El archivo es de una versión más nueva de MDexa (${verTxt(versionArchivo)}); actualiza tu HTML para agregar notas.` };
   if (modo === 'edicion') return { ok: true, msg: 'Se guarda en el archivo al momento.' };
   if (!soportaFS) return { ok: true, msg: 'Se guarda en la copia de este navegador; usa "Más → Descargar copia .md" para compartirla.' };
   if (candado && !esMio(candado) && candadoVigente(candado)) return { ok: false, msg: `${candado.usuario} está editando el archivo; podrás agregar notas cuando lo suelte.` };
@@ -4050,7 +4051,7 @@ async function escribirNotas(cambio, que = 'la nota') {
   let ok = false;
   cola = cola.then(async () => {
     const { d } = await leerDisco();
-    if ((d.meta.version || 0) > VERSION_GESTOR) { aplicar(d); alert(avisoVersion(d.meta.version, d.meta.versionTxt)); return; }
+    if ((d.meta.version || 0) > VERSION_MDEXA) { aplicar(d); alert(avisoVersion(d.meta.version, d.meta.versionTxt)); return; }
     if (d.candado && !esMio(d.candado) && candadoVigente(d.candado)) {
       aplicar(d); alert(`${d.candado.usuario} acaba de tomar el archivo para editarlo, así que ${que} no se pudo guardar. Tu texto sigue en la ventana; inténtalo cuando lo suelte.`);
       return;
@@ -4184,7 +4185,7 @@ async function pedirCarpeta() {
       dirOk = (await dirHandle.requestPermission({ mode: 'readwrite' })) === 'granted';
       if (dirOk) return true;
     }
-    const d = await showDirectoryPicker({ id: 'gestor-imagenes', mode: 'readwrite', startIn: fileHandle });
+    const d = await showDirectoryPicker({ id: 'mdexa-imagenes', mode: 'readwrite', startIn: fileHandle });
     const ruta = await d.resolve(fileHandle);
     if (!ruta || ruta.length !== 1) { alert(`Elige la carpeta donde está "${nombreArchivo}" (no una subcarpeta ni otra carpeta).`); return false; }
     dirHandle = d; dirOk = true; limpiarUrlsImg();
@@ -4414,7 +4415,7 @@ document.addEventListener('click', e => {
 /* ============ Agrupar la lista, el tablero y la línea de tiempo ============ */
 const agrupPor = () => $('qAgrupar').value;
 const porNegocio = () => agrupPor() === 'negocio';
-try { const v = localStorage.getItem('gestor.agrupar'); if (v !== null && [...$('qAgrupar').options].some(o => o.value === v)) $('qAgrupar').value = v; } catch {}
+try { const v = localStorage.getItem('mdexa.agrupar'); if (v !== null && [...$('qAgrupar').options].some(o => o.value === v)) $('qAgrupar').value = v; } catch {}
 // Clave de grupo: el negocio tal cual (lo usa el panel lateral); los demás llevan prefijo, p. ej. "responsable:Ana López"
 function gruposDe(a) {
   const c = agrupPor();
@@ -4444,7 +4445,7 @@ $('qAgrupar').title = 'Agrupa la lista, el tablero y la línea de tiempo';
 
 /* ============ Columnas visibles de la lista (preferencia de este navegador) ============ */
 const COLS_OPC = [['negocio', 'Negocio'], ['prioridad', 'Prioridad'], ['tamano', 'Tamaño'], ['responsable', 'Responsable'], ['inicio', 'Inicio'], ['fin', 'Fin'], ['estado', 'Estado']];
-let colsOcultas = new Set(); try { colsOcultas = new Set(JSON.parse(localStorage.getItem('gestor.colsOcultas') || '[]')); } catch {}
+let colsOcultas = new Set(); try { colsOcultas = new Set(JSON.parse(localStorage.getItem('mdexa.colsOcultas') || '[]')); } catch {}
 const estiloCols = document.createElement('style'); document.head.appendChild(estiloCols);
 function aplicarCols() {
   estiloCols.textContent = COLS_OPC.filter(([k]) => colsOcultas.has(k)).map(([k, t]) => `#vistaLista th[data-k="${k}"],#tabla td[data-t="${t}"]{display:none}`).join('\n');
@@ -4459,12 +4460,12 @@ $('btnCols').onclick = () => { const abrir = $('colsPop').hidden; cerrarMsels();
 $('colsPop').addEventListener('change', e => {
   const c = e.target.closest('[data-col]'); if (!c) return;
   c.checked ? colsOcultas.delete(c.dataset.col) : colsOcultas.add(c.dataset.col);
-  try { localStorage.setItem('gestor.colsOcultas', JSON.stringify([...colsOcultas])); } catch {}
+  try { localStorage.setItem('mdexa.colsOcultas', JSON.stringify([...colsOcultas])); } catch {}
   aplicarCols(); $('colsPop').hidden = false;
 });
 $('colsPop').addEventListener('click', e => {
   if (!e.target.closest('[data-cols="todas"]')) return;
-  colsOcultas.clear(); try { localStorage.removeItem('gestor.colsOcultas'); } catch {}
+  colsOcultas.clear(); try { localStorage.removeItem('mdexa.colsOcultas'); } catch {}
   aplicarCols(); $('colsPop').hidden = false;
 });
 aplicarCols();
@@ -4767,7 +4768,7 @@ $('respCont').addEventListener('click', async e => {
 });
 async function restaurarRespaldo(x) {
   const vr = parseMD(x.texto).meta.version || 0;
-  if (vr > VERSION_GESTOR) { alert(`Este respaldo es de una versión más nueva del gestor (${verTxt(vr)}); actualiza tu HTML para restaurarlo.`); return; }
+  if (vr > VERSION_MDEXA) { alert(`Este respaldo es de una versión más nueva de MDexa (${verTxt(vr)}); actualiza tu HTML para restaurarlo.`); return; }
   if (!confirm(`¿Restaurar el respaldo del ${fmtHora(x.fecha)}?\n\nLas actividades y la meta regresarán a como estaban en ese momento. Las notas y la bitácora actuales se conservan, y antes se guarda un respaldo de la versión actual.`)) return;
   if (modo !== 'edicion') { await tomar(); if (modo !== 'edicion') return; }
   await respaldar('Antes de restaurar');
@@ -4843,7 +4844,7 @@ $('formSprint').onsubmit = async e => {
   await respaldar('Antes de crear el sprint');
   if (!(await soltar())) return;
   cerrarVisita();
-  actividades = nuevas; notas = notasN; bitacora = bitN; seccionesExtra = []; imagenes = []; versionArchivo = VERSION_GESTOR; meta = { proyecto: nom, inicio: ini, fin: fin };
+  actividades = nuevas; notas = notasN; bitacora = bitN; seccionesExtra = []; imagenes = []; versionArchivo = VERSION_MDEXA; meta = { proyecto: nom, inicio: ini, fin: fin };
   colapsados.clear(); copiaLocal = false; ultimoPendiente = null; limpiarDeshacer(); modo = 'edicion';
   if (h) {
     fileHandle = h; nombreArchivo = h.name; cargarVisto(true);
@@ -5140,7 +5141,7 @@ $('impHacer').onclick = async () => {
   if (modo !== 'edicion') { $('dlgImp').close(); await tomar(); if (modo !== 'edicion') return; }
   await respaldar('Antes de importar');
   let sig = siguienteId(), nuevas = 0, act = 0;
-  const mapaIds = new Map(), conDeps = [];      // el ID del CSV de una fila nueva → su ID nuevo en el gestor
+  const mapaIds = new Map(), conDeps = [];      // el ID del CSV de una fila nueva → su ID nuevo en MDexa
   for (const r of fs) {
     if (r.accion === 'actualizar') {
       const a = actividades.find(x => x.id === r.id); if (!a) continue;
@@ -5337,7 +5338,7 @@ function pintarNovedades() {
 // Lleva a la actividad en la vista actual (quita filtros o abre su grupo si hace falta) y la resalta
 function irAActividad(id) {
   const a = actividades.find(x => x.id === id); if (!a) return;
-  if (vista === 'mias' && normaliza(a.responsable || '') !== normaliza($('qPersona').value)) { vista = 'lista'; try { localStorage.setItem('gestor.vista', vista); } catch {} }
+  if (vista === 'mias' && normaliza(a.responsable || '') !== normaliza($('qPersona').value)) { vista = 'lista'; try { localStorage.setItem('mdexa.vista', vista); } catch {} }
   if (vista === 'cal' && a.fin) calMes = a.fin.slice(0, 7);
   colapsados.delete(negocioDe(a)); colapsados.delete('__fav');
   const sel = () => vista === 'gantt' ? $('gantt').querySelector(`.g-area[data-id="${id}"]`)?.closest('.g-fila')
@@ -5374,8 +5375,8 @@ function manualHTML() {
   return `<div class="manual">
   <h1>Manual de uso</h1>
   <p class="sub" style="color:var(--muted);margin:0">${NOMBRE_APP} · versión ${VERSION_TXT} · ${VERSION_FECHA}</p>
-  <p class="sub" style="color:var(--muted)">Gestor de actividades con un archivo <code>.md</code> compartido.</p>
-  <nav>${['Para qué sirve', 'Primeros pasos', 'Trabajo en equipo', 'Actividades', 'Tamaños', 'Estados y colores', 'Editar en la tabla', 'Meta del proyecto', 'Filtros', 'Reporte', 'Archivos recientes', 'Formato del archivo', 'Atajos', 'Preguntas frecuentes', 'Favoritas', 'Panel de negocios', 'Íconos', 'Línea de tiempo', 'Tablero', 'Mis actividades', 'Calendario', 'Novedades', 'Notas', 'Bitácora', 'Respaldos', 'Nuevo sprint', 'Métricas', 'Selección múltiple', 'Versiones del gestor', 'Gráfica de avance', 'Importar y exportar', 'Prioridad y etiquetas', 'Imágenes', 'Modo claro y oscuro', 'Dependencias', 'Subtareas', 'Deshacer', 'Columnas y negocios', 'Reporte semanal', 'Administrar etiquetas', 'Menciones', 'Actividades recurrentes', 'Modo presentación', 'Carga por persona', 'Exportar al calendario']
+  <p class="sub" style="color:var(--muted)">MDexa: actividades de equipo en un archivo <code>.md</code> compartido.</p>
+  <nav>${['Para qué sirve', 'Primeros pasos', 'Trabajo en equipo', 'Actividades', 'Tamaños', 'Estados y colores', 'Editar en la tabla', 'Meta del proyecto', 'Filtros', 'Reporte', 'Archivos recientes', 'Formato del archivo', 'Atajos', 'Preguntas frecuentes', 'Favoritas', 'Panel de negocios', 'Íconos', 'Línea de tiempo', 'Tablero', 'Mis actividades', 'Calendario', 'Novedades', 'Notas', 'Bitácora', 'Respaldos', 'Nuevo sprint', 'Métricas', 'Selección múltiple', 'Versiones de MDexa', 'Gráfica de avance', 'Importar y exportar', 'Prioridad y etiquetas', 'Imágenes', 'Modo claro y oscuro', 'Dependencias', 'Subtareas', 'Deshacer', 'Columnas y negocios', 'Reporte semanal', 'Administrar etiquetas', 'Menciones', 'Actividades recurrentes', 'Modo presentación', 'Carga por persona', 'Exportar al calendario']
     .map((s, i) => `<a href="#man-${i}">${s}</a>`).join('')}</nav>
 
   <h2 id="man-0">Para qué sirve</h2>
@@ -5383,7 +5384,7 @@ function manualHTML() {
 
   <h2 id="man-1">Primeros pasos</h2>
   <ol>
-    <li>Abre <code>gestor-actividades.html</code> en <b>Chrome</b> o <b>Edge</b>.</li>
+    <li>Abre <code>mdexa.html</code> en <b>Chrome</b> o <b>Edge</b>.</li>
     <li>La primera vez te pedirá tu nombre: sirve para que los demás sepan quién está editando.</li>
     <li>Si ya existe el archivo del equipo, usa <b>Abrir .md</b> → <b>Explorar…</b> y elígelo en la carpeta compartida.</li>
     <li>Si es un proyecto nuevo, usa <b>Más → Nuevo .md</b>: define el nombre del proyecto y la <b>meta</b> (fecha de inicio y fin, obligatorias) y elige dónde guardarlo.</li>
@@ -5607,7 +5608,7 @@ function manualHTML() {
   </ul>
 
   <h2 id="man-21">Novedades desde tu última visita</h2>
-  <p>El gestor recuerda, en tu navegador, cómo estaban las actividades la última vez que viste el archivo. Al abrirlo de nuevo te muestra lo que <b>otras personas</b> cambiaron desde entonces.</p>
+  <p>MDexa recuerda, en tu navegador, cómo estaban las actividades la última vez que viste el archivo. Al abrirlo de nuevo te muestra lo que <b>otras personas</b> cambiaron desde entonces.</p>
   <ul>
     <li>El botón <b>${ico('campana', 14)} Novedades</b> muestra un número rojo con la cantidad de cambios. Al abrirlo ves las actividades <b>modificadas</b> (con cada campo que cambió: <i>Estado: <s>Planeado</s> → Terminado</i>), las <b>nuevas</b> y las <b>eliminadas</b>.</li>
     <li>En todas las vistas, las actividades con cambios llevan la marca <span class="nov-mark nueva">Nueva</span> o <span class="nov-mark cambio">Cambió</span> (pasa el ratón encima para ver qué cambió). En la lista, además, los campos que cambiaron se subrayan en amarillo. En el calendario se marcan con un punto.</li>
@@ -5646,7 +5647,7 @@ function manualHTML() {
     <li>Varios cambios seguidos de la misma persona a la misma actividad, en menos de 3 minutos, se juntan en una sola entrada (por ejemplo, al arrastrar una barra varias veces). Si cambias algo y lo regresas a como estaba, no queda registro.</li>
     <li>Se conservan las últimas ${MAX_BITACORA} entradas. Los números de actividad no se reutilizan, para que el historial no se confunda.</li>
     <li>En el .md la bitácora se guarda al final, en la sección <code>## Bitácora</code>: <code>- fecha | autor | #ID | acción | detalle</code>.</li>
-    <li><b>Importante:</b> todo el equipo debe usar esta misma versión del gestor. Una versión anterior no conoce la bitácora y la borraría al guardar.</li>
+    <li><b>Importante:</b> todo el equipo debe usar esta misma versión de MDexa. Una versión anterior no conoce la bitácora y la borraría al guardar.</li>
   </ul>
 
   <h2 id="man-24">Respaldos</h2>
@@ -5698,14 +5699,14 @@ function manualHTML() {
     <li>Cada cambio queda en la bitácora, una entrada por actividad.</li>
   </ul>
 
-  <h2 id="man-28">Versiones del gestor</h2>
+  <h2 id="man-28">Versiones de MDexa</h2>
   <p>Esta es la <b>versión ${VERSION_TXT}</b> (${VERSION_FECHA}), que se muestra junto al nombre en el encabezado. Puedes verla siempre al final del menú <b>Más</b>.</p>
   <ul>
-    <li>Al guardar, el gestor escribe su versión en el archivo: <code>- Versión del gestor: ${VERSION_GESTOR} (v${VERSION_TXT})</code>. El primer número es el de <b>compatibilidad</b>: solo sube cuando cambia lo que se guarda en el archivo, así que una mejora que no toca el formato (como la gráfica de avance) no obliga a nadie a actualizar.</li>
-    <li>Si abres un archivo con un número de compatibilidad <b>más nuevo</b> que el de tu gestor, verás un aviso amarillo y quedarás en <b>solo lectura</b>: no podrás tomar el archivo, comentar, restaurar respaldos ni crear un sprint. Así una versión vieja nunca borra notas, bitácora u otra información que no conoce. Pide al equipo el HTML más reciente.</li>
-    <li>La revisión se hace también justo antes de cada guardado: si mientras editabas alguien guardó el archivo con una versión más nueva, el gestor deja de escribir y te avisa.</li>
+    <li>Al guardar, MDexa escribe su versión en el archivo: <code>- Versión de MDexa: ${VERSION_MDEXA} (v${VERSION_TXT})</code>. El primer número es el de <b>compatibilidad</b>: solo sube cuando cambia lo que se guarda en el archivo, así que una mejora que no toca el formato (como la gráfica de avance) no obliga a nadie a actualizar.</li>
+    <li>Si abres un archivo con un número de compatibilidad <b>más nuevo</b> que el de tu MDexa, verás un aviso amarillo y quedarás en <b>solo lectura</b>: no podrás tomar el archivo, comentar, restaurar respaldos ni crear un sprint. Así una versión vieja nunca borra notas, bitácora u otra información que no conoce. Pide al equipo el HTML más reciente.</li>
+    <li>La revisión se hace también justo antes de cada guardado: si mientras editabas alguien guardó el archivo con una versión más nueva, MDexa deja de escribir y te avisa.</li>
     <li>Los archivos de <b>versiones anteriores</b> se abren sin problema y se actualizan al guardar.</li>
-    <li>Si agregas a mano una sección propia al .md (por ejemplo <code>## Acuerdos</code>), el gestor la conserva tal cual al guardar.</li>
+    <li>Si agregas a mano una sección propia al .md (por ejemplo <code>## Acuerdos</code>), MDexa la conserva tal cual al guardar.</li>
     <li><b>Al repartir una versión nueva</b>, compártela con todo el equipo. Las versiones anteriores a la 14 no conocen este control y podrían borrar notas, bitácora o la línea de versión si se siguen usando.</li>
   </ul>
 
@@ -5728,7 +5729,7 @@ function manualHTML() {
   <ol>
     <li>Abre el archivo .md donde quieres cargar las actividades y ve a <b>${ico('puntos', 14)} Más → ${ico('subir', 14)} Importar desde Excel o CSV</b>.</li>
     <li>Elige un archivo <code>.csv</code> (en Excel: Archivo → Guardar como → <i>CSV UTF-8</i>) <b>o</b> selecciona las celdas en Excel, cópialas (<kbd>Ctrl</kbd>+<kbd>C</kbd>) y pégalas en el cuadro. Incluye la fila de encabezados.</li>
-    <li>El gestor reconoce las columnas por su nombre (Negocio, Actividad/Tarea, Tamaño, Responsable/Encargado, Inicio, Fin/Vencimiento, Estado/Estatus, Terminada, ID). Revisa y corrige a qué campo va cada columna; las que no necesites, déjalas en "no importar".</li>
+    <li>MDexa reconoce las columnas por su nombre (Negocio, Actividad/Tarea, Tamaño, Responsable/Encargado, Inicio, Fin/Vencimiento, Estado/Estatus, Terminada, ID). Revisa y corrige a qué campo va cada columna; las que no necesites, déjalas en "no importar".</li>
     <li>Si alguna fila no trae negocio, puedes indicar uno para todas.</li>
     <li>Revisa la vista previa: cada fila dice si se agregará, actualizará u omitirá, y por qué. Se omiten las filas sin negocio o sin actividad.</li>
     <li>Presiona <b>Importar</b>. Si no tenías el archivo tomado, se toma para guardar. Todo queda en la bitácora y antes se guarda un respaldo.</li>
@@ -5736,7 +5737,7 @@ function manualHTML() {
   <ul>
     <li><b>Agregar como nuevas</b> crea todas las filas como actividades nuevas. <b>Actualizar por ID</b> cambia las actividades cuyo ID coincida (útil después de exportar, editar en Excel y volver a importar) y agrega el resto.</li>
     <li><b>Fechas</b> aceptadas: <code>2026-11-05</code>, <code>05/11/2026</code> (día/mes/año), <code>5-11-26</code>, <code>5 nov 2026</code> o el número de fecha de Excel.</li>
-    <li><b>Estados</b>: los del gestor, o equivalentes como Pendiente, Nuevo, En curso, Hecho, Finalizado, Done… Los no reconocidos quedan en Backlog. <b>Tamaños</b>: XS, S, M, L o XL.</li>
+    <li><b>Estados</b>: los de MDexa, o equivalentes como Pendiente, Nuevo, En curso, Hecho, Finalizado, Done… Los no reconocidos quedan en Backlog. <b>Tamaños</b>: XS, S, M, L o XL.</li>
     <li><b>Descargar plantilla</b> da un .csv de ejemplo con las columnas listas para llenar.</li>
   </ul>
   <h3>Exportar</h3>
@@ -5785,7 +5786,7 @@ function manualHTML() {
   <ul>
     <li>En la ventana de la actividad, en <b>Depende de</b>, escribe el número (<code>#9</code>) o parte del nombre y presiona Enter. Puede depender de varias. Abajo ves también qué actividades dependen de ella.</li>
     <li>En la lista y en el tablero aparece una marca con el número: <span class="dep bloq">${ico('candado', 11)}#9</span> en rojo si esa actividad aún no termina (está <b>bloqueada</b>), <span class="dep ok">${ico('check', 11)}#9</span> en verde si ya terminó. Clic en la marca te lleva a esa actividad.</li>
-    <li>Si intentas pasar a <b>En progreso</b> o <b>Terminado</b> una actividad bloqueada (en la tabla, el tablero, Mis actividades, la ventana o la selección múltiple), el gestor te avisa y te deja continuar si así lo decides.</li>
+    <li>Si intentas pasar a <b>En progreso</b> o <b>Terminado</b> una actividad bloqueada (en la tabla, el tablero, Mis actividades, la ventana o la selección múltiple), MDexa te avisa y te deja continuar si así lo decides.</li>
     <li>También puedes crearlas en la <b>línea de tiempo</b> con el archivo tomado: pasa el cursor sobre una barra y arrastra el <b>punto azul</b> que aparece en su extremo derecho hasta la actividad que depende de ella. La fila de destino se marca en azul (o en rojo si no se puede, por ejemplo porque formaría un círculo). Clic en una flecha para quitar esa dependencia.</li>
     <li>En la <b>línea de tiempo</b> se dibuja una flecha del fin de una barra al inicio de la que depende de ella: gris si está pendiente, verde si ya terminó y <span class="es-rojo">roja punteada</span> si la actividad empieza antes de que termine la anterior. Las bloqueadas llevan un candado junto al nombre.</li>
     <li>El filtro de estado incluye <b>Bloqueada</b>, y las alertas del proyecto cuentan las bloqueadas y las que empiezan antes de que termine su antecesora.</li>
@@ -5832,7 +5833,7 @@ function manualHTML() {
   <ul>
     <li>En una nota escribe <b>@</b> y aparece la lista de personas (responsables y quienes ya han escrito en el archivo). Elige con las flechas y Enter, o con un clic. Por ejemplo: <span class="mencion">@Luis Méndez</span> ¿ya llegó la cotización?</li>
     <li>También puedes escribir solo el nombre de pila, como <i>@Luis</i>, si no hay otra persona con ese nombre.</li>
-    <li>A la persona mencionada le aparece en <b>Novedades</b>, hasta arriba, como <b>Te mencionaron en #12</b>. El botón Novedades muestra una <b>@</b>, y si tiene el gestor abierto le avisa al momento.</li>
+    <li>A la persona mencionada le aparece en <b>Novedades</b>, hasta arriba, como <b>Te mencionaron en #12</b>. El botón Novedades muestra una <b>@</b>, y si tiene MDexa abierto le avisa al momento.</li>
     <li>En las notas, las menciones se ven resaltadas; las que son para ti, en azul sólido.</li>
     <li>Para que funcione, cada quien debe indicar su nombre igual que como aparece en el archivo (arriba, junto al nombre del archivo, en <i>cambiar</i>).</li>
   </ul>
@@ -5950,9 +5951,9 @@ $('manCont').addEventListener('click', e => {
 $('btnManual').onclick = abrirManual;
 /* ---- Tema: automático (como el sistema), claro u oscuro. Se recuerda en este navegador ---- */
 const TEMAS = { auto: { ic: 'auto', t: 'Automático', d: 'Sigue el tema de tu sistema' }, claro: { ic: 'sol', t: 'Claro', d: 'Siempre claro' }, oscuro: { ic: 'luna', t: 'Oscuro', d: 'Siempre oscuro' } };
-let tema = 'auto'; try { tema = localStorage.getItem('gestor.tema') || 'auto'; } catch {} if (!TEMAS[tema]) tema = 'auto';
+let tema = 'auto'; try { tema = localStorage.getItem('mdexa.tema') || 'auto'; } catch {} if (!TEMAS[tema]) tema = 'auto';
 function aplicarTema(t, avisar = false) {
-  tema = t; try { t === 'auto' ? localStorage.removeItem('gestor.tema') : localStorage.setItem('gestor.tema', t); } catch {}
+  tema = t; try { t === 'auto' ? localStorage.removeItem('mdexa.tema') : localStorage.setItem('mdexa.tema', t); } catch {}
   if (t === 'auto') delete document.documentElement.dataset.tema; else document.documentElement.dataset.tema = t;
   const sig = { auto: 'claro', claro: 'oscuro', oscuro: 'auto' }[t];
   $('btnTema').innerHTML = ico(TEMAS[t].ic, 17);
@@ -5988,13 +5989,13 @@ $('expTitulo').insertAdjacentHTML('afterbegin', ico('descargar', 20) + ' ');
 iconizar();
 $('menuVersion').textContent = `${NOMBRE_APP} · versión ${VERSION_TXT} · ${VERSION_FECHA}`;
 $('marcaVersion').textContent = `v${VERSION_TXT}`;
-$('qTexto').oninput = render; $('qAgrupar').onchange = () => { try { localStorage.setItem('gestor.agrupar', agrupPor()); } catch {} render(); };
+$('qTexto').oninput = render; $('qAgrupar').onchange = () => { try { localStorage.setItem('mdexa.agrupar', agrupPor()); } catch {} render(); };
 $('btnAbrir').onclick = abrir; $('btnNuevo').onclick = nuevo;
 $('btnRefrescar').onclick = () => refrescar();
 $('btnNuevaAct').onclick = () => abrirForm();
 /* ============ Carga por persona y semana ============ */
 let cargaCap = 40, cargaSem = 6, cargaSel = null;
-try { cargaCap = Math.max(1, parseFloat(localStorage.getItem('gestor.capacidad')) || 40); cargaSem = [4, 6, 8, 12].includes(+localStorage.getItem('gestor.cargaSem')) ? +localStorage.getItem('gestor.cargaSem') : 6; } catch {}
+try { cargaCap = Math.max(1, parseFloat(localStorage.getItem('mdexa.capacidad')) || 40); cargaSem = [4, 6, 8, 12].includes(+localStorage.getItem('mdexa.cargaSem')) ? +localStorage.getItem('mdexa.cargaSem') : 6; } catch {}
 const lunesDe = f => addDias(f, -((new Date(f + 'T00:00').getDay() + 6) % 7));
 const habil = f => { const d = new Date(f + 'T00:00').getDay(); return d !== 0 && d !== 6; };
 function datosCarga(lista) {
@@ -6058,12 +6059,12 @@ function renderCarga(lista, msgVacio) {
   cont.innerHTML = html;
 }
 $('carga').addEventListener('click', e => {
-  const it = e.target.closest('[data-ir]'); if (it) { const id = +it.dataset.ir; vista = 'lista'; try { localStorage.setItem('gestor.vista', vista); } catch {} irAActividad(id); return; }
+  const it = e.target.closest('[data-ir]'); if (it) { const id = +it.dataset.ir; vista = 'lista'; try { localStorage.setItem('mdexa.vista', vista); } catch {} irAActividad(id); return; }
   const c = e.target.closest('[data-cg]'); if (c) { cargaSel = cargaSel === c.dataset.cg ? null : c.dataset.cg; render(); }
 });
 $('carga').addEventListener('change', e => {
-  if (e.target.id === 'cgCap') { cargaCap = Math.max(1, +e.target.value || 40); try { localStorage.setItem('gestor.capacidad', cargaCap); } catch {} render(); }
-  if (e.target.id === 'cgSem') { cargaSem = +e.target.value; try { localStorage.setItem('gestor.cargaSem', cargaSem); } catch {} render(); }
+  if (e.target.id === 'cgCap') { cargaCap = Math.max(1, +e.target.value || 40); try { localStorage.setItem('mdexa.capacidad', cargaCap); } catch {} render(); }
+  if (e.target.id === 'cgSem') { cargaSem = +e.target.value; try { localStorage.setItem('mdexa.cargaSem', cargaSem); } catch {} render(); }
 });
 
 /* ============ Exportar al calendario (.ics para Outlook, Google, Apple) ============ */
@@ -6075,18 +6076,18 @@ function icsLinea(l) {                               // las líneas largas se do
 }
 function generarICS(acts, alarma) {
   const sello = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
-  const proy = meta.proyecto || nombreArchivo.replace(/\.md$/i, ''), uidBase = normaliza(proy).replace(/[^a-z0-9]+/g, '-') || 'gestor';
+  const proy = meta.proyecto || nombreArchivo.replace(/\.md$/i, ''), uidBase = normaliza(proy).replace(/[^a-z0-9]+/g, '-') || 'mdexa';
   const ev = acts.map(a => {
     const d = a.fin.replace(/-/g, ''), d2 = addDias(a.fin, 1).replace(/-/g, '');
     const desc = [`${negocioDe(a)} · ${EST(a)}`, a.responsable && `Responsable: ${a.responsable}`, a.inicio && `Inicio: ${fmtTxt(a.inicio)}`, a.prioridad && `Prioridad: ${a.prioridad}`,
       a.tamano && `Tamaño: ${a.tamano}`, REPITE[a.repite] && `Se repite: ${descRepite(a)}`, etqs(a).length && `Etiquetas: ${etqs(a).join(', ')}`,
       subtareasDe(a).length && `Subtareas (${txtSubs(a)}):\n${subtareasDe(a).map(x => (x.ok ? '[x] ' : '[ ] ') + x.t).join('\n')}`,
       a.actividad.includes('\n') && `\n${a.actividad}`, `\n${proy} · ${NOMBRE_APP}`].filter(Boolean).join('\n');
-    return ['BEGIN:VEVENT', `UID:${uidBase}-${a.id}@gestor-proyectos`, `DTSTAMP:${sello}`, `DTSTART;VALUE=DATE:${d}`, `DTEND;VALUE=DATE:${d2}`,
+    return ['BEGIN:VEVENT', `UID:${uidBase}-${a.id}@mdexa`, `DTSTAMP:${sello}`, `DTSTART;VALUE=DATE:${d}`, `DTEND;VALUE=DATE:${d2}`,
       `SUMMARY:${icsEsc(`#${a.id} ${nomCorto(a)}${EST(a) === 'Terminado' ? ' ✓' : ''}`)}`, `DESCRIPTION:${icsEsc(desc)}`, `CATEGORIES:${icsEsc(negocioDe(a))}`,
       'TRANSP:TRANSPARENT', ...(alarma && !cerrada(a) ? ['BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc('Vence: ' + nomCorto(a))}`, 'TRIGGER:-PT15H', 'END:VALARM'] : []), 'END:VEVENT'].map(icsLinea).join('\r\n');
   });
-  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Gestor Proyectos//ES', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', icsLinea(`X-WR-CALNAME:${icsEsc(proy)}`), ...ev, 'END:VCALENDAR'].join('\r\n') + '\r\n';
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//MDexa//ES', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', icsLinea(`X-WR-CALNAME:${icsEsc(proy)}`), ...ev, 'END:VCALENDAR'].join('\r\n') + '\r\n';
 }
 function actsICS() {
   const que = document.querySelector('input[name=icsQue]:checked').value, term = $('icsTerm').checked;
@@ -6148,7 +6149,7 @@ pintarBtnPantalla();
 
 /* ============ Modo presentación (para la junta semanal) ============ */
 let presZoom = 1.3, presNegPrevio = null, presReloj = 0, presFsPrevio = false;
-try { presZoom = Math.min(2, Math.max(1, parseFloat(localStorage.getItem('gestor.presZoom')) || 1.3)); } catch {}
+try { presZoom = Math.min(2, Math.max(1, parseFloat(localStorage.getItem('mdexa.presZoom')) || 1.3)); } catch {}
 const presentando = () => document.body.classList.contains('presentando');
 function entrarPresentacion() {
   if (!nombreArchivo) { aviso('Abre primero un archivo .md'); return; }
@@ -6194,7 +6195,7 @@ $('presVistas').addEventListener('click', e => { const b = e.target.closest('[da
 function zoomPres(d) {
   presZoom = Math.round(Math.min(2, Math.max(1, presZoom + d)) * 10) / 10;
   document.documentElement.style.setProperty('--pres-zoom', presZoom);
-  try { localStorage.setItem('gestor.presZoom', presZoom); } catch {}
+  try { localStorage.setItem('mdexa.presZoom', presZoom); } catch {}
   aviso(`Tamaño ${Math.round(presZoom * 100)}%`); render();
 }
 $('presMenos').onclick = () => zoomPres(-0.1);
@@ -6257,7 +6258,7 @@ document.addEventListener('keydown', e => {
   render();
   if (!soportaFS) {
     try {
-      const u = JSON.parse(localStorage.getItem('gestor.ultimo') || 'null');
+      const u = JSON.parse(localStorage.getItem('mdexa.ultimo') || 'null');
       if (u) { aplicar(parseMD(u.texto)); nombreArchivo = u.nombre; textoCargado = u.texto; copiaLocal = true; cargarVisto(); render(); }
     } catch {}
     return;

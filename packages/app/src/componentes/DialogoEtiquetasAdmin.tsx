@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { COLORES_ETQ, actividadesConEtiqueta, colorEtq, normaliza, todasEtq, type ColorEtiqueta, type Documento } from '@gestor/core';
+import { COLORES_ETQ, actividadesConEtiqueta, colorEtq, normaliza, todasEtq, type ColorEtiqueta, type Documento } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { Dialogo } from './Dialogo';
 

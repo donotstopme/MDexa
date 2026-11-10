@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SIN_NEGOCIO, infoRenombrarNegocio, unicos, type Documento } from '@gestor/core';
+import { SIN_NEGOCIO, infoRenombrarNegocio, unicos, type Documento } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { Dialogo } from './Dialogo';
 

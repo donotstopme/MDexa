@@ -1,4 +1,4 @@
-import { VERSION_TXT, candadoVigente, type Candado } from '@gestor/core';
+import { VERSION_TXT, candadoVigente, type Candado } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { fmtHora, hace } from '../original/piezas';
 
@@ -18,7 +18,7 @@ export function Banner(p: Props) {
     acciones = <div className="barra"><button className="prim" onClick={p.onAbrir}><Ico n="carpeta" /> Abrir .md</button></div>;
   } else if (p.masNuevo) {
     cls = 'otro'; icono = 'alerta';
-    cuerpo = <div><b>Solo lectura: el archivo es de una versión más nueva del gestor.</b> Lo guardó la v{p.versionArchivo} y tú tienes la v{VERSION_TXT}.
+    cuerpo = <div><b>Solo lectura: el archivo es de una versión más nueva de MDexa.</b> Lo guardó la v{p.versionArchivo} y tú tienes la v{VERSION_TXT}.
       <div className="det">Para no borrar información que esta versión no conoce, no se permite editar, comentar ni restaurar.</div></div>;
   } else if (!p.puedeEscribir) {
     cls = 'libre';

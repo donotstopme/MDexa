@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   ESTADOS, EST, PRIORIDADES, colorEtq, TAMANOS, cerrada, conEstado, metaGrupo, negocioDe, pendientesAlMover, nomCorto, palabras, vencida,
   type Actividad, type Bloque, type Documento, type Estado, type Novedades, type Orden, type Prioridad, type Tamano, type ClaveOrden, type InfoGrupo,
-} from '@gestor/core';
+} from '@mdexa/core';
 import { Ico, Estrella } from '../original/iconos';
 import type { Acciones, Seleccion } from './acciones';
 import { CajaGrupo, CajaSel } from './Cajas';

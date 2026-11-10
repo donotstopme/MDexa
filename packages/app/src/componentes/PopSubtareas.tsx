@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { avanceSubs, cerrada, limpiaSub, nomCorto, subtareasDe, type Documento, type Subtarea } from '@gestor/core';
+import { avanceSubs, cerrada, limpiaSub, nomCorto, subtareasDe, type Documento, type Subtarea } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { PopFlotante } from './PopFlotante';
 

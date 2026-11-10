@@ -14,7 +14,7 @@ describe('Manual de uso', () => {
     for (const s of ['Para qué sirve', 'Trabajo en equipo', 'Tamaños', 'Línea de tiempo', 'Tablero', 'Calendario', 'Notas', 'Bitácora', 'Respaldos', 'Nuevo sprint', 'Importar y exportar', 'Imágenes', 'Dependencias', 'Subtareas', 'Deshacer', 'Reporte semanal', 'Menciones', 'Actividades recurrentes', 'Modo presentación', 'Carga por persona', 'Exportar al calendario']) expect(h).toContain(s);
   });
   it('está adaptado a esta aplicación (sin referencias al HTML original ni a funciones que no existen)', () => {
-    expect(h).not.toContain('gestor-actividades.html'); expect(h).not.toContain('Explorar…'); expect(h).not.toContain('Archivos recientes'); expect(h).not.toContain('el HTML más reciente');
+    expect(h).not.toContain('mdexa.html'); expect(h).not.toContain('Explorar…'); expect(h).not.toContain('Archivos recientes'); expect(h).not.toContain('el HTML más reciente');
     expect(h).toContain('Al abrir la aplicación'); expect(h).toContain('aplicación de escritorio'); expect(h).toContain('<kbd>1</kbd> a <kbd>6</kbd>');
   });
   it('la ventana tiene buscador, resultado, imprimir y cerrar', () => {

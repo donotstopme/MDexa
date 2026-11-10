@@ -1,6 +1,6 @@
-# Gestor Proyectos
+# MDexa
 
-**Gestor de actividades para equipos pequeños, donde todo vive en un solo archivo `.md`.**
+**Actividades de equipos pequeños, donde todo vive en un solo archivo `.md`.**
 
 Sin servidor, sin base de datos, sin cuentas ni suscripciones: el equipo comparte un archivo de texto (en una carpeta de red, Drive, Dropbox…) y la aplicación lo muestra como lista, línea de tiempo, tablero, calendario y reportes. Como el archivo es Markdown normal, también se puede leer y editar a mano, en Obsidian, VS Code o GitHub.
 
@@ -8,8 +8,33 @@ Sin servidor, sin base de datos, sin cuentas ni suscripciones: el equipo compart
 
 > Aplicación y documentación en **español**. Licencia Apache 2.0.
 
+## Descargas
+
+En la página de [Releases](https://github.com/donotstopme/MDexa/releases/latest) están todas las versiones:
+
+| Sistema | Archivo |
+|---|---|
+| macOS | `mdexa-<versión>-mac-arm64.dmg` (Apple Silicon) · `mdexa-<versión>-mac-x64.dmg` (Intel) |
+| Windows | `mdexa-<versión>-instalador-windows.exe` · `mdexa-<versión>-portable-windows.exe` |
+| Linux | `mdexa-<versión>-linux-x86_64.AppImage` · `mdexa-<versión>-linux-amd64.deb` |
+| Navegador | `mdexa.html`: un solo archivo, se abre con doble clic en Chrome o Edge |
+
+Cada release publica también la suma de verificación SHA-256 de todos los archivos, para comprobar que la descarga está íntegra (`shasum -a 256 <archivo>` en macOS y Linux, `Get-FileHash <archivo>` en Windows).
+
+### Cómo instalarla
+
+| Sistema | Pasos |
+|---|---|
+| **macOS** | Abre el `.dmg` y arrastra MDexa a Aplicaciones (elige `arm64` para Apple Silicon: M1 o posterior; `x64` para Macs Intel). Como la app aún no está firmada, la primera vez ábrela con **clic derecho → Abrir**. |
+| **Windows** | Ejecuta el instalador `.exe`, o usa la versión portable sin instalar. Si aparece SmartScreen, pulsa **Más información → Ejecutar de todas formas**. |
+| **Linux** | `.AppImage`: `chmod +x mdexa-*.AppImage && ./mdexa-*.AppImage`. `.deb`: `sudo apt install ./mdexa-*.deb`. |
+| **Navegador** | Descarga `mdexa.html` y ábrelo con doble clic en Chrome o Edge. No instala nada ni envía datos a ningún lado. |
+
+Los instaladores de Windows y Linux se generan en cada release pero todavía no se han probado en equipos reales; si algo falla, abre un *issue*.
+
 ## Contenido
 
+- [Descargas](#descargas)
 - [¿Para quién es?](#para-quién-es)
 - [Qué puedes hacer](#qué-puedes-hacer)
 - [Empezar en 5 minutos](#empezar-en-5-minutos)
@@ -19,6 +44,7 @@ Sin servidor, sin base de datos, sin cuentas ni suscripciones: el equipo compart
 - [Formato del archivo](#formato-del-archivo)
 - [Tus datos y privacidad](#tus-datos-y-privacidad)
 - [Limitaciones conocidas](#limitaciones-conocidas)
+- [Preguntas frecuentes](#preguntas-frecuentes)
 - [Desarrollo](#desarrollo)
 - [Licencia](#licencia)
 
@@ -53,8 +79,8 @@ Para equipos de 2 a 15 personas que llevan sus pendientes en Excel, en notas sue
 **Requisitos:** [Node.js](https://nodejs.org) 22 o superior y **Chrome o Edge** (necesitan poder escribir el archivo; en otros navegadores solo se puede leer).
 
 ```bash
-git clone https://github.com/donotstopme/gestor-actividades.git
-cd gestor-actividades
+git clone https://github.com/donotstopme/MDexa.git
+cd MDexa
 npm install          # la primera vez tarda: también descarga Electron para la app de escritorio
 npm run dev          # abre http://localhost:5173
 ```
@@ -66,7 +92,7 @@ npm run dev          # abre http://localhost:5173
 
 Para empezar un proyecto propio: **Más → Nuevo .md** (te pide el nombre y las fechas de la meta) o **Más → Importar desde Excel o CSV**.
 
-> ¿Prefieres no instalar nada? [gestor-actividades.html](gestor-actividades.html) es la primera versión del proyecto, de un solo archivo: se abre con doble clic en Chrome o Edge. Las funciones nuevas y las correcciones van en la aplicación de este repositorio.
+> ¿Prefieres no instalar nada? [mdexa.html](mdexa.html) es la primera versión del proyecto, de un solo archivo: se abre con doble clic en Chrome o Edge. Las funciones nuevas y las correcciones van en la aplicación de este repositorio.
 
 ## Aplicación de escritorio (macOS, Windows y Linux)
 
@@ -146,7 +172,7 @@ Un `.md` normal: encabezado con el proyecto y la meta, una tabla de actividades 
 - Proyecto: Mi proyecto
 - Meta inicio: 2026-10-05
 - Meta fin: 2026-12-18
-- Versión del gestor: 18 (v1.34.1)
+- Versión de MDexa: 18 (v1.34.1)
 
 | ID | Negocio | Actividad | Tamaño | Prioridad | Responsable | Inicio | Fin | Estado | Terminada | Etiquetas | Depende de | Repite |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -176,6 +202,20 @@ Un `.md` normal: encabezado con el proyecto y la meta, una tabla de actividades 
 - La aplicación de escritorio aún no está firmada y solo se ha ejecutado en macOS.
 - El ícono de la aplicación de escritorio es provisional.
 
+## Preguntas frecuentes
+
+**¿Necesito internet?** No. Todo funciona sin conexión; sólo hace falta que la carpeta compartida esté disponible si trabajas en equipo.
+
+**¿Qué pasa con mis archivos de versiones anteriores?** Se abren sin cambios. Al guardar, el encabezado pasa a decir `Versión de MDexa` (antes decía otra cosa), y el resto del formato no cambia. Un archivo guardado con una versión más nueva se abre en solo lectura.
+
+**¿Se conservan mis preferencias y respaldos de versiones anteriores?** No: MDexa guarda sus preferencias (vista, tema, filtros, favoritas) y los respaldos con nombres nuevos, así que empiezan vacíos. Tus actividades no se tocan porque viven en el `.md`.
+
+**¿Puedo editar el `.md` a mano mientras alguien usa la aplicación?** Mejor no: si alguien tiene el archivo tomado, tus cambios podrían pisarse. Espera a que lo suelte o coordínate con quien lo edita.
+
+**¿Cuál uso, la aplicación de escritorio o el navegador?** La de escritorio guarda directo y refleja al instante los cambios ajenos, sin pedir permisos. El navegador no requiere instalar nada, pero necesita Chrome o Edge para escribir.
+
+**¿Se puede usar con Git, Obsidian o VS Code?** Sí: es un Markdown normal, y las imágenes quedan en una carpeta junto al archivo.
+
 ## Desarrollo
 
 Monorepo de npm con tres paquetes:
@@ -199,7 +239,7 @@ npm run escritorio:dist   # instaladores del sistema actual
 - La interfaz reutiliza el CSS y la estructura del HTML original; antes de inventar estilos, busca la clase en `packages/app/src/original/original.css`.
 - Si Electron no arranca desde un IDE, quita la variable `ELECTRON_RUN_AS_NODE` del entorno (`env -u ELECTRON_RUN_AS_NODE …`).
 - [CLAUDE.md](CLAUDE.md) documenta la arquitectura, las convenciones y las decisiones técnicas (está escrito para asistentes de código, pero sirve como guía para cualquier persona que contribuya).
-- Si cambias lo que se guarda en el `.md`, actualiza `parseMD` y `toMD` en `packages/core` y sube `VERSION_GESTOR`.
+- Si cambias lo que se guarda en el `.md`, actualiza `parseMD` y `toMD` en `packages/core` y sube `VERSION_MDEXA`.
 
 ## Licencia
 

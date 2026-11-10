@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { NOMBRE_APP, datosSemana, hoy, textoSemanal, type Documento } from '@gestor/core';
+import { NOMBRE_APP, datosSemana, hoy, textoSemanal, type Documento } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { Dialogo } from './Dialogo';
 

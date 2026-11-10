@@ -1,4 +1,4 @@
-import { VERSION_GESTOR, VERSION_TXT } from './constantes';
+import { VERSION_MDEXA, VERSION_TXT } from './constantes';
 import type { Actividad, ColorEtiqueta, Documento, Estado } from './tipos';
 import { etqs, limpiaEtq, tieneEtq, todasEtq } from './etiquetas';
 import { conEstado } from './sesion';
@@ -73,7 +73,7 @@ export function crearSprint(d: Documento, o: OpcionesSprint, usuario: string, ar
   const ids = new Set(actividades.map(a => a.id));
   const origen = d.meta.proyecto || archivoOrigen;
   return {
-    actividades, meta: { proyecto: o.nombre, inicio: o.inicio, fin: o.fin, version: VERSION_GESTOR, versionTxt: VERSION_TXT }, candado: null,
+    actividades, meta: { proyecto: o.nombre, inicio: o.inicio, fin: o.fin, version: VERSION_MDEXA, versionTxt: VERSION_TXT }, candado: null,
     notas: o.notas ? d.notas.filter(n => ids.has(n.act)).map(n => ({ ...n })) : [], extra: [], coloresEtq: { ...d.coloresEtq } as Record<string, ColorEtiqueta>, imagenes: [],
     bitacora: [{ fecha: ahora.toISOString(), autor: usuario || 'Sin nombre', act: null, accion: 'sprint', campos: [],
       detalle: `A partir de "${origen}" (${archivoOrigen}) · ${actividades.length} ${actividades.length === 1 ? 'actividad copiada' : 'actividades copiadas'}` }],
@@ -82,5 +82,5 @@ export function crearSprint(d: Documento, o: OpcionesSprint, usuario: string, ar
 
 /** Documento vacío para un archivo nuevo */
 export const documentoNuevo = (meta: { proyecto: string; inicio: string; fin: string }): Documento => ({
-  actividades: [], meta: { ...meta, version: VERSION_GESTOR, versionTxt: VERSION_TXT }, candado: null, notas: [], bitacora: [], extra: [], coloresEtq: {}, imagenes: [],
+  actividades: [], meta: { ...meta, version: VERSION_MDEXA, versionTxt: VERSION_TXT }, candado: null, notas: [], bitacora: [], extra: [], coloresEtq: {}, imagenes: [],
 });

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { NOMBRE_APP, VERSION_TXT } from '@gestor/core';
+import { NOMBRE_APP, VERSION_TXT } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import type { Tema } from '../estado/ui';
 

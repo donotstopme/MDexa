@@ -3,7 +3,7 @@
 - Proyecto: Proyecto Demo
 - Meta inicio: 2026-10-01
 - Meta fin: 2026-12-15
-- Versión del gestor: 18 (v1.34.1)
+- Versión de MDexa: 18 (v1.34.1)
 - En edición: Ana | 2026-11-03T10:00:00.000Z | 2026-11-03T10:04:00.000Z
 
 | ID | Negocio | Actividad | Tamaño | Prioridad | Responsable | Inicio | Fin | Estado | Terminada | Etiquetas | Depende de | Repite |
@@ -21,7 +21,7 @@
 
 ## Sección manual
 
-Texto que el gestor no conoce
+Texto que MDexa no conoce
 y debe conservar.
 
 ## Notas

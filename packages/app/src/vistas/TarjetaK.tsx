@@ -1,7 +1,7 @@
-import { EST, cerrada, nomCorto, negocioDe, vencida, type Actividad, type Documento, type Estado, type Novedades } from '@gestor/core';
+import { EST, cerrada, nomCorto, negocioDe, vencida, type Actividad, type Documento, type Estado, type Novedades } from '@mdexa/core';
 import { Estrella, Ico } from '../original/iconos';
 import { BotonImgs, BotonNotas, BotonSubs, ChipEstado, ChipRepite, ChipsDeps, Etqs, MarcaNov, PriBadge, Resaltar, TamBadge, colorEstado, fmtCorta } from '../original/piezas';
-import { CAMPOS_NOV } from '@gestor/core';
+import { CAMPOS_NOV } from '@mdexa/core';
 import type { Acciones, Seleccion } from './acciones';
 import { CajaSel } from './Cajas';
 

@@ -3,7 +3,7 @@ import { watch, promises as fs, type FSWatcher } from 'node:fs';
 import * as path from 'node:path';
 import { escrituraAtomica, guardarDato, leerDato, nombreSeguro, rutaImagenSegura } from './archivos';
 
-const esMac = process.platform === 'darwin', esDev = !app.isPackaged && !!process.env.GESTOR_DEV_URL;
+const esMac = process.platform === 'darwin', esDev = !app.isPackaged && !!process.env.MDEXA_DEV_URL;
 const carpetaDatos = () => path.join(app.getPath('userData'), 'datos');
 const rutaUltimo = () => path.join(app.getPath('userData'), 'ultimo.json');
 const rutaVentana = () => path.join(app.getPath('userData'), 'ventana.json');
@@ -98,7 +98,7 @@ async function crearVentana() {
   let b = { width: 1400, height: 900 } as { width: number; height: number; x?: number; y?: number };
   try { b = { ...b, ...JSON.parse(await fs.readFile(rutaVentana(), 'utf8')) }; } catch { /* primera vez */ }
   ventana = new BrowserWindow({
-    ...b, minWidth: 900, minHeight: 600, show: false, title: 'Gestor Proyectos', backgroundColor: '#12151a',
+    ...b, minWidth: 900, minHeight: 600, show: false, title: 'MDexa', backgroundColor: '#12151a',
     icon: path.join(__dirname, '..', 'build', 'icon.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false },
   });
@@ -114,9 +114,9 @@ async function crearVentana() {
     if (externo(url)) void shell.openExternal(url);
     return { action: 'deny' };
   });
-  w.webContents.on('will-navigate', (e, url) => { if (!url.startsWith('file:') && !(esDev && url.startsWith(process.env.GESTOR_DEV_URL!))) { e.preventDefault(); if (externo(url)) void shell.openExternal(url); } });
+  w.webContents.on('will-navigate', (e, url) => { if (!url.startsWith('file:') && !(esDev && url.startsWith(process.env.MDEXA_DEV_URL!))) { e.preventDefault(); if (externo(url)) void shell.openExternal(url); } });
 
-  if (esDev) await w.loadURL(process.env.GESTOR_DEV_URL!);
+  if (esDev) await w.loadURL(process.env.MDEXA_DEV_URL!);
   else await w.loadFile(app.isPackaged ? path.join(process.resourcesPath, 'app', 'index.html') : path.join(__dirname, '..', '..', 'app', 'dist', 'index.html'));
 }
 
@@ -124,7 +124,7 @@ if (!app.requestSingleInstanceLock()) app.quit();
 else {
   app.on('second-instance', () => { if (ventana) { if (ventana.isMinimized()) ventana.restore(); ventana.focus(); } });
   app.whenReady().then(async () => {
-    app.setName('Gestor Proyectos');
+    app.setName('MDexa');
     registrarIpc(); menu(); await crearVentana();
     app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) void crearVentana(); });
   });

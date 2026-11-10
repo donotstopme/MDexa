@@ -1,4 +1,4 @@
-import { CAMPOS_NOV, ETQ_BIT, REPITE, TTL_CANDADO, VERSION_GESTOR } from './constantes';
+import { CAMPOS_NOV, ETQ_BIT, REPITE, TTL_CANDADO, VERSION_MDEXA } from './constantes';
 import type { Actividad, Candado, Documento, Estado } from './tipos';
 import { registrarBit } from './bitacora';
 import { txtDeps } from './dependencias';
@@ -18,7 +18,7 @@ const esMio = (c: Candado | null, usuario: string) => !!c && c.usuario === usuar
 
 /** ¿Se puede tomar el archivo para editar, dado lo que hay hoy en disco? */
 export function decidirToma(d: Documento, usuario: string, ahora = Date.now()): DecisionToma {
-  if ((d.meta.version || 0) > VERSION_GESTOR) return { tipo: 'masNuevo' };
+  if ((d.meta.version || 0) > VERSION_MDEXA) return { tipo: 'masNuevo' };
   const c = d.candado;
   if (c && !esMio(c, usuario)) {
     return candadoVigente(c, ahora, TTL_CANDADO)
@@ -37,7 +37,7 @@ export const candadoNuevo = (previo: Candado | null, usuario: string, ahora: Dat
 export type DecisionEscritura = 'ok' | 'masNuevo' | 'perdido';
 /** Antes de cada escritura: ¿sigue siendo seguro escribir? */
 export function decidirEscritura(enDisco: Documento, usuario: string, ahora = Date.now()): DecisionEscritura {
-  if ((enDisco.meta.version || 0) > VERSION_GESTOR) return 'masNuevo';
+  if ((enDisco.meta.version || 0) > VERSION_MDEXA) return 'masNuevo';
   const c = enDisco.candado;
   if (c && !esMio(c, usuario) && candadoVigente(c, ahora, TTL_CANDADO)) return 'perdido';
   return 'ok';
@@ -45,7 +45,7 @@ export function decidirEscritura(enDisco: Documento, usuario: string, ahora = Da
 
 /** Al soltar: ¿se debe reescribir el archivo sin candado? Sólo si el candado es tuyo o ya no hay. */
 export const puedeSoltar = (enDisco: Documento, usuario: string): boolean =>
-  (enDisco.meta.version || 0) <= VERSION_GESTOR && (!enDisco.candado || esMio(enDisco.candado, usuario));
+  (enDisco.meta.version || 0) <= VERSION_MDEXA && (!enDisco.candado || esMio(enDisco.candado, usuario));
 
 /* ============ Cambios propios: bitácora y recurrentes ============ */
 
@@ -168,7 +168,7 @@ export function estadoEscritura(x: {
   hayArchivo: boolean; masNuevo: boolean; modo: 'lectura' | 'edicion'; puedeEscribir: boolean; candado: Candado | null; usuario: string; versionTxt?: string; ahora?: number;
 }): { ok: boolean; msg: string } {
   if (!x.hayArchivo) return { ok: false, msg: 'Abre un archivo primero.' };
-  if (x.masNuevo) return { ok: false, msg: `El archivo es de una versión más nueva del gestor${x.versionTxt ? ` (v${x.versionTxt})` : ''}; actualiza tu HTML para agregar notas.` };
+  if (x.masNuevo) return { ok: false, msg: `El archivo es de una versión más nueva de MDexa${x.versionTxt ? ` (v${x.versionTxt})` : ''}; actualiza tu HTML para agregar notas.` };
   if (x.modo === 'edicion') return { ok: true, msg: 'Se guarda en el archivo al momento.' };
   if (!x.puedeEscribir) return { ok: false, msg: 'Este navegador no puede escribir el archivo compartido; usa Chrome o Edge.' };
   const c = x.candado;

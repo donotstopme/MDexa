@@ -1,6 +1,6 @@
 // Preload (sandbox): sólo puede usar `electron`; expone una API mínima y fija a la página.
 import { contextBridge, ipcRenderer } from 'electron';
-import type { ApiEscritorio } from '@gestor/core';
+import type { ApiEscritorio } from '@mdexa/core';
 
 const api: ApiEscritorio = {
   plataforma: process.platform,
@@ -24,4 +24,4 @@ const api: ApiEscritorio = {
     return () => { ipcRenderer.removeListener('archivo:cambio', f); };
   },
 };
-contextBridge.exposeInMainWorld('gestorEscritorio', api);
+contextBridge.exposeInMainWorld('mdexaEscritorio', api);

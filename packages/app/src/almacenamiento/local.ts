@@ -12,7 +12,7 @@ export const localEnMemoria = (): Local => {
 /** IndexedDB (los respaldos incluyen el texto completo del archivo, demasiado para localStorage) */
 export function localWeb(): Local {
   const abrir = () => new Promise<IDBDatabase>((ok, mal) => {
-    const r = indexedDB.open('gestor-proyectos', 1);
+    const r = indexedDB.open('mdexa', 1);
     r.onupgradeneeded = () => r.result.createObjectStore('kv');
     r.onsuccess = () => ok(r.result);
     r.onerror = () => mal(r.error);

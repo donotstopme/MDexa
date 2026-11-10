@@ -1,6 +1,6 @@
 /**
  * Contrato entre la app (renderer) y la versión de escritorio (Electron): el preload lo expone en
- * `window.gestorEscritorio`. Sólo tipos; no lleva lógica.
+ * `window.mdexaEscritorio`. Sólo tipos; no lleva lógica.
  */
 export interface ArchivoEscritorio { nombre: string; texto: string }
 

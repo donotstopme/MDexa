@@ -47,7 +47,7 @@ describe('piezas del reporte', () => {
 });
 
 describe('reporteMd', () => {
-  const md = reporteMd(doc, x, { usuario: 'Ana', nombreApp: 'Gestor Proyectos', version: '1.34.1', ahora: new Date('2026-11-06T12:00:00') });
+  const md = reporteMd(doc, x, { usuario: 'Ana', nombreApp: 'MDexa', version: '1.34.1', ahora: new Date('2026-11-06T12:00:00') });
   it('trae las secciones principales', () => {
     for (const s of ['# Lanzamiento Portal de Clientes', '## Resumen general', '## Alertas', '## Avance por responsable', '## Avance por negocio', '## Tamaño y esfuerzo',
       '## Actividades terminadas (3)', '## Actividades sin terminar (12)', '## Actividades canceladas (1)', '## Quién hizo qué', '## Notas de los últimos 14 días']) expect(md).toContain(s);

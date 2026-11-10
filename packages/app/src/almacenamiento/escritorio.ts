@@ -1,8 +1,8 @@
-import type { ApiEscritorio } from '@gestor/core';
+import type { ApiEscritorio } from '@mdexa/core';
 import type { Local } from './local';
 import type { Almacenamiento } from './tipos';
 
-declare global { interface Window { gestorEscritorio?: ApiEscritorio } }
+declare global { interface Window { mdexaEscritorio?: ApiEscritorio } }
 
 /** Almacenamiento de la versión de escritorio (Electron): archivos reales, sin permisos del navegador */
 export function crearAlmacenamientoEscritorio(api: ApiEscritorio): Almacenamiento {

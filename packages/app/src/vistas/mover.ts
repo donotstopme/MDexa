@@ -1,4 +1,4 @@
-import { conEstado, EST, nomCorto, pendientesAlMover, type Documento, type Estado } from '@gestor/core';
+import { conEstado, EST, nomCorto, pendientesAlMover, type Documento, type Estado } from '@mdexa/core';
 import type { Edicion } from './Lista';
 
 /** Cambia el estado de una actividad; antes pide confirmar si hay dependencias sin terminar */

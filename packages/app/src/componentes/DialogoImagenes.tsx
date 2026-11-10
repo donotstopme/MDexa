@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { EST, carpetaImagenes, imagenesDe, negocioDe, nomCorto, type Documento, type Imagen } from '@gestor/core';
+import { EST, carpetaImagenes, imagenesDe, negocioDe, nomCorto, type Documento, type Imagen } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { colorEstado, fmtHora, haceLargo } from '../original/piezas';
 import type { Almacenamiento } from '../almacenamiento/tipos';

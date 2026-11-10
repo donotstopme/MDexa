@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { NOMBRE_APP, VERSION_TXT, analizarReporte, reporteMd, hoy, type Documento } from '@gestor/core';
+import { NOMBRE_APP, VERSION_TXT, analizarReporte, reporteMd, hoy, type Documento } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { CSS_REPORTE as cssReporte } from '../original/reporteCss';
 import { ReporteContenido } from './ReporteContenido';

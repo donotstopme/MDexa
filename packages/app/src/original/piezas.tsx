@@ -1,7 +1,7 @@
 import {
   avanceSubs, choqueFechas, cerrada, deps, EST, etqs, colorEtq, nomCorto, PRIORIDADES, TAMANOS, trozosResaltado, bloqueada, descRepite,
   type Actividad, type Documento, type Novedades, type Prioridad, type Tamano,
-} from '@gestor/core';
+} from '@mdexa/core';
 import { Ico } from './iconos';
 
 export const fmtTxt = (d: string) => (d ? new Date(d + 'T00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) : '');

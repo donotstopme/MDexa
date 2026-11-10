@@ -37,7 +37,12 @@ describe('parseMD', () => {
   });
 
   it('conserva las secciones desconocidas', () => {
-    expect(d.extra).toEqual(['## Sección manual', '', 'Texto que el gestor no conoce', 'y debe conservar.']);
+    expect(d.extra).toEqual(['## Sección manual', '', 'Texto que MDexa no conoce', 'y debe conservar.']);
+  });
+
+  it('lee la clave de versión anterior del encabezado', () => {
+    const x = parseMD('- Versión del gestor: 18 (v1.30.0)\n\n| Actividad |\n|---|\n| x |');
+    expect(x.meta.version).toBe(18); expect(x.meta.versionTxt).toBe('1.30.0');
   });
 
   it('acepta alias de estado y encabezados incompletos', () => {
@@ -59,7 +64,7 @@ describe('toMD', () => {
     expect(salida).toContain('- #2 [x] Wireframe');
     expect(salida).toContain('![boceto](imagenes/boceto%20final.png)');
     expect(salida).toContain('## Sección manual');
-    expect(salida).toMatch(/- Versión del gestor: 18 \(v1\.34\.1\)/);
+    expect(salida).toMatch(/- Versión de MDexa: 18 \(v1\.34\.1\)/);
   });
 
   it('no escribe colores de etiquetas que ya no se usan', () => {
