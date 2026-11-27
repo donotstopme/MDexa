@@ -25,7 +25,11 @@ export interface Actividad {
 }
 
 /** Un hito (también funciona como fase) de uno o varios negocios; `cumplido` = fecha si se marcó a mano */
-export interface Hito { id: number; nombre: string; fecha: string; negocios: string[]; cumplido: string; descripcion: string; color?: ColorEtiqueta }
+export interface Hito { id: number; nombre: string; fecha: string; negocios: string[]; cumplido: string; descripcion: string; color?: ColorEtiqueta;
+  depende?: number[];          // hitos que deben cumplirse antes
+  cambios?: CambioHito[];      // cada vez que se recorrió su fecha, de la más antigua a la más reciente
+}
+export interface CambioHito { cuando: string; autor: string; antes: string; despues: string }
 
 export interface Meta {
   proyecto: string;

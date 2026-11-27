@@ -436,7 +436,7 @@ export function App() {
                 {ui.vista === 'cal' && <Calendario hitos={hitosVista} onHito={abrirHito} onMoverHito={cambiarFechaHito} doc={doc} lista={lista} hoy={hoy} edicion={ed} novIds={novIds} favs={ui.favs} onEditar={id => abrirForm(id)} onNotas={acc.notas}
                   onNueva={fin => abrirForm(null, { fin })} aviso={m => sesion.avisar(m)} msgVacio={msgVacio} />}
                 {ui.vista === 'carga' && <Carga doc={doc} lista={lista} hoy={hoy} onIr={id => { ui.setVista('lista'); setTimeout(() => irA(id), 80); }} msgVacio={msgVacio} />}
-                {ui.vista === 'mias' && <Mias sel={sel} doc={doc} lista={lista} quien={ui.persona || e.usuario} usuario={e.usuario} hoy={hoy} edicion={ed} novIds={novIds} favs={ui.favs} onFav={ui.alternarFav}
+                {ui.vista === 'mias' && <Mias onHito={abrirHito} sel={sel} doc={doc} lista={lista} quien={ui.persona || e.usuario} usuario={e.usuario} hoy={hoy} edicion={ed} novIds={novIds} favs={ui.favs} onFav={ui.alternarFav}
                   acc={acc} onEditar={id => abrirForm(id)} onNombre={() => sesion.cambiarUsuario()} hayFiltros={false} msgVacio={msgVacio} />}
                 <div className="resumen">
                   <span>Total: {analisis?.total}</span><span>Negocios: {unicos(doc.actividades.map(a => a.negocio)).length}</span>

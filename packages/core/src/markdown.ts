@@ -10,6 +10,9 @@ const LINEA_HITO = /^[-*]\s*H(\d+)\s*\|\s*(\d{4}-\d{2}-\d{2})?\s*\|\s*([^|]+?)\s
 
 const LINEA_COLOR_HITO = /^[-*]\s*H(\d+)\s*\|\s*(\w+)\s*$/;
 
+const LINEA_DEP_HITO = /^[-*]\s*H(\d+)\s*\|\s*(H\d+(?:\s*,\s*H\d+)*)\s*$/;
+const LINEA_CAMBIO_HITO = /^[-*]\s*H(\d+)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|\s*(\d{4}-\d{2}-\d{2})\s*(?:→|->)\s*(\d{4}-\d{2}-\d{2})\s*$/;
+
 /** Una sección "## Hitos" sólo se interpreta si todas sus líneas tienen el formato; una escrita a mano se conserva tal cual */
 function esSeccionDe(formato: RegExp, lineas: string[], desde: number): boolean {
   for (let i = desde; i < lineas.length; i++) {
@@ -28,7 +31,7 @@ export const versionDe = (d: Pick<Documento, 'hitos' | 'actividades'>): number =
  * Formato del archivo:
  *   - Proyecto: ...    - Meta inicio: AAAA-MM-DD    - Meta fin: AAAA-MM-DD
  *   - En edición: Nombre | desde | último latido     (sólo mientras alguien edita)
- *   ## Hitos: - H1 | fecha | nombre | negocio; negocio | cumplido | descripción  (y el color aparte, en ## Colores de hitos)  (y columna "Hito" en la tabla, sólo si hay hitos)
+ *   ## Hitos: - H1 | fecha | nombre | negocio; negocio | cumplido | descripción  (y aparte: ## Colores de hitos, ## Dependencias de hitos, ## Historial de hitos)  (y columna "Hito" en la tabla, sólo si hay hitos)
  *   | ID | Negocio | Actividad | Tamaño | Prioridad | Responsable | Inicio | Fin | Estado | Terminada | Etiquetas | Depende de | Repite |
  *   ## Etiquetas · ## Notas · ## Subtareas · ## Imágenes · ## Bitácora · (otras ## se conservan)
  */
@@ -38,7 +41,8 @@ export function parseMD(txt: string): Documento {
   const coloresEtq: Record<string, ColorEtiqueta> = {}, imagenes: Documento['imagenes'] = [];
   const subsPorAct: Record<number, { t: string; ok: boolean }[]> = {};
   let candado: Documento['candado'] = null, cols: string[] | null = null;
-  let enNotas = false, enBit = false, enEtq = false, enImg = false, enSub = false, enHitos = false, enColores = false, enOtra = false;
+  let enNotas = false, enBit = false, enEtq = false, enImg = false, enSub = false, enHitos = false, enColores = false, enDepH = false, enHist = false, enOtra = false;
+  const depsHito: Record<number, number[]> = {}, cambiosHito: Record<number, NonNullable<Documento['hitos'][number]['cambios']>> = {};
   const coloresHito: Record<number, ColorEtiqueta> = {};
   const hitos: Documento['hitos'] = [], lineas = txt.split(/\r?\n/);
 
@@ -50,11 +54,23 @@ export function parseMD(txt: string): Documento {
       enImg = /^##\s+imagenes\s*$/.test(t); enSub = /^##\s+subtareas\s*$/.test(t);
       enHitos = /^##\s+hitos\s*$/.test(t) && esSeccionDe(LINEA_HITO, lineas, num + 1);
       enColores = /^##\s+colores de hitos\s*$/.test(t) && esSeccionDe(LINEA_COLOR_HITO, lineas, num + 1);
-      enOtra = /^##\s/.test(l) && !enNotas && !enBit && !enEtq && !enImg && !enSub && !enHitos && !enColores;
+      enDepH = /^##\s+dependencias de hitos\s*$/.test(t) && esSeccionDe(LINEA_DEP_HITO, lineas, num + 1);
+      enHist = /^##\s+historial de hitos\s*$/.test(t) && esSeccionDe(LINEA_CAMBIO_HITO, lineas, num + 1);
+      enOtra = /^##\s/.test(l) && !enNotas && !enBit && !enEtq && !enImg && !enSub && !enHitos && !enColores && !enDepH && !enHist;
       if (enOtra) extra.push(linea.replace(/\s+$/, ''));
       continue;
     }
     if (enOtra) { extra.push(linea.replace(/\s+$/, '')); continue; }
+    if (enDepH) {
+      const md = l.match(LINEA_DEP_HITO);
+      if (md) depsHito[+md[1]] = [...new Set(md[2].split(',').map(x => +x.trim().slice(1)))];
+      continue;
+    }
+    if (enHist) {
+      const mc = l.match(LINEA_CAMBIO_HITO);
+      if (mc) (cambiosHito[+mc[1]] = cambiosHito[+mc[1]] || []).push({ cuando: mc[2], autor: mc[3] || 'Sin nombre', antes: mc[4], despues: mc[5] });
+      continue;
+    }
     if (enColores) {
       const mc = l.match(LINEA_COLOR_HITO);
       if (mc && (COLORES_ETQ as Record<string, string>)[normaliza(mc[2])]) coloresHito[+mc[1]] = normaliza(mc[2]) as ColorEtiqueta;
@@ -130,7 +146,12 @@ export function parseMD(txt: string): Documento {
       ...(/^H\d+$/i.test(g('hito')) ? { hito: +g('hito').slice(1) } : {}),
     });
   }
-  hitos.forEach(h => { if (coloresHito[h.id]) h.color = coloresHito[h.id]; });
+  hitos.forEach(h => {
+    if (coloresHito[h.id]) h.color = coloresHito[h.id];
+    const dep = (depsHito[h.id] || []).filter(x => x !== h.id && hitos.some(y => y.id === x));
+    if (dep.length) h.depende = dep;
+    if (cambiosHito[h.id]) h.cambios = cambiosHito[h.id];
+  });
   acts.forEach(a => { if (subsPorAct[a.id]) a.subtareas = subsPorAct[a.id]; });
   let max = Math.max(0, ...acts.map(a => a.id));
   acts.forEach(a => { if (!a.id) a.id = ++max; });
@@ -153,6 +174,11 @@ export function toMD(doc: Documento, version: { num: number; txt: string } = { n
   const conColor = [...hitos].sort((a, b) => a.id - b.id).filter(h => h.color);
   // En una sección aparte: las versiones que no conocen el color la conservan tal cual
   if (conColor.length) md += '\n## Colores de hitos\n\n' + conColor.map(h => `- H${h.id} | ${h.color}`).join('\n') + '\n';
+  const porId = [...hitos].sort((a, b) => a.id - b.id);
+  const conDeps = porId.map(h => ({ h, dep: (h.depende || []).filter(x => hitos.some(y => y.id === x)) })).filter(x => x.dep.length);
+  if (conDeps.length) md += '\n## Dependencias de hitos\n\n' + conDeps.map(({ h, dep }) => `- H${h.id} | ${dep.map(x => 'H' + x).join(', ')}`).join('\n') + '\n';
+  const conCambios = porId.filter(h => h.cambios?.length);
+  if (conCambios.length) md += '\n## Historial de hitos\n\n' + conCambios.flatMap(h => h.cambios!.map(c => `- H${h.id} | ${c.cuando} | ${limpia(c.autor)} | ${c.antes} → ${c.despues}`)).join('\n') + '\n';
   const todas = todasEtq(actividades), usadas = new Set(todas.map(normaliza));
   const colores = Object.entries(coloresEtq).filter(([k]) => usadas.has(k));
   if (colores.length) md += '\n## Etiquetas\n\n' + colores.map(([k, c]) => `- ${limpia(todas.find(t => normaliza(t) === k) || k)} | ${c}`).join('\n') + '\n';

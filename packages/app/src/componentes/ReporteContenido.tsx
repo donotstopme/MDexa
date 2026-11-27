@@ -1,4 +1,4 @@
-import { datosAvance, hitosOrdenados, infoHito, ESTADOS, NOMBRE_APP, ORDEN_TAMANOS, TAMANOS, VERSION_TXT, addDias, dias, negocioDe, quienTermino, resultado, situacion, type ActR, type AnalisisReporte, type Documento, type Resumen } from '@mdexa/core';
+import { datosAvance, hitosOrdenados, infoHito, previosDe, textoRecorrido, ESTADOS, NOMBRE_APP, ORDEN_TAMANOS, TAMANOS, VERSION_TXT, addDias, dias, negocioDe, quienTermino, resultado, situacion, type ActR, type AnalisisReporte, type Documento, type Resumen } from '@mdexa/core';
 import { GraficaAvance, LeyendaAvance, ResumenAvance, TablaAvance } from './GraficaAvance';
 import { TamBadge, colorEstado, fmtHora, fmtTxt } from '../original/piezas';
 
@@ -57,10 +57,10 @@ export function ReporteContenido({ doc, x, usuario, archivo, ahora = new Date() 
 
       {!!doc.hitos.length && <>
         <h2>Hitos</h2>
-        <div className="scroll"><table><thead><tr><th>Fecha</th><th>Hito</th><th>Negocios</th><th className="num">Actividades terminadas</th><th className="num">Avance</th><th>Estado</th><th>Detalle</th></tr></thead><tbody>
+        <div className="scroll"><table><thead><tr><th>Fecha</th><th>Hito</th><th>Negocios</th><th className="num">Actividades terminadas</th><th className="num">Avance</th><th>Estado</th><th>Detalle</th><th>Depende de</th><th>Cambios de fecha</th></tr></thead><tbody>
           {hitosOrdenados(doc.hitos).map(x => { const i = infoHito(doc, x, h); return (
             <tr key={x.id}><td>{fmtTxt(x.fecha) || '—'}</td><td className="txt">{x.nombre}{x.descripcion && <div className="sub">{x.descripcion}</div>}</td><td>{x.negocios.join(', ') || '—'}</td>
-              <td className="num">{i.hechas} de {i.total}</td><td className="num">{i.pct}%</td><td className={({ Cumplido: 't-ok', 'En tiempo': 't-mut', 'En riesgo': 't-warn', Vencido: 't-dan' } as const)[i.estado]}>{i.estado}</td><td>{i.detalle}</td></tr>); })}
+              <td className="num">{i.hechas} de {i.total}</td><td className="num">{i.pct}%</td><td className={({ Cumplido: 't-ok', 'En tiempo': 't-mut', 'En riesgo': 't-warn', Vencido: 't-dan' } as const)[i.estado]}>{i.estado}</td><td>{i.detalle}</td><td>{previosDe(doc.hitos, x).map(p => p.nombre).join(', ') || '—'}</td><td>{textoRecorrido(x) || '—'}</td></tr>); })}
         </tbody></table></div></>}
 
       <h2>Alertas</h2>

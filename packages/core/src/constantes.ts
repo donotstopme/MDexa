@@ -17,7 +17,7 @@ export const ponerNombreApp = (v: unknown): void => { NOMBRE_APP = limpiaMarca(v
 export const VERSION_MDEXA = 19;
 /** Con la que se guardan los archivos sin hitos, para que las versiones anteriores puedan seguir editándolos */
 export const VERSION_SIN_HITOS = 18;
-export const VERSION_TXT = '1.35.1';
+export const VERSION_TXT = '1.36.0';
 export const SIN_HITO = 'Sin hito';
 
 export const SIN_NEGOCIO = 'Sin negocio';

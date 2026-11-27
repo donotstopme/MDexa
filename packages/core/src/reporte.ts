@@ -2,7 +2,7 @@ import { ESTADOS, TAMANOS, SIN_NEGOCIO, SIN_RESP } from './constantes';
 import type { Actividad, Documento, Estado } from './tipos';
 import { analizarMeta, type AnalisisMeta } from './lista';
 import { bloqueada, choqueFechas } from './dependencias';
-import { hitosOrdenados, infoHito } from './hitos';
+import { hitosOrdenados, infoHito, previosDe, textoRecorrido } from './hitos';
 import { datosAvance, etqUnidad, filasAvance, resumenAvanceTxt } from './avance';
 import { EST, addDias, dias, hoy as hoyDe, medible, negocioDe, vencida } from './utilidades';
 
@@ -115,8 +115,8 @@ export function reporteMd(d: Documento, x: AnalisisReporte, o: { usuario?: strin
   const dav = datosAvance(d, 'act', x.h);
   if (dav && dav.total) m += `\n## Avance acumulado contra la meta\n\n${resumenAvanceTxt(dav)}\n\n| Fecha | Terminadas | Ideal | Diferencia |\n|---|---|---|---|\n` +
     filasAvance(dav).map(r => `| ${fmtTxt(r.f)}${r.marca} | ${r.real == null ? '—' : etqUnidad(r.real, 'act')} | ${etqUnidad(r.ideal, 'act')} | ${r.dif == null ? '—' : (r.dif > 0 ? '+' : '') + etqUnidad(r.dif, 'act')} |`).join('\n') + '\n';
-  if (d.hitos.length) m += `\n## Hitos\n\n| Fecha | Hito | Negocios | Actividades terminadas | Avance | Estado | Detalle |\n|---|---|---|---|---|---|---|\n` +
-    hitosOrdenados(d.hitos).map(h => { const i = infoHito(d, h, x.h); return `| ${fmtTxt(h.fecha) || '—'} | ${c(h.nombre)}${h.descripcion ? `<br>${c(h.descripcion)}` : ''} | ${c(h.negocios.join(', ') || '—')} | ${i.hechas} de ${i.total} | ${i.pct}% | ${i.estado} | ${i.detalle} |`; }).join('\n') + '\n';
+  if (d.hitos.length) m += `\n## Hitos\n\n| Fecha | Hito | Negocios | Actividades terminadas | Avance | Estado | Detalle | Depende de | Cambios de fecha |\n|---|---|---|---|---|---|---|---|---|\n` +
+    hitosOrdenados(d.hitos).map(h => { const i = infoHito(d, h, x.h); return `| ${fmtTxt(h.fecha) || '—'} | ${c(h.nombre)}${h.descripcion ? `<br>${c(h.descripcion)}` : ''} | ${c(h.negocios.join(', ') || '—')} | ${i.hechas} de ${i.total} | ${i.pct}% | ${i.estado} | ${c(i.detalle)} | ${c(previosDe(d.hitos, h).map(p => p.nombre).join(', ') || '—')} | ${textoRecorrido(h) || '—'} |`; }).join('\n') + '\n';
   m += `\n## Alertas\n\n` + (x.alertas.length ? x.alertas.map(a => `- ${a}`).join('\n') : '- Sin alertas.') + '\n';
   const tabla = (titulo: string, lista: Resumen[], col: string) => `\n## ${titulo}\n\n| ${col} | Asignadas | Terminadas | A tiempo | Con retraso | En progreso | Planeadas | Backlog | Canceladas | Vencidas | Cumplimiento |\n|---|---|---|---|---|---|---|---|---|---|---|\n` +
     lista.map(r => `| ${c(r.k)} | ${r.total} | ${r.comp} | ${r.aTiempo} | ${r.retraso} | ${r.prog} | ${r.plan} | ${r.porIni} | ${r.canc} | ${r.venc} | ${r.pct}% |`).join('\n') + '\n';

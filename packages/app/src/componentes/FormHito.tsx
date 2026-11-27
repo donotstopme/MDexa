@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { COLORES_ETQ, EST, actividadesParaHito, guardarHito, hitoDe, nomCorto, pl, seleccionHito, unicos, type Actividad, type ColorEtiqueta, type Documento } from '@mdexa/core';
+import { COLORES_ETQ, EST, actividadesParaHito, conSigno, creaCicloHito, hitosOrdenados, recorridoHito, siguienteIdHito, guardarHito, hitoDe, nomCorto, pl, seleccionHito, unicos, type Actividad, type ColorEtiqueta, type Documento } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { fmtTxt } from '../original/piezas';
 import { Dialogo } from './Dialogo';
@@ -9,9 +9,10 @@ export function FormHito({ doc, id, usuario, onGuardar, aviso, onCerrar }: {
   doc: Documento; id: number | null; usuario: string; onGuardar(fn: (d: Documento) => Documento): void; aviso(m: string): void; onCerrar(): void;
 }) {
   const h = doc.hitos.find(x => x.id === id);
-  const [f, setF] = useState(() => ({ id: h?.id, nombre: h?.nombre ?? '', fecha: h?.fecha ?? '', descripcion: h?.descripcion ?? '', negocios: h?.negocios ?? [], cumplido: h?.cumplido ?? '', color: h?.color }));
+  const [f, setF] = useState(() => ({ id: h?.id, nombre: h?.nombre ?? '', fecha: h?.fecha ?? '', descripcion: h?.descripcion ?? '', negocios: h?.negocios ?? [], cumplido: h?.cumplido ?? '', color: h?.color, depende: h?.depende ?? [] }));
   /** Casillas que la persona cambió; las demás se marcan solas */
   const [manual, setManual] = useState<ReadonlyMap<number, boolean>>(new Map());
+  const otros = hitosOrdenados(doc.hitos.filter(x => x.id !== f.id)), idF = f.id ?? siguienteIdHito(doc), rec = h ? recorridoHito(h) : null;
   const negocios = unicos([...doc.actividades.map(a => a.negocio), ...f.negocios]);
   const acts = actividadesParaHito(doc, f.negocios, f.id), sel = seleccionHito(doc, f, manual);
   const marcar = (l: Actividad[], v: boolean) => setManual(m => new Map([...m, ...l.map(a => [a.id, v] as const)]));
@@ -65,6 +66,15 @@ export function FormHito({ doc, id, usuario, onGuardar, aviso, onCerrar }: {
               })}</div>)}
             {!f.fecha && !!f.negocios.length && <p className="nd">Pon la fecha para que se marquen las que encajan.</p>}
           </div>
+          {!!otros.length && <div className="todo"><span className="hito-cab"><span>Depende de <span className="nd">(hitos que deben cumplirse antes)</span></span></span>
+            <div className="hito-negs" id="hDeps">{otros.map(x => {
+              const marcado = f.depende.includes(x.id), ciclo = !marcado && creaCicloHito(doc.hitos, idF, x.id);
+              return <label key={x.id} className="check s-ck" title={ciclo ? 'Ese hito ya depende de éste' : x.fecha ? fmtTxt(x.fecha) : ''}>
+                <input type="checkbox" checked={marcado} disabled={ciclo} onChange={e => setF({ ...f, depende: e.target.checked ? [...f.depende, x.id] : f.depende.filter(n => n !== x.id) })} />
+                <i className={`hito-punto ${x.color ? `h-color etq-${x.color}` : 'h-En-tiempo'}`} />{x.nombre}</label>;
+            })}</div></div>}
+          {rec && <div className="todo hito-hist"><span className="hito-cab"><span>Historial de fechas <span className="nd">(recorrido {pl(rec.veces, 'vez', 'veces')} · {conSigno(rec.dias)} desde el {fmtTxt(rec.original)})</span></span></span>
+            <ul>{[...h!.cambios!].reverse().map(c => <li key={c.cuando}>{fmtTxt(c.antes)} → <b>{fmtTxt(c.despues)}</b> <span className="nd">· {c.autor} · {new Date(c.cuando).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}</span></li>)}</ul></div>}
           <label>Cumplido el<input type="date" value={f.cumplido} onChange={e => setF({ ...f, cumplido: e.target.value })} />
             <span className="nota-dep">Opcional: se cumple solo cuando terminan sus actividades.</span></label>
         </div>

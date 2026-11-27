@@ -1,4 +1,4 @@
-import { borrarHito, claseHito, guardarHito, hitosOrdenados, hoy, infoHito, pl, porIncluir, type Documento, type Hito } from '@mdexa/core';
+import { borrarHito, claseHito, previosDe, textoRecorrido, guardarHito, hitosOrdenados, hoy, infoHito, pl, porIncluir, type Documento, type Hito } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { fmtTxt } from '../original/piezas';
 import { Dialogo } from './Dialogo';
@@ -39,6 +39,8 @@ export function DialogoHitos({ doc, usuario, editando, onNuevo, onEditarHito, on
                   <td className="txt"><i className={`hito-punto ${claseHito(h, i.estado)}`} />{h.nombre}
                     {h.descripcion && <div className="nd hito-desc">{h.descripcion}</div>}
                     {i.inicio && <div className="nd">Fase desde el {fmtTxt(i.inicio)}</div>}
+                    {!!h.depende?.length && <div className="nd">Depende de: {previosDe(doc.hitos, h).map(x => `${x.nombre}${i.espera.some(y => y.id === x.id) ? '' : ' ✓'}`).join(', ')}</div>}
+                    {!!h.cambios?.length && <div className="hito-recorrido" title={h.cambios.map(c => `${fmtTxt(c.antes)} → ${fmtTxt(c.despues)} (${c.autor})`).join('\n')}>↻ {textoRecorrido(h)}</div>}
                     {editando && !!faltan.length && <div className="hito-aviso">{pl(faltan.length, 'actividad más encaja', 'actividades más encajan')}
                       <button title={faltan.map(a => `#${a.id} ${a.actividad.split('\n')[0]}`).join('\n')} onClick={() => cambiar(h, {}, new Set([...doc.actividades.filter(a => a.hito === h.id), ...faltan].map(a => a.id)), `${pl(faltan.length, 'actividad agregada', 'actividades agregadas')} a «${h.nombre}»`)}>
                         <Ico n="mas" t={13} /> Incluir</button></div>}</td>

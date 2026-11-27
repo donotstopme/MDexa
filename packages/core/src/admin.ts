@@ -1,7 +1,7 @@
 import { VERSION_MDEXA, VERSION_TXT } from './constantes';
 import type { Actividad, ColorEtiqueta, Documento, Estado } from './tipos';
 import { etqs, limpiaEtq, tieneEtq, todasEtq } from './etiquetas';
-import { renombrarNegocioHitos } from './hitos';
+import { hitosDeSprint, renombrarNegocioHitos } from './hitos';
 import { conEstado } from './sesion';
 import { EST, addDias, dias, hoy as hoyDe, negocioDe, normaliza, unicos } from './utilidades';
 import { subtareasDe } from './utilidades';
@@ -76,7 +76,7 @@ export function crearSprint(d: Documento, o: OpcionesSprint, usuario: string, ar
   return {
     actividades, meta: { proyecto: o.nombre, inicio: o.inicio, fin: o.fin, version: VERSION_MDEXA, versionTxt: VERSION_TXT }, candado: null,
     notas: o.notas ? d.notas.filter(n => ids.has(n.act)).map(n => ({ ...n })) : [], extra: [], coloresEtq: { ...d.coloresEtq } as Record<string, ColorEtiqueta>, imagenes: [],
-    hitos: d.hitos.filter(h => actividades.some(a => a.hito === h.id)).map(h => ({ ...h })),
+    hitos: hitosDeSprint(d.hitos, actividades),
     bitacora: [{ fecha: ahora.toISOString(), autor: usuario || 'Sin nombre', act: null, accion: 'sprint', campos: [],
       detalle: `A partir de "${origen}" (${archivoOrigen}) · ${actividades.length} ${actividades.length === 1 ? 'actividad copiada' : 'actividades copiadas'}` }],
   };

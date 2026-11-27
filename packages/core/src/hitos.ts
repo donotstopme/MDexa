@@ -1,5 +1,5 @@
-import { SIN_HITO, TAMANOS } from './constantes';
-import type { Actividad, Documento, Hito } from './tipos';
+import { JUNTAR_BIT, SIN_HITO, TAMANOS } from './constantes';
+import type { Actividad, CambioHito, Documento, Hito } from './tipos';
 import { EST, cerrada, dias, hoy as hoyDe, normaliza, pl } from './utilidades';
 
 /*
@@ -81,6 +81,46 @@ const anotar = (d: Documento, usuario: string, detalle: string, ahora: Date): Do
 export type DatosHito = Omit<Hito, 'id'> & { id?: number };
 export type ResultadoHito = { error: string } | { doc: Documento; id: number };
 
+/* ============ Orden entre hitos ============ */
+
+/** Hitos de los que depende (los que todavía existen), por fecha */
+export const previosDe = (hitos: Hito[], h: Pick<Hito, 'depende'>): Hito[] => hitosOrdenados(hitos.filter(x => h.depende?.includes(x.id)));
+
+/** ¿Hacer que `id` dependa de `previo` cerraría un círculo? (o es él mismo) */
+export function creaCicloHito(hitos: Hito[], id: number, previo: number): boolean {
+  const vistos = new Set<number>(), cola = [previo];
+  while (cola.length) {
+    const n = cola.pop()!;
+    if (n === id) return true;
+    if (vistos.has(n)) continue;
+    vistos.add(n); cola.push(...(hitos.find(h => h.id === n)?.depende || []));
+  }
+  return false;
+}
+
+/* ============ Historial de fechas ============ */
+
+/** Anota que la fecha se recorrió; los ajustes seguidos de la misma persona (p. ej. al arrastrar) se juntan en uno */
+export function anotarCambioFecha(cambios: CambioHito[], antes: string, despues: string, usuario: string, ahora: Date = new Date()): CambioHito[] {
+  if (!antes || !despues || antes === despues) return cambios;
+  const autor = usuario || 'Sin nombre', ult = cambios[cambios.length - 1];
+  if (ult && ult.autor === autor && ahora.getTime() - Date.parse(ult.cuando) < JUNTAR_BIT) {
+    const resto = cambios.slice(0, -1);
+    return ult.antes === despues ? resto : [...resto, { ...ult, despues, cuando: ahora.toISOString() }];   // regresó a donde estaba: no cuenta
+  }
+  return [...cambios, { cuando: ahora.toISOString(), autor, antes, despues }];
+}
+
+export interface Recorrido { veces: number; /** días netos desde la primera fecha (negativo = se adelantó) */ dias: number; original: string }
+export const recorridoHito = (h: Pick<Hito, 'cambios' | 'fecha'>): Recorrido | null =>
+  (h.cambios?.length ? { veces: h.cambios.length, dias: dias(h.cambios[0].antes, h.fecha), original: h.cambios[0].antes } : null);
+export const conSigno = (n: number): string => `${n > 0 ? '+' : ''}${n} ${Math.abs(n) === 1 ? 'día' : 'días'}`;
+/** "Recorrido 2 veces (+14 días)" o '' */
+export function textoRecorrido(h: Pick<Hito, 'cambios' | 'fecha'>): string {
+  const r = recorridoHito(h);
+  return r ? `Recorrido ${pl(r.veces, 'vez', 'veces')} (${conSigno(r.dias)})` : '';
+}
+
 /**
  * Crea o modifica un hito. `ids` son sus actividades (las demás lo dejan; las elegidas salen de otro hito);
  * si no se indica, se conservan las que tenía, salvo las de negocios que ya no incluye.
@@ -92,7 +132,14 @@ export function guardarHito(d: Documento, datos: DatosHito, usuario: string, ids
   if (!negocios.length) return { error: 'Elige al menos un negocio.' };
   if (d.hitos.some(h => h.id !== datos.id && normaliza(h.nombre) === normaliza(nombre))) return { error: `Ya existe un hito llamado «${nombre}».` };
   const previo = d.hitos.find(h => h.id === datos.id);
-  const h: Hito = { id: previo?.id ?? siguienteIdHito(d), nombre, fecha: datos.fecha, negocios, cumplido: datos.cumplido, descripcion: limpiaDesc(datos.descripcion), ...(datos.color ? { color: datos.color } : {}) };
+  const id = previo?.id ?? siguienteIdHito(d);
+  const depende = [...new Set(datos.depende || [])].filter(x => d.hitos.some(y => y.id === x)).sort((a, b) => a - b);
+  const ciclo = depende.find(x => creaCicloHito(d.hitos, id, x));
+  if (ciclo !== undefined) return { error: `No puede depender de «${d.hitos.find(x => x.id === ciclo)?.nombre}»: ese hito ya depende de éste.` };
+  // el historial lo lleva la aplicación: no se toma de lo que llega
+  const cambiosF = previo ? anotarCambioFecha(previo.cambios || [], previo.fecha, datos.fecha, usuario, ahora) : [];
+  const h: Hito = { id, nombre, fecha: datos.fecha, negocios, cumplido: datos.cumplido, descripcion: limpiaDesc(datos.descripcion), ...(datos.color ? { color: datos.color } : {}),
+    ...(depende.length ? { depende } : {}), ...(cambiosF.length ? { cambios: cambiosF } : {}) };
   let entran = 0, salen = 0;
   const actividades = d.actividades.map(a => {
     const estaba = !!previo && a.hito === h.id, queda = (ids ? ids.has(a.id) : estaba) && hitoCompatible(h, a.negocio);
@@ -100,12 +147,13 @@ export function guardarHito(d: Documento, datos: DatosHito, usuario: string, ids
     if (queda) { entran++; return { ...a, hito: h.id }; }
     salen++; return sinHito(a);
   });
-  const igual = (x: Hito) => JSON.stringify([x.nombre, x.fecha, x.negocios, x.cumplido, x.descripcion, x.color || '']);
+  const igual = (x: Hito) => JSON.stringify([x.nombre, x.fecha, x.negocios, x.cumplido, x.descripcion, x.color || '', x.depende || []]);
   if (previo && !entran && !salen && igual(previo) === igual(h)) return { doc: d, id: h.id };
   const movs = [entran && `entran ${pl(entran, 'actividad', 'actividades')}`, salen && `salen ${pl(salen, 'actividad', 'actividades')}`];
   const cambios = previo ? [
     previo.nombre !== h.nombre && `nombre «${previo.nombre}» → «${h.nombre}»`, previo.fecha !== h.fecha && `fecha ${previo.fecha || '—'} → ${h.fecha}`,
     previo.negocios.join(', ') !== h.negocios.join(', ') && `negocios: ${h.negocios.join(', ')}`, previo.descripcion !== h.descripcion && 'descripción', previo.color !== h.color && 'color',
+    (previo.depende || []).join() !== depende.join() && (depende.length ? `depende de ${previosDe(d.hitos, h).map(x => `«${x.nombre}»`).join(', ')}` : 'ya no depende de otros'),
     previo.cumplido !== h.cumplido && (h.cumplido ? `cumplido el ${h.cumplido}` : 'ya no está cumplido'), ...movs,
   ] : movs;
   const resumen = cambios.filter(Boolean).join(', ');
@@ -119,9 +167,22 @@ export function borrarHito(d: Documento, id: number, usuario: string, ahora: Dat
   const h = d.hitos.find(x => x.id === id);
   if (!h) return d;
   return {
-    ...d, hitos: d.hitos.filter(x => x.id !== id), actividades: d.actividades.map(a => (a.hito === id ? sinHito(a) : a)),
+    ...d, hitos: d.hitos.filter(x => x.id !== id).map(x => {
+      if (!x.depende?.includes(id)) return x;
+      const { depende, ...resto } = x, quedan = depende!.filter(n => n !== id);
+      return quedan.length ? { ...resto, depende: quedan } : resto;
+    }), actividades: d.actividades.map(a => (a.hito === id ? sinHito(a) : a)),
     bitacora: anotar(d, usuario, `Eliminó «${h.nombre}»`, ahora),
   };
+}
+
+/** Hitos que pasan a un sprint nuevo: los que usan las actividades copiadas; empiezan sin historial */
+export function hitosDeSprint(hitos: Hito[], actividades: Actividad[]): Hito[] {
+  const quedan = hitos.filter(h => actividades.some(a => a.hito === h.id));
+  return quedan.map(h => {
+    const { depende, cambios: _c, ...resto } = h, dep = (depende || []).filter(x => quedan.some(y => y.id === x));
+    void _c; return dep.length ? { ...resto, depende: dep } : resto;
+  });
 }
 
 /** Al renombrar un negocio, los hitos que lo incluyen lo siguen */
@@ -140,22 +201,52 @@ export interface InfoHito {
   /** Inicio de la fase: la primera fecha de inicio de sus actividades */
   inicio: string;
   detalle: string;
+  /** Hitos de los que depende y que aún no se cumplen */
+  espera: Hito[];
 }
 
+type ParaEstado = Pick<Documento, 'actividades'> & Partial<Pick<Documento, 'hitos'>>;
+const susActividades = (d: ParaEstado, h: Hito) => d.actividades.filter(a => a.hito === h.id && EST(a) !== 'Cancelado');
+export const hitoCumplido = (d: ParaEstado, h: Hito): boolean => {
+  if (h.cumplido) return true;
+  const l = susActividades(d, h);
+  return l.length > 0 && l.every(a => EST(a) === 'Terminado');
+};
+
 /** Estado y avance (por horas según el tamaño; si ninguna lo tiene, por número de actividades) */
-export function infoHito(d: Pick<Documento, 'actividades'>, h: Hito, hoyStr: string = hoyDe()): InfoHito {
-  const l = d.actividades.filter(a => a.hito === h.id && EST(a) !== 'Cancelado'), hechas = l.filter(a => EST(a) === 'Terminado');
+export function infoHito(d: ParaEstado, h: Hito, hoyStr: string = hoyDe()): InfoHito {
+  const l = susActividades(d, h), hechas = l.filter(a => EST(a) === 'Terminado');
   const horas = (x: Actividad[]) => x.reduce((s, a) => s + (a.tamano ? TAMANOS[a.tamano].h : 0), 0), th = horas(l);
-  const cumplido = !!h.cumplido || (l.length > 0 && hechas.length === l.length);
+  const cumplido = hitoCumplido(d, h);
   const pct = cumplido ? 100 : th ? Math.round(horas(hechas) * 100 / th) : l.length ? Math.round(hechas.length * 100 / l.length) : 0;
   const tarde = l.filter(a => EST(a) !== 'Terminado' && h.fecha && a.fin > h.fecha).length;
-  const estado: EstadoHito = cumplido ? 'Cumplido' : h.fecha && h.fecha < hoyStr ? 'Vencido' : tarde ? 'En riesgo' : 'En tiempo';
+  const espera = previosDe(d.hitos || [], h).filter(x => !hitoCumplido(d, x));
+  // un hito previo estorba si ya venció o si está programado después de éste
+  const estorba = cumplido ? undefined : espera.find(x => !!x.fecha && (x.fecha < hoyStr || (!!h.fecha && x.fecha > h.fecha)));
+  const estado: EstadoHito = cumplido ? 'Cumplido' : h.fecha && h.fecha < hoyStr ? 'Vencido' : tarde || estorba ? 'En riesgo' : 'En tiempo';
   const detalle = estado === 'Cumplido' ? (h.cumplido ? `Marcado como cumplido el ${h.cumplido}` : 'Todas sus actividades terminaron')
     : estado === 'Vencido' ? `Hace ${pl(dias(h.fecha, hoyStr), 'día', 'días')} que debía cumplirse`
-      : estado === 'En riesgo' ? `${pl(tarde, 'actividad termina', 'actividades terminan')} después de la fecha`
-        : h.fecha ? (h.fecha === hoyStr ? 'Es hoy' : `Faltan ${pl(dias(hoyStr, h.fecha), 'día', 'días')}`) : 'Sin fecha';
+      : estorba ? (estorba.fecha < hoyStr ? `Espera a «${estorba.nombre}», que está vencido` : `«${estorba.nombre}», del que depende, está programado después`)
+        : tarde ? `${pl(tarde, 'actividad termina', 'actividades terminan')} después de la fecha`
+          : h.fecha ? (h.fecha === hoyStr ? 'Es hoy' : `Faltan ${pl(dias(hoyStr, h.fecha), 'día', 'días')}`) : 'Sin fecha';
   const inicios = l.map(a => a.inicio).filter(Boolean).sort();
-  return { estado, total: l.length, hechas: hechas.length, pct, inicio: inicios[0] || '', detalle };
+  return { estado, total: l.length, hechas: hechas.length, pct, inicio: inicios[0] || '', detalle, espera };
+}
+
+/* ============ Mis hitos ============ */
+
+export interface MiHito { h: Hito; info: InfoHito; mias: Actividad[]; pendientes: Actividad[] }
+/** Los hitos sin cumplir a los que aporta una persona, por fecha */
+export function misHitos(d: Documento, quien: string, hoyStr: string = hoyDe()): MiHito[] {
+  const q = normaliza(quien);
+  if (!q) return [];
+  return hitosOrdenados(d.hitos).flatMap(h => {
+    const mias = susActividades(d, h).filter(a => normaliza(a.responsable || '') === q)
+      .sort((a, b) => (a.fin || '9999').localeCompare(b.fin || '9999') || a.id - b.id);
+    if (!mias.length) return [];
+    const info = infoHito(d, h, hoyStr);
+    return info.estado === 'Cumplido' ? [] : [{ h, info, mias, pendientes: mias.filter(a => EST(a) !== 'Terminado') }];
+  });
 }
 
 /* ============ Dónde se muestran ============ */
@@ -192,7 +283,8 @@ export function moverHito(d: Documento, id: number, fecha: string, usuario: stri
   const r = guardarHito(d, { ...h, fecha }, usuario, undefined, ahora);
   if ('doc' in r) return r.doc;
   // un hito escrito a mano sin negocios no pasa la validación: sólo se cambia la fecha
-  return { ...d, hitos: d.hitos.map(x => (x.id === id ? { ...x, fecha } : x)), bitacora: anotar(d, usuario, `Cambió «${h.nombre}»: fecha ${h.fecha || '—'} → ${fecha}`, ahora) };
+  const cambios = anotarCambioFecha(h.cambios || [], h.fecha, fecha, usuario, ahora);
+  return { ...d, hitos: d.hitos.map(x => (x.id === id ? { ...x, fecha, ...(cambios.length ? { cambios } : {}) } : x)), bitacora: anotar(d, usuario, `Cambió «${h.nombre}»: fecha ${h.fecha || '—'} → ${fecha}`, ahora) };
 }
 
 /** Para el reporte semanal: los pendientes hasta el fin de la semana siguiente y los que tocaban o se cumplieron en esta */

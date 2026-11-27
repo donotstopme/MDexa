@@ -952,6 +952,18 @@
   .hito-colores .auto{padding:3px 12px;font-size:12.5px;font-weight:400;border-radius:99px}
   .hito-colores .auto.on{border-color:var(--accent);color:var(--accent);font-weight:600}
   .hito-colores .etq-col{width:22px;height:22px}
+  /* ---- Orden entre hitos, historial de fechas y "Mis hitos" ---- */
+  .hito-recorrido{color:var(--t-amar);font-size:12px;white-space:nowrap}
+  .hito-hist ul{margin:0;padding-left:18px;max-height:110px;overflow:auto;font-size:13px}
+  .mh-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;padding:8px 0}
+  .mh-it{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--card);font-size:13px;min-width:0}
+  .mh-cab{display:flex;align-items:center;gap:8px;width:100%;padding:0;border:0;background:transparent;color:var(--text);font-weight:400;text-align:left;font-size:14px}
+  .mh-cab:hover{filter:none;text-decoration:underline}
+  .mh-cab .hito-punto{margin-right:0;flex:none}
+  .mh-cab b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .mh-est{margin-left:auto;font-weight:700;font-size:12.5px;white-space:nowrap}
+  .mh-acts{display:flex;flex-wrap:wrap;gap:6px}
+  .mh-acts button{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;padding:2px 9px;font-size:12px;font-weight:400;border-radius:99px}
   .g-escala.con-hitos{height:auto}
   .g-escala.con-hitos .g-marca{top:29px;bottom:auto}   /* "Hoy" y "Meta" se quedan arriba de la banda de hitos */
   .g-esq{flex-wrap:wrap;align-content:flex-start;padding-top:14px}
@@ -1353,6 +1365,8 @@
           <span id="hTodasNinguna"><button type="button" data-hmarcar="1">Todas</button> <button type="button" data-hmarcar="">Ninguna</button></span></span>
         <div id="hArbol"></div>
       </div>
+      <div class="todo" id="hDepsBloque" hidden><span class="hito-cab"><span>Depende de <span class="nd">(hitos que deben cumplirse antes)</span></span></span><div class="hito-negs" id="hDeps"></div></div>
+      <div class="todo hito-hist" id="hHist" hidden></div>
       <label>Cumplido el<input type="date" id="hCumplido"><span class="nota-dep">Opcional: se cumple solo cuando terminan sus actividades.</span></label>
     </div>
     <div class="pie"><span class="ayuda">* Obligatorio</span><div class="barra"><button type="button" id="hitoCancelar">Cancelar</button><button type="submit" class="prim" id="hitoGuardar">Guardar hito</button></div></div>
@@ -1563,7 +1577,7 @@ const colorEstado = v => (ESTADOS.find(e => e.v === (ALIAS_ESTADO[normaliza(v ||
 // sólo sube cuando cambia lo que se guarda en el .md. VERSION_TXT es la versión que se muestra.
 // Nombre que se muestra (mdexa-config.js): sin caracteres de HTML ni de control y no demasiado largo
 const limpiaMarca = v => (typeof v === 'string' ? v.replace(/[<>"`\u0000-\u001f]/g, '').trim().slice(0, 40).trim() : '') || 'MDexa';
-const NOMBRE_APP = limpiaMarca(window.MDEXA_CONFIG?.nombre), VERSION_MDEXA = 19, VERSION_TXT = '1.35.1', VERSION_FECHA = '27 nov 2026';
+const NOMBRE_APP = limpiaMarca(window.MDEXA_CONFIG?.nombre), VERSION_MDEXA = 19, VERSION_TXT = '1.36.0', VERSION_FECHA = '27 nov 2026';
 const VERSION_SIN_HITOS = 18, SIN_HITO = 'Sin hito';   // sin hitos el archivo se guarda como 18, para que las versiones anteriores lo sigan editando
 const verTxt = n => n >= 14 ? `v1.${n}.0` : `v${n}`;
 let versionArchivo = 0, versionArchivoTxt = '';
@@ -2087,6 +2101,8 @@ function setEstado(a, v, terminada) {
 /* ============ Markdown <-> datos ============ */
 const LINEA_HITO = /^[-*]\s*H(\d+)\s*\|\s*(\d{4}-\d{2}-\d{2})?\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*(?:\|\s*(\d{4}-\d{2}-\d{2})?\s*(?:\|(.*))?)?$/;
 const LINEA_COLOR_HITO = /^[-*]\s*H(\d+)\s*\|\s*(\w+)\s*$/;
+const LINEA_DEP_HITO = /^[-*]\s*H(\d+)\s*\|\s*(H\d+(?:\s*,\s*H\d+)*)\s*$/;
+const LINEA_CAMBIO_HITO = /^[-*]\s*H(\d+)\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*\|\s*(\d{4}-\d{2}-\d{2})\s*(?:→|->)\s*(\d{4}-\d{2}-\d{2})\s*$/;
 // Una sección "## Hitos" sólo se interpreta si todas sus líneas tienen el formato; una escrita a mano se conserva tal cual
 function esSeccionDe(formato, lineas, desde) {
   for (let i = desde; i < lineas.length; i++) {
@@ -2109,7 +2125,8 @@ const versionDe = (hs, acts) => hs.length || acts.some(a => a.hito) ? VERSION_MD
 //   - #ID | fecha ISO | Autor | texto (los saltos de línea como <br>)
 function parseMD(txt) {
   const acts = [], m = { proyecto: '', inicio: '', fin: '', version: 0 }, nts = [], bit = [], extra = [], colEtq = {}, imgs = [], subsPorAct = {}; let c = null, cols = null, enNotas = false, enBit = false, enEtq = false, enImg = false, enSub = false, enOtra = false, enHitos = false, enColores = false;
-  const coloresHito = {};
+  const coloresHito = {}, depsHito = {}, cambiosHito = {};
+  let enDepH = false, enHist = false;
   const hs = [], lineas = txt.split(/\r?\n/);
   for (let num = 0; num < lineas.length; num++) {
     const linea = lineas[num], l = linea.trim();
@@ -2118,11 +2135,23 @@ function parseMD(txt) {
       // Una sección ## que MDexa no conoce se conserva tal cual (por ejemplo, una agregada a mano)
       enHitos = /^##\s+hitos\s*$/.test(t) && esSeccionDe(LINEA_HITO, lineas, num + 1);
       enColores = /^##\s+colores de hitos\s*$/.test(t) && esSeccionDe(LINEA_COLOR_HITO, lineas, num + 1);
-      enOtra = /^##\s/.test(l) && !enNotas && !enBit && !enEtq && !enImg && !enSub && !enHitos && !enColores;
+      enDepH = /^##\s+dependencias de hitos\s*$/.test(t) && esSeccionDe(LINEA_DEP_HITO, lineas, num + 1);
+      enHist = /^##\s+historial de hitos\s*$/.test(t) && esSeccionDe(LINEA_CAMBIO_HITO, lineas, num + 1);
+      enOtra = /^##\s/.test(l) && !enNotas && !enBit && !enEtq && !enImg && !enSub && !enHitos && !enColores && !enDepH && !enHist;
       if (enOtra) extra.push(linea.replace(/\s+$/, ''));
       continue;
     }
     if (enOtra) { extra.push(linea.replace(/\s+$/, '')); continue; }
+    if (enDepH) {
+      const md = l.match(LINEA_DEP_HITO);
+      if (md) depsHito[+md[1]] = [...new Set(md[2].split(',').map(x => +x.trim().slice(1)))];
+      continue;
+    }
+    if (enHist) {
+      const mc = l.match(LINEA_CAMBIO_HITO);
+      if (mc) (cambiosHito[+mc[1]] = cambiosHito[+mc[1]] || []).push({ cuando: mc[2], autor: mc[3] || 'Sin nombre', antes: mc[4], despues: mc[5] });
+      continue;
+    }
     if (enColores) {
       const mc = l.match(LINEA_COLOR_HITO);
       if (mc && COLORES_ETQ[normaliza(mc[2])]) coloresHito[+mc[1]] = normaliza(mc[2]);
@@ -2188,7 +2217,12 @@ function parseMD(txt) {
                 responsable: g('responsable'), inicio: g('inicio'), fin: g('fin'),
                 estado, terminada: estado === 'Terminado' ? g('terminada') : '', ...(/^H\d+$/i.test(g('hito')) ? { hito: +g('hito').slice(1) } : {}) });
   }
-  hs.forEach(h => { if (coloresHito[h.id]) h.color = coloresHito[h.id]; });
+  hs.forEach(h => {
+    if (coloresHito[h.id]) h.color = coloresHito[h.id];
+    const dep = (depsHito[h.id] || []).filter(x => x !== h.id && hs.some(y => y.id === x));
+    if (dep.length) h.depende = dep;
+    if (cambiosHito[h.id]) h.cambios = cambiosHito[h.id];
+  });
   acts.forEach(a => { if (subsPorAct[a.id]) a.subtareas = subsPorAct[a.id]; });
   let max = Math.max(0, ...acts.map(a => a.id));
   acts.forEach(a => { if (!a.id) a.id = ++max; });
@@ -2210,6 +2244,11 @@ function toMD() {
   const conColor = [...hitos].sort((a, b) => a.id - b.id).filter(h => h.color);
   // En una sección aparte: las versiones que no conocen el color la conservan tal cual
   if (conColor.length) md += '\n## Colores de hitos\n\n' + conColor.map(h => `- H${h.id} | ${h.color}`).join('\n') + '\n';
+  const porId = [...hitos].sort((a, b) => a.id - b.id);
+  const conDeps = porId.map(h => ({ h, dep: (h.depende || []).filter(x => hitos.some(y => y.id === x)) })).filter(x => x.dep.length);
+  if (conDeps.length) md += '\n## Dependencias de hitos\n\n' + conDeps.map(({ h, dep }) => `- H${h.id} | ${dep.map(x => 'H' + x).join(', ')}`).join('\n') + '\n';
+  const conCambios = porId.filter(h => h.cambios?.length);
+  if (conCambios.length) md += '\n## Historial de hitos\n\n' + conCambios.flatMap(h => h.cambios.map(c => `- H${h.id} | ${c.cuando} | ${limpia(c.autor)} | ${c.antes} → ${c.despues}`)).join('\n') + '\n';
   const usadas = new Set(todasEtq().map(normaliza)), colores = Object.entries(coloresEtq).filter(([k]) => usadas.has(k));
   if (colores.length) md += '\n## Etiquetas\n\n' + colores.map(([k, c]) => `- ${limpia(todasEtq().find(t => normaliza(t) === k) || k)} | ${c}`).join('\n') + '\n';
   if (seccionesExtra.length) md += '\n' + seccionesExtra.join('\n') + '\n';
@@ -2940,7 +2979,7 @@ function bloqueHitos() {
   if (!hitos.length && !ed) return '';
   const prox = proximosHitos(), color = { Cumplido: 'es-verde', 'En tiempo': 'es-gris', 'En riesgo': 'es-amar', Vencido: 'es-rojo' };
   return `<div class="m-hitos"><div class="m-hitos-cab"><span class="etq">${ico('bandera', 13)} Próximos hitos</span><div class="barra">${hitos.length ? `<button type="button" data-acc="hitos">Ver todos (${hitos.length})</button>` : ''}${ed ? '<button type="button" data-acc="nuevo-hito" data-ico="bandera" title="Crear un hito y elegir sus actividades">Nuevo hito</button>' : ''}</div></div>
-    ${prox.length ? prox.slice(0, 4).map(({ h, info }) => `<button type="button" class="m-hito" data-hito="${h.id}" title="${esc(`${h.negocios.join(', ')}${h.descripcion ? '\n' + h.descripcion : ''}`)}"><span class="m-hito-nom"><i class="hito-punto ${claseHito(h, info.estado)}"></i>${esc(h.nombre)}</span><span class="nd">${fmtTxt(h.fecha)}</span>
+    ${prox.length ? prox.slice(0, 4).map(({ h, info }) => `<button type="button" class="m-hito" data-hito="${h.id}" title="${esc(`${h.negocios.join(', ')}${h.descripcion ? '\n' + h.descripcion : ''}${info.espera.length ? '\nEspera a: ' + info.espera.map(x => x.nombre).join(', ') : ''}`)}"><span class="m-hito-nom"><i class="hito-punto ${claseHito(h, info.estado)}"></i>${esc(h.nombre)}</span><span class="nd">${fmtTxt(h.fecha)}${recorridoHito(h) ? `<span class="hito-recorrido" title="${textoRecorrido(h)}"> ↻${recorridoHito(h).veces} · ${conSigno(recorridoHito(h).dias)}</span>` : ''}</span>
       <span class="bar"><span class="f-verde" style="width:${info.pct}%"></span></span><span class="nd">${info.hechas}/${info.total}</span><b class="${color[info.estado]}" title="${esc(info.detalle)}">${info.estado}</b></button>`).join('') : `<div class="nd">${hitos.length ? 'Todos los hitos están cumplidos.' : 'Todavía no hay hitos.'}</div>`}
     ${prox.length > 4 ? `<div class="nd">y ${prox.length - 4} más</div>` : ''}</div>`;
 }
@@ -3339,7 +3378,7 @@ function renderGantt(bloques, lista, msgVacio) {
     const info = infoHito(m);
     fondo += `<div class="g-hito-lin ${m.color ? 'etq-' + m.color : ''}" data-hito="${m.id}" style="left:${x(m.fecha) + px / 2}px${m.color ? ';border-color:var(--e)' : ''}"></div>`;
     rombos += `<button type="button" class="g-rombo ${claseHito(m, info.estado)} ${ed ? 'mov' : ''}" data-hito="${m.id}" style="left:${x(m.fecha) + px / 2}px;top:${carriles[i] * 22 + 3}px"
-      title="${esc(`${m.nombre}\n${fmtTxt(m.fecha)} · ${info.estado} · ${info.hechas}/${info.total} actividades${m.descripcion ? '\n' + m.descripcion : ''}${ed ? '\n\nArrastra para cambiar la fecha · clic para editar' : ''}`)}"><i></i><span>${esc(m.nombre)}</span></button>`;
+      title="${esc(`${m.nombre}\n${fmtTxt(m.fecha)} · ${info.estado} · ${info.hechas}/${info.total} actividades${m.descripcion ? '\n' + m.descripcion : ''}${extraHito(m)}${ed ? '\n\nArrastra para cambiar la fecha · clic para editar' : ''}`)}"><i></i><span>${esc(m.nombre)}</span></button>`;
   });
 
   const filaAct = (a, tagNeg) => {
@@ -3548,6 +3587,20 @@ function tarjetaK(a, tagNeg, { arrastrable = false, rapidas = false, mostrarEsta
 
 /* ============ Mis actividades ============ */
 let persona = ''; try { persona = localStorage.getItem('mdexa.persona') || ''; } catch {}
+function bloqueMisHitos(quien, esYo) {
+  const l = misHitos(quien);
+  if (!l.length) return '';
+  const color = { Cumplido: 'es-verde', 'En tiempo': 'es-gris', 'En riesgo': 'es-amar', Vencido: 'es-rojo' }, cerrado = colapsados.has('m:hitos');
+  return `<section class="m-sec mh" style="--k:var(--accent)"><h3 class="m-tit ${cerrado ? 'cerrado' : ''}" data-sec="m:hitos"><span class="flecha">▾</span><span class="m-ic">${ico('bandera', 17)}</span>${esYo ? 'Mis hitos' : 'Hitos de ' + esc(quien)}<span class="m-n">${l.length}</span></h3>
+    ${cerrado ? '' : `<div class="mh-lista">${l.map(({ h, info, mias, pendientes }) => `<div class="mh-it" data-hito="${h.id}">
+      <button type="button" class="mh-cab" data-mh="${h.id}" title="${esc(h.descripcion || 'Ver el hito')}"><i class="hito-punto ${claseHito(h, info.estado)}"></i><b>${esc(h.nombre)}</b><span class="nd">${fmtTxt(h.fecha)}</span><span class="mh-est ${color[info.estado]}" title="${esc(info.detalle)}">${info.estado}</span></button>
+      <div class="nd">${pendientes.length ? `Te ${pendientes.length === 1 ? 'falta' : 'faltan'} ${pendientes.length} de ${mias.length}` : `Terminaste tus ${mias.length}`} · el hito va en ${info.pct}% · ${esc(info.detalle)}</div>
+      ${pendientes.length ? `<div class="mh-acts">${pendientes.map(a => `<button type="button" data-mha="${a.id}" title="${esc(a.actividad)}">#${a.id} ${esc(nomCorto(a))}</button>`).join('')}</div>` : ''}</div>`).join('')}</div>`}</section>`;
+}
+$('mias').addEventListener('click', e => {
+  const h = e.target.closest('[data-mh]'); if (h) { abrirHito(+h.dataset.mh); return; }
+  const a = e.target.closest('[data-mha]'); if (a) irAActividad(+a.dataset.mha);
+});
 function renderMias(lista, msgVacio) {
   const cont = $('mias'), ed = modo === 'edicion', h = hoy();
   const quien = $('qPersona').value;
@@ -3584,6 +3637,7 @@ function renderMias(lista, msgVacio) {
       ${tile(secciones[0].items.length, 'Vencidas', secciones[0].items.length ? 'rojo' : '')}${tile(secciones[1].items.length + secciones[2].items.length, 'Vencen esta semana', 'azul')}
       ${tile(horas + ' h', 'Esfuerzo máx. por hacer')}${tile(noCanc.length ? Math.round(term * 100 / noCanc.length) + '%' : '—', `Terminadas (${term} de ${noCanc.length})`, 'verde')}
     </div></div>`;
+  html += bloqueMisHitos(quien, esYo);
   if (!abiertas.length) html += `<div class="m-libre">${ico('check', 22)} <b>¡Nada pendiente!</b> No tienes actividades abiertas${lista.length < actividades.length ? ' con los filtros actuales' : ''}.</div>`;
   html += secciones.filter(s => s.items.length).map(s => {
     const clave = 'm:' + s.k, cerrado = s.plegada ? !colapsados.has(clave) : colapsados.has(clave);
@@ -3660,7 +3714,7 @@ function renderCal(lista, msgVacio) {
         ${ed ? `title="Clic en un espacio vacío para crear una actividad con fecha fin ${fmtTxt(d)}"` : ''}>
       <div class="c-num"><b>${+d.slice(8)}</b>${marcas}${items.length ? `<span class="c-cuenta">${items.length}</span>` : ''}</div>
       ${hitosCal.filter(m => m.fecha === d).map(m => { const info = infoHito(m); return `<button type="button" class="c-hito ${claseHito(m, info.estado)}" data-hito="${m.id}" ${ed ? 'draggable="true"' : ''}
-        title="${esc(`Hito: ${m.nombre}\n${info.estado} · ${info.hechas}/${info.total} actividades${m.descripcion ? '\n' + m.descripcion : ''}${ed ? '\n\nArrastra a otro día para cambiar la fecha · clic para editar' : ''}`)}"><i></i><span>${esc(m.nombre)}</span></button>`; }).join('')}
+        title="${esc(`Hito: ${m.nombre}\n${info.estado} · ${info.hechas}/${info.total} actividades${m.descripcion ? '\n' + m.descripcion : ''}${extraHito(m)}${ed ? '\n\nArrastra a otro día para cambiar la fecha · clic para editar' : ''}`)}"><i></i><span>${esc(m.nombre)}</span></button>`; }).join('')}
       <div class="c-items">${vis.map(chip).join('')}
         ${items.length > MAX_POR_DIA ? `<button class="c-mas" data-mas="${d}">${abierta ? 'Ver menos' : `+${items.length - MAX_POR_DIA} más`}</button>` : ''}</div>
     </div>`;
@@ -4112,8 +4166,8 @@ function reporteHTML(x) {
       <h3>Por semana</h3><div class="scroll">${tablaAvance(dav)}</div>`;
 
   const colorR = { Cumplido: 't-ok', 'En tiempo': 't-mut', 'En riesgo': 't-warn', Vencido: 't-dan' };
-  if (hitos.length) h += `<h2>Hitos</h2><div class="scroll"><table><thead><tr><th>Fecha</th><th>Hito</th><th>Negocios</th><th class="num">Actividades terminadas</th><th class="num">Avance</th><th>Estado</th><th>Detalle</th></tr></thead><tbody>${hitosOrdenados().map(m => { const i = infoHito(m);
-    return `<tr><td>${fmtTxt(m.fecha) || '—'}</td><td class="txt">${esc(m.nombre)}${m.descripcion ? `<div class="sub">${esc(m.descripcion)}</div>` : ''}</td><td>${esc(m.negocios.join(', ') || '—')}</td><td class="num">${i.hechas} de ${i.total}</td><td class="num">${i.pct}%</td><td class="${colorR[i.estado]}">${i.estado}</td><td>${i.detalle}</td></tr>`; }).join('')}</tbody></table></div>`;
+  if (hitos.length) h += `<h2>Hitos</h2><div class="scroll"><table><thead><tr><th>Fecha</th><th>Hito</th><th>Negocios</th><th class="num">Actividades terminadas</th><th class="num">Avance</th><th>Estado</th><th>Detalle</th><th>Depende de</th><th>Cambios de fecha</th></tr></thead><tbody>${hitosOrdenados().map(m => { const i = infoHito(m);
+    return `<tr><td>${fmtTxt(m.fecha) || '—'}</td><td class="txt">${esc(m.nombre)}${m.descripcion ? `<div class="sub">${esc(m.descripcion)}</div>` : ''}</td><td>${esc(m.negocios.join(', ') || '—')}</td><td class="num">${i.hechas} de ${i.total}</td><td class="num">${i.pct}%</td><td class="${colorR[i.estado]}">${i.estado}</td><td>${esc(i.detalle)}</td><td>${esc(previosDe(m).map(p => p.nombre).join(', ') || '—')}</td><td>${textoRecorrido(m) || '—'}</td></tr>`; }).join('')}</tbody></table></div>`;
 
   h += `<h2>Alertas</h2>` + (x.alertas.length ? `<ul>${x.alertas.map(a => `<li>${esc(a)}</li>`).join('')}</ul>` : '<p class="vacio">Sin alertas.</p>');
 
@@ -4192,8 +4246,8 @@ function reporteMD(x) {
       .map(tr => '| ' + [...tr.children].map(td => td.textContent.trim()).join(' | ') + ' |');
     m += `\n## Avance acumulado contra la meta\n\n${plano(resumenAvance(dav))}\n\n| Fecha | Terminadas | Ideal | Diferencia |\n|---|---|---|---|\n` + filas.join('\n') + '\n';
   }
-  if (hitos.length) m += `\n## Hitos\n\n| Fecha | Hito | Negocios | Actividades terminadas | Avance | Estado | Detalle |\n|---|---|---|---|---|---|---|\n` +
-    hitosOrdenados().map(h => { const i = infoHito(h); return `| ${fmtTxt(h.fecha) || '—'} | ${c(h.nombre)}${h.descripcion ? `<br>${c(h.descripcion)}` : ''} | ${c(h.negocios.join(', ') || '—')} | ${i.hechas} de ${i.total} | ${i.pct}% | ${i.estado} | ${i.detalle} |`; }).join('\n') + '\n';
+  if (hitos.length) m += `\n## Hitos\n\n| Fecha | Hito | Negocios | Actividades terminadas | Avance | Estado | Detalle | Depende de | Cambios de fecha |\n|---|---|---|---|---|---|---|---|---|\n` +
+    hitosOrdenados().map(h => { const i = infoHito(h); return `| ${fmtTxt(h.fecha) || '—'} | ${c(h.nombre)}${h.descripcion ? `<br>${c(h.descripcion)}` : ''} | ${c(h.negocios.join(', ') || '—')} | ${i.hechas} de ${i.total} | ${i.pct}% | ${i.estado} | ${c(i.detalle)} | ${c(previosDe(h).map(p => p.nombre).join(', ') || '—')} | ${textoRecorrido(h) || '—'} |`; }).join('\n') + '\n';
   m += `\n## Alertas\n\n` + (x.alertas.length ? x.alertas.map(a => `- ${a}`).join('\n') : '- Sin alertas.') + '\n';
   const tabla = (titulo, lista, col) => `\n## ${titulo}\n\n| ${col} | Asignadas | Terminadas | A tiempo | Con retraso | En progreso | Planeadas | Backlog | Canceladas | Vencidas | Cumplimiento |\n|---|---|---|---|---|---|---|---|---|---|---|\n` +
     lista.map(r => `| ${c(r.k)} | ${r.total} | ${r.comp} | ${r.aTiempo} | ${r.retraso} | ${r.prog} | ${r.plan} | ${r.porIni} | ${r.canc} | ${r.venc} | ${r.pct}% |`).join('\n') + '\n';
@@ -4743,7 +4797,8 @@ const claseHito = (h, estado) => 'h-' + estado.replace(' ', '-') + (h.color ? ` 
 // Cambia la fecha (al arrastrar el rombo) conservando las actividades
 function moverHito(id, fecha) {
   const h = hitos.find(x => x.id === id); if (!h || !fecha || h.fecha === fecha || modo !== 'edicion') return;
-  if (h.negocios.length) guardarHito({ ...h, fecha }); else { anotarHito(`Cambió «${h.nombre}»: fecha ${h.fecha || '—'} → ${fecha}`); h.fecha = fecha; }
+  if (h.negocios.length) guardarHito({ ...h, fecha });
+  else { anotarHito(`Cambió «${h.nombre}»: fecha ${h.fecha || '—'} → ${fecha}`); const c = anotarCambioFecha(h.cambios || [], h.fecha, fecha); h.fecha = fecha; if (c.length) h.cambios = c; else delete h.cambios; }
   render(); guardar(); aviso(`Hito «${h.nombre}»: ${fmtTxt(fecha)}`);
 }
 const abrirHito = id => modo === 'edicion' ? abrirFormHito(id) : abrirHitos();
@@ -4771,25 +4826,68 @@ function validarHito(d) {
   if (!d.fecha) return 'Elige la fecha objetivo del hito.';
   if (!d.negocios.length) return 'Elige al menos un negocio.';
   if (hitos.some(h => h.id !== d.id && normaliza(h.nombre) === normaliza(nombre))) return `Ya existe un hito llamado «${nombre}».`;
+  const ciclo = (d.depende || []).find(x => creaCicloHito(d.id ?? siguienteIdHito(), x));
+  if (ciclo !== undefined) return `No puede depender de «${hitos.find(x => x.id === ciclo)?.nombre}»: ese hito ya depende de éste.`;
   return '';
 }
 const anotarHito = detalle => bitacora.push({ fecha: new Date().toISOString(), autor: usuario || 'Sin nombre', act: null, accion: 'hito', campos: [], detalle });
+// Orden entre hitos
+const previosDe = h => hitosOrdenados().filter(x => h.depende?.includes(x.id));
+function creaCicloHito(id, previo) {
+  const vistos = new Set(), cola = [previo];
+  while (cola.length) { const n = cola.pop(); if (n === id) return true; if (vistos.has(n)) continue; vistos.add(n); cola.push(...(hitos.find(h => h.id === n)?.depende || [])); }
+  return false;
+}
+// Historial de fechas: los ajustes seguidos de la misma persona (p. ej. al arrastrar) se juntan en uno
+function anotarCambioFecha(cambios, antes, despues) {
+  if (!antes || !despues || antes === despues) return cambios;
+  const ahora = new Date(), autor = usuario || 'Sin nombre', ult = cambios[cambios.length - 1];
+  if (ult && ult.autor === autor && ahora - Date.parse(ult.cuando) < JUNTAR_BIT) {
+    const resto = cambios.slice(0, -1);
+    return ult.antes === despues ? resto : [...resto, { ...ult, despues, cuando: ahora.toISOString() }];
+  }
+  return [...cambios, { cuando: ahora.toISOString(), autor, antes, despues }];
+}
+const recorridoHito = h => h.cambios?.length ? { veces: h.cambios.length, dias: dias(h.cambios[0].antes, h.fecha), original: h.cambios[0].antes } : null;
+const conSigno = n => `${n > 0 ? '+' : ''}${n} ${Math.abs(n) === 1 ? 'día' : 'días'}`;
+const textoRecorrido = h => { const r = recorridoHito(h); return r ? `Recorrido ${pl(r.veces, 'vez', 'veces')} (${conSigno(r.dias)})` : ''; };
+const extraHito = h => `${h.depende?.length ? '\nDepende de: ' + previosDe(h).map(x => x.nombre).join(', ') : ''}${h.cambios?.length ? '\n' + textoRecorrido(h) : ''}`;
+// Los hitos sin cumplir a los que aporta una persona, por fecha
+function misHitos(quien) {
+  const q = normaliza(quien);
+  if (!q) return [];
+  return hitosOrdenados().flatMap(h => {
+    const mias = actividades.filter(a => a.hito === h.id && EST(a) !== 'Cancelado' && normaliza(a.responsable || '') === q).sort((a, b) => (a.fin || '9999').localeCompare(b.fin || '9999') || a.id - b.id);
+    if (!mias.length) return [];
+    const info = infoHito(h);
+    return info.estado === 'Cumplido' ? [] : [{ h, info, mias, pendientes: mias.filter(a => EST(a) !== 'Terminado') }];
+  });
+}
+// Hitos que pasan a un sprint nuevo: empiezan sin historial y sólo con las dependencias copiadas
+function hitosDeSprint(nuevas) {
+  const quedan = hitos.filter(h => nuevas.some(a => a.hito === h.id));
+  return quedan.map(h => { const { depende, cambios, ...resto } = h, dep = (depende || []).filter(x => quedan.some(y => y.id === x)); return dep.length ? { ...resto, depende: dep } : resto; });
+}
 // Crea o modifica un hito (ya validado). `ids` son sus actividades; sin ellas conserva las que tenía. No guarda ni dibuja
 function guardarHito(d, ids) {
   const previo = hitos.find(h => h.id === d.id);
-  const h = { id: previo?.id ?? siguienteIdHito(), nombre: limpiaNombreHito(d.nombre), fecha: d.fecha, negocios: [...new Set(d.negocios)].sort((a, b) => a.localeCompare(b, 'es')),
-    cumplido: d.cumplido, descripcion: String(d.descripcion || '').replace(/\|/g, '/').replace(/\r/g, '').trim().slice(0, 600), ...(d.color ? { color: d.color } : {}) };
+  const id = previo?.id ?? siguienteIdHito(), depende = [...new Set(d.depende || [])].filter(x => x !== id && hitos.some(y => y.id === x)).sort((a, b) => a - b);
+  // el historial lo lleva la aplicación: no se toma de lo que llega
+  const cambiosF = previo ? anotarCambioFecha(previo.cambios || [], previo.fecha, d.fecha) : [];
+  const h = { id, nombre: limpiaNombreHito(d.nombre), fecha: d.fecha, negocios: [...new Set(d.negocios)].sort((a, b) => a.localeCompare(b, 'es')),
+    cumplido: d.cumplido, descripcion: String(d.descripcion || '').replace(/\|/g, '/').replace(/\r/g, '').trim().slice(0, 600), ...(d.color ? { color: d.color } : {}), ...(depende.length ? { depende } : {}), ...(cambiosF.length ? { cambios: cambiosF } : {}) };
   let entran = 0, salen = 0;
   actividades.forEach(a => {
     const estaba = !!previo && a.hito === h.id, queda = (ids ? ids.has(a.id) : estaba) && hitoCompatible(h, a.negocio);
     if (queda === estaba) return;
     if (queda) { a.hito = h.id; entran++; } else { delete a.hito; salen++; }
   });
-  const igual = x => JSON.stringify([x.nombre, x.fecha, x.negocios, x.cumplido, x.descripcion, x.color || '']);
+  const igual = x => JSON.stringify([x.nombre, x.fecha, x.negocios, x.cumplido, x.descripcion, x.color || '', x.depende || []]);
   if (previo && !entran && !salen && igual(previo) === igual(h)) return h;
   const movs = [entran && `entran ${pl(entran, 'actividad', 'actividades')}`, salen && `salen ${pl(salen, 'actividad', 'actividades')}`];
   const cambios = previo ? [previo.nombre !== h.nombre && `nombre «${previo.nombre}» → «${h.nombre}»`, previo.fecha !== h.fecha && `fecha ${previo.fecha || '—'} → ${h.fecha}`,
     previo.negocios.join(', ') !== h.negocios.join(', ') && `negocios: ${h.negocios.join(', ')}`, previo.descripcion !== h.descripcion && 'descripción', previo.color !== h.color && 'color',
+    (previo.depende || []).join() !== depende.join() && (depende.length ? `depende de ${previosDe(h).map(x => `«${x.nombre}»`).join(', ')}` : 'ya no depende de otros'),
     previo.cumplido !== h.cumplido && (h.cumplido ? `cumplido el ${h.cumplido}` : 'ya no está cumplido'), ...movs] : movs;
   const resumen = cambios.filter(Boolean).join(', ');
   hitos = previo ? hitos.map(x => x.id === h.id ? h : x) : [...hitos, h];
@@ -4798,7 +4896,11 @@ function guardarHito(d, ids) {
 }
 function borrarHito(id) {
   const h = hitos.find(x => x.id === id); if (!h) return;
-  hitos = hitos.filter(x => x.id !== id); actividades.forEach(a => { if (a.hito === id) delete a.hito; });
+  hitos = hitos.filter(x => x.id !== id).map(x => {
+    if (!x.depende?.includes(id)) return x;
+    const { depende, ...resto } = x, quedan = depende.filter(n => n !== id);
+    return quedan.length ? { ...resto, depende: quedan } : resto;
+  }); actividades.forEach(a => { if (a.hito === id) delete a.hito; });
   anotarHito(`Eliminó «${h.nombre}»`);
 }
 // Al renombrar un negocio, los hitos que lo incluyen lo siguen
@@ -4806,19 +4908,28 @@ function renombrarNegocioHitos(viejo, nuevo) {
   if (!viejo) return;
   hitos = hitos.map(h => h.negocios.includes(viejo) ? { ...h, negocios: [...new Set(h.negocios.map(n => n === viejo ? nuevo : n))].sort((a, b) => a.localeCompare(b, 'es')) } : h);
 }
+function hitoCumplido(h) {
+  if (h.cumplido) return true;
+  const l = actividades.filter(a => a.hito === h.id && EST(a) !== 'Cancelado');
+  return l.length > 0 && l.every(a => EST(a) === 'Terminado');
+}
 // Estado y avance (por horas según el tamaño; si ninguna lo tiene, por número de actividades)
 function infoHito(h, hoyStr = hoy()) {
   const l = actividades.filter(a => a.hito === h.id && EST(a) !== 'Cancelado'), hechas = l.filter(a => EST(a) === 'Terminado');
   const horas = x => x.reduce((s, a) => s + (TAMANOS[a.tamano]?.h || 0), 0), th = horas(l);
-  const cumplido = !!h.cumplido || (l.length > 0 && hechas.length === l.length);
+  const cumplido = hitoCumplido(h);
   const pct = cumplido ? 100 : th ? Math.round(horas(hechas) * 100 / th) : l.length ? Math.round(hechas.length * 100 / l.length) : 0;
   const tarde = l.filter(a => EST(a) !== 'Terminado' && h.fecha && a.fin > h.fecha).length;
-  const estado = cumplido ? 'Cumplido' : h.fecha && h.fecha < hoyStr ? 'Vencido' : tarde ? 'En riesgo' : 'En tiempo';
+  const espera = previosDe(h).filter(x => !hitoCumplido(x));
+  // un hito previo estorba si ya venció o si está programado después de éste
+  const estorba = cumplido ? undefined : espera.find(x => !!x.fecha && (x.fecha < hoyStr || (!!h.fecha && x.fecha > h.fecha)));
+  const estado = cumplido ? 'Cumplido' : h.fecha && h.fecha < hoyStr ? 'Vencido' : tarde || estorba ? 'En riesgo' : 'En tiempo';
   const detalle = estado === 'Cumplido' ? (h.cumplido ? `Marcado como cumplido el ${fmtTxt(h.cumplido)}` : 'Todas sus actividades terminaron')
     : estado === 'Vencido' ? `Hace ${pl(dias(h.fecha, hoyStr), 'día', 'días')} que debía cumplirse`
-    : estado === 'En riesgo' ? `${pl(tarde, 'actividad termina', 'actividades terminan')} después de la fecha`
+    : estorba ? (estorba.fecha < hoyStr ? `Espera a «${estorba.nombre}», que está vencido` : `«${estorba.nombre}», del que depende, está programado después`)
+    : tarde ? `${pl(tarde, 'actividad termina', 'actividades terminan')} después de la fecha`
     : h.fecha ? (h.fecha === hoyStr ? 'Es hoy' : `Faltan ${pl(dias(hoyStr, h.fecha), 'día', 'días')}`) : 'Sin fecha';
-  return { estado, total: l.length, hechas: hechas.length, pct, inicio: l.map(a => a.inicio).filter(Boolean).sort()[0] || '', detalle };
+  return { estado, espera, total: l.length, hechas: hechas.length, pct, inicio: l.map(a => a.inicio).filter(Boolean).sort()[0] || '', detalle };
 }
 
 /* ---- Lista de hitos ---- */
@@ -4831,6 +4942,8 @@ function pintarHitos() {
     : `<table><thead><tr><th>Fecha</th><th>Hito</th><th>Negocios</th><th>Actividades</th><th>Avance</th><th>Estado</th>${ed ? '<th></th>' : ''}</tr></thead><tbody>${l.map(h => {
       const i = infoHito(h), faltan = porIncluir(h);
       return `<tr data-hito="${h.id}"><td>${fmt(h.fecha)}</td><td class="txt"><i class="hito-punto ${claseHito(h, i.estado)}"></i>${esc(h.nombre)}${h.descripcion ? `<div class="nd hito-desc">${esc(h.descripcion)}</div>` : ''}${i.inicio ? `<div class="nd">Fase desde el ${fmtTxt(i.inicio)}</div>` : ''}
+        ${h.depende?.length ? `<div class="nd">Depende de: ${esc(previosDe(h).map(x => x.nombre + (i.espera.some(y => y.id === x.id) ? '' : ' ✓')).join(', '))}</div>` : ''}
+        ${h.cambios?.length ? `<div class="hito-recorrido" title="${esc(h.cambios.map(c => `${fmtTxt(c.antes)} → ${fmtTxt(c.despues)} (${c.autor})`).join('\n'))}">↻ ${textoRecorrido(h)}</div>` : ''}
         ${ed && faltan.length ? `<div class="hito-aviso">${pl(faltan.length, 'actividad más encaja', 'actividades más encajan')}<button data-h="incluir" title="${esc(faltan.map(a => `#${a.id} ${nomCorto(a)}`).join('\n'))}">${ico('mas', 13)} Incluir</button></div>` : ''}</td>
         <td>${h.negocios.map(n => `<span class="tag">${esc(n)}</span>`).join('')}</td><td>${i.hechas}/${i.total}</td><td>${i.pct}%</td>
         <td><b class="${color[i.estado]}">${i.estado}</b><div class="nd">${i.detalle}</div></td>
@@ -4854,8 +4967,21 @@ function abrirFormHito(id = null) {
   $('hNom').value = hf.nombre; $('hFecha').value = hf.fecha; $('hDesc').value = hf.descripcion; $('hCumplido').value = hf.cumplido;
   const negs = unicos([...actividades.map(a => a.negocio), ...hf.negocios]);
   $('hNegs').innerHTML = negs.length ? negs.map(n => `<label class="check s-ck"><input type="checkbox" value="${esc(n)}" ${hf.negocios.includes(n) ? 'checked' : ''}> ${esc(n)}</label>`).join('') : '<span class="nd">Todavía no hay actividades con negocio.</span>';
-  pintarColoresHito(); pintarArbolHito(); $('dlgHito').showModal(); $('hNom').focus();
+  pintarColoresHito(); pintarDepsHito(); pintarArbolHito(); $('dlgHito').showModal(); $('hNom').focus();
 }
+function pintarDepsHito() {
+  const otros = hitosOrdenados().filter(x => x.id !== hf.id), idF = hf.id ?? siguienteIdHito();
+  $('hDepsBloque').hidden = !otros.length;
+  $('hDeps').innerHTML = otros.map(x => {
+    const marcado = !!hf.depende?.includes(x.id), ciclo = !marcado && creaCicloHito(idF, x.id);
+    return `<label class="check s-ck" title="${esc(ciclo ? 'Ese hito ya depende de éste' : fmtTxt(x.fecha))}"><input type="checkbox" value="${x.id}" ${marcado ? 'checked' : ''} ${ciclo ? 'disabled' : ''}><i class="hito-punto ${x.color ? 'h-color etq-' + x.color : 'h-En-tiempo'}"></i>${esc(x.nombre)}</label>`;
+  }).join('');
+  const previo = hitos.find(x => x.id === hf.id), r = previo && recorridoHito(previo);
+  $('hHist').hidden = !r;
+  $('hHist').innerHTML = r ? `<span class="hito-cab"><span>Historial de fechas <span class="nd">(recorrido ${pl(r.veces, 'vez', 'veces')} · ${conSigno(r.dias)} desde el ${fmtTxt(r.original)})</span></span></span>
+    <ul>${[...previo.cambios].reverse().map(c => `<li>${fmtTxt(c.antes)} → <b>${fmtTxt(c.despues)}</b> <span class="nd">· ${esc(c.autor)} · ${new Date(c.cuando).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}</span></li>`).join('')}</ul>` : '';
+}
+$('hDeps').addEventListener('change', () => { if (hf) hf.depende = [...$('hDeps').querySelectorAll('input:checked')].map(i => +i.value); });
 function pintarColoresHito() {
   $('hColores').innerHTML = `<button type="button" class="auto ${hf.color ? '' : 'on'}" data-color="" aria-pressed="${!hf.color}" title="El color cambia según el estado del hito">Según el estado</button>` +
     Object.entries(COLORES_ETQ).map(([c, nom]) => `<button type="button" class="etq-col etq-${c} ${hf.color === c ? 'on' : ''}" data-color="${c}" title="${nom}" aria-label="${nom}" aria-pressed="${hf.color === c}"></button>`).join('');
@@ -5037,7 +5163,7 @@ function textoSemanal(d, html) {
   const titulo = `Avance semanal · ${meta.proyecto || nombreArchivo.replace(/\.md$/i, '')} · ${rango(d.lunes, d.domingo)}`;
   const resumen = `Avance del proyecto: ${d.x.pctAv}% (${d.x.comp.length} de ${d.x.medibles.length} actividades terminadas)${meta.fin ? ` · meta al ${fmtTxt(meta.fin)}` : ''}${d.x.ritmo ? ` · ${d.x.ritmo.txt}` : ''}.`;
   const hs = hitosSemana(d.lunes, d.domingo, d.pFin);
-  const detH = x => `${fmtCorta(x.h.fecha) || 'sin fecha'} · ${x.info.estado}${x.info.total ? ` · ${x.info.hechas} de ${x.info.total} actividades` : ''}`;
+  const detH = x => `${fmtCorta(x.h.fecha) || 'sin fecha'} · ${x.info.estado}${x.info.total ? ` · ${x.info.hechas} de ${x.info.total} actividades` : ''}${textoRecorrido(x.h) ? ` · ${textoRecorrido(x.h).toLowerCase()}` : ''}`;
   const secHitos = !hs.length ? [] : [html
     ? `<h3 style="font-size:15px;margin:18px 0 6px">Hitos (${hs.length})</h3><ul style="margin:0;padding-left:20px">${hs.map(x => `<li><b>${esc(x.h.nombre)}</b> <span style="color:#667085">— ${esc(detH(x))}</span></li>`).join('')}</ul>`
     : `HITOS (${hs.length})\n${hs.map(x => `  • ${x.h.nombre} — ${detH(x)}`).join('\n')}\n`];
@@ -5294,7 +5420,7 @@ $('formSprint').onsubmit = async e => {
     try { h = await showSaveFilePicker({ suggestedName: nombre, types: tiposMD }); }
     catch (err) { if (err.name !== 'AbortError') alert(err.message); return; }
   }
-  const hitosN = hitos.filter(h => nuevas.some(a => a.hito === h.id)).map(h => ({ ...h }));
+  const hitosN = hitosDeSprint(nuevas);
   $('dlgSprint').close();
   await respaldar('Antes de crear el sprint');
   if (!(await soltar())) return;
@@ -6353,6 +6479,9 @@ function manualBase() {
     <li>Debajo de la meta del proyecto aparecen los <b>Próximos hitos</b> con su avance. Los filtros de negocio y de hito también aplican a los rombos.</li>
     <li>El <b>reporte</b> y el <b>reporte semanal</b> incluyen los hitos y avisan de los vencidos o en riesgo. <b>Exportar a CSV</b> agrega la columna Hito; al <b>importar</b>, esa columna asigna un hito que ya exista (una celda vacía no lo quita). En el <b>calendario .ics</b> se exportan como eventos (opción <b>Incluir hitos</b>).</li>
     <li>Cada hito puede tener un <b>color</b> propio, que se ve en la Línea de tiempo, el Calendario, la tarjeta de meta, el filtro y al agrupar. Con <b>Según el estado</b> el color indica cómo va; con un color propio, los vencidos y en riesgo llevan además un borde rojo o amarillo.</li>
+    <li><b>Orden:</b> en la ventana del hito marca en <b>Depende de</b> los hitos que deben cumplirse antes (no se permiten círculos). Si uno de ellos venció o está programado después, el hito aparece <b>En riesgo</b>.</li>
+    <li><b>Historial de fechas:</b> cada vez que se cambia la fecha (en la ventana o arrastrando) queda anotado quién y cuándo. Se ve cuántas veces se recorrió y cuántos días lleva desde la fecha original; los ajustes seguidos de la misma persona cuentan como uno. El historial empieza a partir de esta versión.</li>
+    <li><b>Mis actividades</b> muestra arriba <b>Mis hitos</b>: los pendientes a los que aporta la persona elegida, lo que le falta y cómo va cada uno.</li>
     <li>Estados: <b>Cumplido</b> (todas sus actividades terminaron, o pusiste la fecha de cumplido), <b>Vencido</b> (pasó la fecha), <b>En riesgo</b> (alguna actividad termina después de la fecha) y <b>En tiempo</b>. El avance se calcula con las horas según el tamaño; las canceladas no cuentan.</li>
     <li>Un archivo con hitos se guarda con el formato 19: las versiones anteriores a la 1.35.0 lo abren sólo en lectura.</li>
     <li>La siguiente repetición de una actividad recurrente no se incluye sola.</li>

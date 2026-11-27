@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  absorberPropios, actividadesParaHito, analizarReporte, aplicarImportacion, carrilesHitos, claseHito, datosSemana, exportarCsv, filasImportar, generarICS, hitosIcs, hitosVisibles, mapaInicial, moverHito, parseCSV, proximosHitos, reporteMd, textoSemanal, aplicarSoltar, armarBloques, borrarHito, calcularNovedades, conHito, crearSprint, deshacer, filtrar, filtrosVacios, foto, guardarHito, historialVacio,
+  absorberPropios, actividadesParaHito, analizarReporte, aplicarImportacion, carrilesHitos, claseHito, creaCicloHito, hitosDeSprint, misHitos, textoRecorrido, datosSemana, exportarCsv, filasImportar, generarICS, hitosIcs, hitosVisibles, mapaInicial, moverHito, parseCSV, proximosHitos, reporteMd, textoSemanal, aplicarSoltar, armarBloques, borrarHito, calcularNovedades, conHito, crearSprint, deshacer, filtrar, filtrosVacios, foto, guardarHito, historialVacio,
   infoHito, parseMD, porIncluir, quitarHitosAjenos, seleccionHito, registrarDeshacer, renombrarNegocio, restaurarRespaldo, toMD, type Documento,
 } from '../src';
 
@@ -202,5 +202,55 @@ describe('color', () => {
     const d = ok(guardarHito(doc(), { ...doc().hitos[0], color: 'rojo' }, 'Ana')).doc;
     const r = ok(guardarHito(d, { ...d.hitos[0], color: undefined }, 'Ana')).doc;
     expect(r.hitos[0].color).toBeUndefined(); expect(toMD(r)).not.toContain('Colores de hitos');
+  });
+});
+
+describe('orden entre hitos', () => {
+  const dos = () => ok(guardarHito(doc(), { ...doc().hitos[1], depende: [1] }, 'Ana')).doc;
+  it('se guarda aparte y se lee de vuelta', () => {
+    const d = dos(), t = toMD(d);
+    expect(t).toContain('## Dependencias de hitos\n\n- H2 | H1'); expect(parseMD(t).hitos[1].depende).toEqual([1]); expect(toMD(parseMD(t))).toBe(t);
+    expect(d.bitacora.at(-1)?.detalle).toContain('depende de «Diseño aprobado»');
+  });
+  it('no permite círculos ni depender de sí mismo', () => {
+    expect(creaCicloHito(dos().hitos, 1, 2)).toBe(true);
+    expect(guardarHito(dos(), { ...dos().hitos[0], depende: [2] }, 'Ana')).toHaveProperty('error');
+    expect(guardarHito(dos(), { ...dos().hitos[0], depende: [1] }, 'Ana')).toHaveProperty('error');
+  });
+  it('avisa si el previo venció o está programado después', () => {
+    const d = dos(), h2 = d.hitos[1];
+    expect(infoHito(d, h2, '2026-10-01')).toMatchObject({ estado: 'En tiempo' });
+    expect(infoHito(d, h2, '2026-10-01').espera.map(h => h.id)).toEqual([1]);
+    expect(infoHito(d, h2, '2026-11-02')).toMatchObject({ estado: 'En riesgo', detalle: 'Espera a «Diseño aprobado», que está vencido' });
+    expect(infoHito(d, { ...h2, fecha: '2026-10-15' }, '2026-10-01').detalle).toContain('programado después');
+  });
+  it('al borrar un hito, los demás dejan de depender de él; un sprint conserva sólo dependencias copiadas', () => {
+    expect(borrarHito(dos(), 1, 'Ana').hitos[0].depende).toBeUndefined();
+    expect(hitosDeSprint(dos().hitos, [{ ...doc().actividades[0], hito: 2 }])[0].depende).toBeUndefined();
+  });
+});
+
+describe('historial de fechas', () => {
+  const a = new Date('2026-10-01T10:00:00Z'), b = new Date('2026-10-02T10:00:00Z'), b2 = new Date('2026-10-02T10:01:00Z');
+  it('cuenta cada vez que se recorre y junta los ajustes seguidos', () => {
+    let d = moverHito(doc(), 1, '2026-11-06', 'Ana', a);
+    d = moverHito(d, 1, '2026-11-09', 'Ana', b); d = moverHito(d, 1, '2026-11-13', 'Ana', b2);
+    expect(d.hitos[0].cambios?.map(c => [c.antes, c.despues])).toEqual([['2026-10-30', '2026-11-06'], ['2026-11-06', '2026-11-13']]);
+    expect(textoRecorrido(d.hitos[0])).toBe('Recorrido 2 veces (+14 días)');
+    const t = toMD(d); expect(t).toContain('## Historial de hitos'); expect(parseMD(t).hitos[0].cambios).toEqual(d.hitos[0].cambios); expect(toMD(parseMD(t))).toBe(t);
+  });
+  it('regresar a la fecha anterior enseguida no cuenta, y editar otra cosa no agrega cambios', () => {
+    let d = moverHito(doc(), 1, '2026-11-06', 'Ana', b); d = moverHito(d, 1, '2026-10-30', 'Ana', b2);
+    expect(d.hitos[0].cambios).toBeUndefined();
+    const falso = [{ cuando: '', autor: '', antes: '2000-01-01', despues: '2000-01-02' }];
+    expect(ok(guardarHito(doc(), { ...doc().hitos[0], nombre: 'Otro', cambios: falso }, 'Ana')).doc.hitos[0].cambios).toBeUndefined();
+  });
+});
+
+describe('mis hitos', () => {
+  it('lista los pendientes a los que aporta la persona, con sus actividades', () => {
+    const d = { ...doc(), actividades: doc().actividades.map(x => (x.id <= 2 ? { ...x, responsable: x.id === 1 ? 'Ana' : 'ana' } : x)) };
+    expect(misHitos(d, 'Ana', '2026-10-01').map(x => [x.h.id, x.mias.length, x.pendientes.map(p => p.id)])).toEqual([[1, 2, [2]]]);
+    expect(misHitos(d, 'Luis')).toEqual([]);
   });
 });

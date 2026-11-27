@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { EST, normaliza, resumenMias, type Actividad, type Documento, type Estado, type Novedades } from '@mdexa/core';
+import { EST, claseHito, misHitos, normaliza, resumenMias, type Actividad, type Documento, type Estado, type Novedades } from '@mdexa/core';
 import { Ico } from '../original/iconos';
-import { fmtCorta } from '../original/piezas';
+import { fmtCorta, fmtTxt } from '../original/piezas';
+import { COLOR_HITO } from '../componentes/DialogoHitos';
 import type { Edicion } from './Lista';
 import type { Acciones, Seleccion } from './acciones';
 import { TarjetaK } from './TarjetaK';
@@ -12,7 +13,8 @@ const SEC: Record<string, { ic: string; c: string }> = {
   luego: { ic: 'bandera', c: 'gris' }, sinf: { ic: 'calendario', c: 'gris' }, term: { ic: 'check', c: 'verde' },
 };
 
-export function Mias({ sel, doc, lista, quien, usuario, hoy, edicion, novIds, favs, onFav, acc, onEditar, onNombre, hayFiltros, msgVacio }: {
+export function Mias({ sel, doc, lista, quien, usuario, hoy, edicion, novIds, favs, onFav, acc, onEditar, onNombre, hayFiltros, msgVacio, onHito }: {
+  onHito?(id: number): void;
   doc: Documento; lista: Actividad[]; quien: string; usuario: string; hoy: string; edicion?: Edicion; novIds?: Novedades['porId'];
   favs: Set<number>; onFav(id: number): void; acc: Acciones; sel?: Seleccion; onEditar(id: number): void; onNombre(): void; hayFiltros: boolean; msgVacio: string;
 }) {
@@ -35,6 +37,7 @@ export function Mias({ sel, doc, lista, quien, usuario, hoy, edicion, novIds, fa
     if (pend.length && !window.confirm(`"${nomCorto(a)}" depende de:\n\n${pend.map(d => `• #${d.id} ${nomCorto(d)} (${EST(d)})`).join('\n')}\n\n${pend.length === 1 ? 'Esa actividad aún no termina' : 'Esas actividades aún no terminan'}. ¿Pasarla a ${e} de todos modos?`)) return;
     edicion.editar(d => ({ ...d, actividades: d.actividades.map(x => (x.id === id ? conEstado(x, e) : x)) }));
   };
+  const mh = misHitos(doc, quien, hoy);
   const tile = (n: string | number, l: string, c = '') => <div className={`m-tile ${c}`}><b>{n}</b><span>{l}</span></div>;
   const alternar = (k: string) => setAbiertos(s => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; });
   return (
@@ -44,6 +47,19 @@ export function Mias({ sel, doc, lista, quien, usuario, hoy, edicion, novIds, fa
         {tile(`${r.horas} h`, 'Esfuerzo máx. por hacer')}{tile(r.medibles ? `${Math.round(r.terminadas * 100 / r.medibles)}%` : '—', `Terminadas (${r.terminadas} de ${r.medibles})`, 'verde')}
       </div></div>
       {!r.abiertas.length && <div className="m-libre"><Ico n="check" t={22} /> <b>¡Nada pendiente!</b> No tienes actividades abiertas{lista.length < doc.actividades.length ? ' con los filtros actuales' : ''}.</div>}
+      {!!mh.length && (
+        <section className="m-sec mh" style={{ '--k': 'var(--accent)' } as React.CSSProperties}>
+          <h3 className={`m-tit ${abiertos.has('hitos') ? 'cerrado' : ''}`} onClick={() => alternar('hitos')}>
+            <span className="flecha">▾</span><span className="m-ic"><Ico n="bandera" t={17} /></span>{esYo ? 'Mis hitos' : `Hitos de ${quien}`}<span className="m-n">{mh.length}</span></h3>
+          {!abiertos.has('hitos') && <div className="mh-lista">{mh.map(({ h, info, mias, pendientes }) => (
+            <div key={h.id} className="mh-it" data-hito={h.id}>
+              <button type="button" className="mh-cab" title={h.descripcion || 'Ver el hito'} onClick={() => onHito?.(h.id)}>
+                <i className={`hito-punto ${claseHito(h, info.estado)}`} /><b>{h.nombre}</b><span className="nd">{fmtTxt(h.fecha)}</span><span className={`mh-est ${COLOR_HITO[info.estado]}`} title={info.detalle}>{info.estado}</span></button>
+              <div className="nd">{pendientes.length ? `Te ${pendientes.length === 1 ? 'falta' : 'faltan'} ${pendientes.length} de ${mias.length}` : `Terminaste tus ${mias.length}`} · el hito va en {info.pct}% · {info.detalle}</div>
+              {!!pendientes.length && <div className="mh-acts">{pendientes.map(a => <button type="button" key={a.id} title={a.actividad} onClick={() => acc.ir(a.id)}>#{a.id} {nomCorto(a)}</button>)}</div>}
+            </div>))}</div>}
+        </section>
+      )}
       {r.secciones.filter(s => s.items.length).map(s => {
         const cerrado = s.plegada ? !abiertos.has(s.k) : abiertos.has(s.k), { ic, c } = SEC[s.k];
         return (

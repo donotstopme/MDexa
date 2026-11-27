@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ESTADOS, EST, PX_DIA, addDias, avanceSubs, choqueFechas, cerrada, conDependencia, descRepite, deps, dias, diaEn, metaGrupo, moverBarra, negocioDe, nomCorto, palabras,
-  carrilesHitos, claseHito, infoHito, problemaEnlace, programarPorClic, type Hito, rangoGantt, rutaFlecha, sinDependencia, vencida, xDe, type Actividad, type Asa, type Bloque, type Documento, type Novedades, type Zoom,
+  carrilesHitos, claseHito, infoHito, previosDe, textoRecorrido, problemaEnlace, programarPorClic, type Hito, rangoGantt, rutaFlecha, sinDependencia, vencida, xDe, type Actividad, type Asa, type Bloque, type Documento, type Novedades, type Zoom,
 } from '@mdexa/core';
 import { Estrella, Ico } from '../original/iconos';
 import { BotonNotas, MarcaNov, PriBadge, Resaltar, TamBadge, colorEstado, fmtTxt } from '../original/piezas';
@@ -138,7 +138,7 @@ export function Gantt(p: PropsGantt) {
     const info = infoHito(doc, h, hoy), f = fechaH(h);
     return (
       <button type="button" key={h.id} data-hito={h.id} className={`g-rombo ${claseHito(h, info.estado)} ${ed ? 'mov' : ''}`} style={{ left: x(f) + px / 2, top: carriles[i] * 22 + 3 }}
-        title={`${h.nombre}\n${fmtTxt(f)} · ${info.estado} · ${info.hechas}/${info.total} actividades${h.descripcion ? '\n' + h.descripcion : ''}${ed ? '\n\nArrastra para cambiar la fecha · clic para editar' : ''}`}
+        title={`${h.nombre}\n${fmtTxt(f)} · ${info.estado} · ${info.hechas}/${info.total} actividades${h.descripcion ? '\n' + h.descripcion : ''}${h.depende?.length ? '\nDepende de: ' + previosDe(doc.hitos, h).map(x => x.nombre).join(', ') : ''}${h.cambios?.length ? '\n' + textoRecorrido(h) : ''}${ed ? '\n\nArrastra para cambiar la fecha · clic para editar' : ''}`}
         onPointerDown={e => { if (!ed || e.button !== 0) return; e.preventDefault(); (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); setArrH({ id: h.id, x0: e.clientX, fecha: h.fecha, d: 0 }); }}
         onPointerMove={e => { if (arrH) setArrH({ ...arrH, d: Math.round((e.clientX - arrH.x0) / px) }); }} onPointerUp={soltarH} onPointerCancel={() => setArrH(null)}
         onClick={e => { if (!ed || e.detail === 0) p.onHito?.(h.id); }}>

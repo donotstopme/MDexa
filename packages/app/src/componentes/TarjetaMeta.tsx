@@ -1,4 +1,4 @@
-import { claseHito, proximosHitos, type AnalisisMeta, type DatosAvance, type Documento, type UnidadAvance } from '@mdexa/core';
+import { claseHito, conSigno, recorridoHito, textoRecorrido, proximosHitos, type AnalisisMeta, type DatosAvance, type Documento, type UnidadAvance } from '@mdexa/core';
 import { COLOR_HITO } from './DialogoHitos';
 import { BloqueAvance } from './GraficaAvance';
 import { Ico } from '../original/iconos';
@@ -20,8 +20,8 @@ export function TarjetaMeta({ doc, a, editando, onEditar, verAvance, onVerAvance
           {editando && <button type="button" title="Crear un hito y elegir sus actividades" onClick={onNuevoHito}><Ico n="bandera" /> Nuevo hito</button>}</div></div>
       {!prox.length && <div className="nd">{doc.hitos.length ? 'Todos los hitos están cumplidos.' : 'Todavía no hay hitos.'}</div>}
       {prox.slice(0, MAX).map(({ h, info }) => (
-        <button type="button" key={h.id} className="m-hito" data-hito={h.id} onClick={() => onHito?.(h.id)} title={`${h.negocios.join(', ')}${h.descripcion ? '\n' + h.descripcion : ''}`}>
-          <span className="m-hito-nom"><i className={`hito-punto ${claseHito(h, info.estado)}`} />{h.nombre}</span><span className="nd">{fmtTxt(h.fecha)}</span>
+        <button type="button" key={h.id} className="m-hito" data-hito={h.id} onClick={() => onHito?.(h.id)} title={`${h.negocios.join(', ')}${h.descripcion ? '\n' + h.descripcion : ''}${info.espera.length ? '\nEspera a: ' + info.espera.map(x => x.nombre).join(', ') : ''}`}>
+          <span className="m-hito-nom"><i className={`hito-punto ${claseHito(h, info.estado)}`} />{h.nombre}</span><span className="nd">{fmtTxt(h.fecha)}{recorridoHito(h) && <span className="hito-recorrido" title={textoRecorrido(h)}> ↻{recorridoHito(h)!.veces} · {conSigno(recorridoHito(h)!.dias)}</span>}</span>
           <span className="bar"><span className="f-verde" style={{ width: `${info.pct}%` }} /></span><span className="nd">{info.hechas}/{info.total}</span>
           <b className={COLOR_HITO[info.estado]} title={info.detalle}>{info.estado}</b></button>))}
       {prox.length > MAX && <div className="nd">y {prox.length - MAX} más</div>}

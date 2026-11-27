@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  ESTADOS, EST, abrevNeg, claseHito, infoHito, type Hito, cerrada, diasDelMes, mesMas, moverFin, negocioDe, nomCorto, vencida, descRepite, type Actividad, type Documento, type Novedades,
+  ESTADOS, EST, abrevNeg, claseHito, infoHito, previosDe, textoRecorrido, type Hito, cerrada, diasDelMes, mesMas, moverFin, negocioDe, nomCorto, vencida, descRepite, type Actividad, type Documento, type Novedades,
 } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { PriBadge, colorEstado, fmtTxt } from '../original/piezas';
@@ -89,7 +89,7 @@ export function Calendario({ doc, lista, hoy, edicion, novIds, favs, onEditar, o
                 const info = infoHito(doc, h, hoy);
                 return (
                   <button type="button" key={h.id} data-hito={h.id} className={`c-hito ${claseHito(h, info.estado)}`} draggable={ed}
-                    title={`Hito: ${h.nombre}\n${info.estado} · ${info.hechas}/${info.total} actividades${h.descripcion ? '\n' + h.descripcion : ''}${ed ? '\n\nArrastra a otro día para cambiar la fecha · clic para editar' : ''}`}
+                    title={`Hito: ${h.nombre}\n${info.estado} · ${info.hechas}/${info.total} actividades${h.descripcion ? '\n' + h.descripcion : ''}${h.depende?.length ? '\nDepende de: ' + previosDe(doc.hitos, h).map(x => x.nombre).join(', ') : ''}${h.cambios?.length ? '\n' + textoRecorrido(h) : ''}${ed ? '\n\nArrastra a otro día para cambiar la fecha · clic para editar' : ''}`}
                     onDragStart={e => { e.stopPropagation(); e.dataTransfer.setData('text/plain', 'H' + h.id); e.dataTransfer.effectAllowed = 'move'; setArrH(h.id); }} onDragEnd={() => { setArrH(null); setSobre(''); }}
                     onClick={e => { e.stopPropagation(); onHito?.(h.id); }}><i /><span>{h.nombre}</span></button>
                 );

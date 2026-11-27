@@ -135,12 +135,21 @@ El repositorio incluye un flujo de GitHub Actions ([.github/workflows/escritorio
 2. Las actividades de esos negocios que siguen abiertas y terminan a tiempo **entran solas**; desmarca las excepciones y guarda.
 3. La selección queda fija: si una actividad se atrasa, el hito aparece **En riesgo**.
 
+Además:
+
+- **Orden entre hitos:** un hito puede depender de otros; si el previo se atrasa, el siguiente aparece en riesgo.
+- **Historial de fechas:** cuántas veces se ha recorrido cada hito y cuántos días lleva.
+- **Mis hitos:** en *Mis actividades*, cada persona ve a cuáles aporta y qué le falta.
+
 Los hitos se ven en la **Línea de tiempo** y el **Calendario** (arrástralos para cambiar su fecha), en la tarjeta de meta (**Próximos hitos**), en el botón **Hitos**, en los reportes, en el CSV y en el `.ics`.
 
 <table>
   <tr>
     <td><img src="docs/capturas/hitos.png" alt="Ventana para crear un hito eligiendo negocios y actividades"><br><sub>Nuevo hito: negocios, descripción y actividades que entran solas</sub></td>
     <td><img src="docs/capturas/hitos-linea.png" alt="Hitos en la línea de tiempo y en la tarjeta de meta"><br><sub>Próximos hitos y rombos en la Línea de tiempo</sub></td>
+  </tr>
+  <tr>
+    <td colspan="2"><img src="docs/capturas/mis-hitos.png" alt="Mis hitos dentro de Mis actividades"><br><sub>Mis hitos: a cuáles aporta cada persona y qué le falta</sub></td>
   </tr>
 </table>
 
@@ -205,6 +214,7 @@ Un `.md` normal: encabezado con el proyecto y la meta, una tabla de actividades 
 
 - Los hitos van en `## Hitos` (`- H1 | fecha | nombre | negocio; negocio | cumplido | descripción`) y la tabla gana la columna `Hito`. Un archivo con hitos se guarda con el formato **19**: las versiones anteriores a la 1.35.0 lo abren en solo lectura. Sin hitos, el formato sigue siendo el 18.
 - El color elegido para un hito va aparte, en `## Colores de hitos` (`- H1 | morado`); las versiones que no lo conocen lo conservan.
+- El orden y el historial van en `## Dependencias de hitos` (`- H2 | H1`) y `## Historial de hitos` (`- H1 | fecha y hora | quién | antes → después`); las versiones anteriores las conservan, pero no anotan cambios.
 - Las secciones `##` que la aplicación no conoce (por ejemplo, una que agregues a mano) se conservan al guardar.
 - Un archivo guardado por una versión **más nueva** se abre en solo lectura, para no borrar información que esta versión no entiende.
 - Las imágenes se guardan en una carpeta `nombre-del-archivo-imagenes/` junto al `.md` y se enlazan desde la sección `## Imágenes`, así también se ven en Obsidian, VS Code o GitHub.
