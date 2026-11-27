@@ -498,6 +498,8 @@
   header .barra>button,header .menu-wrap>button{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:#fff}
   header .barra>button:hover:not(:disabled),header .menu-wrap>button:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.45)}
   header .barra>button svg,header .menu-wrap>button svg{color:rgba(255,255,255,.85)}
+  /* en pantallas medianas, botones más juntos para que la cabecera siga en un renglón */
+  @media (max-width:1560px){ header .barra{gap:6px} header .barra>button,header .menu-wrap>button{padding-left:9px;padding-right:9px} }
   header #btnNovedades.hay{border-color:#ff8a80;background:rgba(255,90,80,.14)}
   header .nov-badge{box-shadow:0 0 0 2px #13243d}
   header .menu{color:var(--text)}

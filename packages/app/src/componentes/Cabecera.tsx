@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { NOMBRE_APP, VERSION_TXT } from '@mdexa/core';
 import { Ico } from '../original/iconos';
+import { ICONO_APP } from '../original/iconoApp';
 import type { Tema } from '../estado/ui';
 
 const TEMAS: Record<Tema, { ic: string; t: string; d: string }> = {
@@ -37,8 +38,8 @@ export function Cabecera(p: Props) {
     <header>
       <div className="cabeza">
         <div className="marca" title={NOMBRE_APP}>
-          {/* logo.png junto a la app (o junto al .md en el escritorio); si no existe, no se muestra */}
-          <img key={p.logo || 'logo.png'} src={p.logo || 'logo.png'} alt="" className="marca-logo" onError={e => { e.currentTarget.style.display = 'none'; }} />
+          {/* logo.png junto a la app (o junto al .md en el escritorio); si no existe, el ícono de MDexa */}
+          <img key={p.logo || 'logo.png'} src={p.logo || 'logo.png'} alt="" className="marca-logo" onError={e => { if (e.currentTarget.src !== ICONO_APP) e.currentTarget.src = ICONO_APP; }} />
           <span className="marca-txt"><b>{NOMBRE_APP}</b><span className="marca-ver">v{p.version ?? VERSION_TXT}</span></span>
         </div>
         <div className="cabeza-proy">

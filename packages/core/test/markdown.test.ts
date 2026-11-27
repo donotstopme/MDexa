@@ -64,7 +64,7 @@ describe('toMD', () => {
     expect(salida).toContain('- #2 [x] Wireframe');
     expect(salida).toContain('![boceto](imagenes/boceto%20final.png)');
     expect(salida).toContain('## Sección manual');
-    expect(salida).toMatch(/- Versión de MDexa: 18 \(v1\.36\.0\)/);
+    expect(salida).toMatch(/- Versión de MDexa: 18 \(v1\.36\.1\)/);
   });
 
   it('no escribe colores de etiquetas que ya no se usan', () => {

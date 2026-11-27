@@ -1,5 +1,7 @@
 # MDexa
 
+<img src="packages/desktop/build/icon.png" alt="Ícono de MDexa" width="128">
+
 **Actividades de equipos pequeños, donde todo vive en un solo archivo `.md`.**
 
 Sin servidor, sin base de datos, sin cuentas ni suscripciones: el equipo comparte un archivo de texto (en una carpeta de red, Drive, Dropbox…) y la aplicación lo muestra como lista, línea de tiempo, tablero, calendario y reportes. Como el archivo es Markdown normal, también se puede leer y editar a mano, en Obsidian, VS Code o GitHub.
@@ -231,11 +233,10 @@ Un `.md` normal: encabezado con el proyecto y la meta, una tabla de actividades 
 - Un proyecto es un archivo: no hay permisos por persona ni cuentas (quien puede abrir el archivo puede editarlo).
 - El candado depende de la velocidad con que sincronice la carpeta compartida (ver [Trabajar en equipo](#trabajar-en-equipo)).
 - La aplicación de escritorio aún no está firmada y solo se ha ejecutado en macOS.
-- El ícono de la aplicación de escritorio es provisional.
 
 ## Personalizar nombre e imagen
 
-Dos archivos opcionales cambian el nombre y la imagen de la cabecera:
+Dos archivos opcionales cambian el nombre y la imagen de la cabecera (sin `logo.png` se muestra el ícono de MDexa):
 
 ```
 carpeta/
