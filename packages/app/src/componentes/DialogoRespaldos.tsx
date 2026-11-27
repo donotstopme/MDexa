@@ -33,6 +33,7 @@ export function DialogoRespaldos({ sesion, nombre, onCerrar }: { sesion: Sesion;
             c.pierde.length ? <span key="p" className="t-dan">−{c.pierde.length} se quitaría</span> : null,
             c.cambian.length ? <span key="c" className="t-warn">{c.cambian.length} {c.cambian.length === 1 ? 'cambiaría' : 'cambiarían'}</span> : null,
             c.metaDif ? <span key="m" className="t-warn">meta distinta</span> : null,
+            c.hitosDif ? <span key="h" className="t-warn">hitos distintos</span> : null,
           ].filter(Boolean).reduce<React.ReactNode[]>((acc, x, k) => (k ? [...acc, ' · ', x] : [x]), [])}</>;
           return (
             <div key={r.fecha} className={`resp-it ${abre ? 'abierto' : ''}`}>
@@ -53,6 +54,7 @@ export function DialogoRespaldos({ sesion, nombre, onCerrar }: { sesion: Sesion;
                   {c.pierde.length > 0 && <div className="resp-g"><b>Se quitarían (existen ahora, no en el respaldo)</b><ul>{c.pierde.slice(0, 30).map(a => <li key={a.id}>{nomCorto(a)} <span className="nd">{negocioDe(a)} · {EST(a)}</span></li>)}</ul></div>}
                   {c.cambian.length > 0 && <div className="resp-g"><b>Regresarían a como estaban</b><ul>{c.cambian.slice(0, 30).map(x => <li key={x.a.id}>{nomCorto(x.a)} <span className="nd">{x.campos.map(k => `${CAMPOS_NOV[k.k]}: ${k.ahora ? (k.k === 'inicio' || k.k === 'fin' ? fmtTxt(k.ahora) : k.ahora) : '—'} → ${k.antes ? (k.k === 'inicio' || k.k === 'fin' ? fmtTxt(k.antes) : k.antes) : '—'}`).join(' · ')}</span></li>)}</ul></div>}
                   {c.metaDif && <div className="resp-g"><b>Meta</b><ul><li>{c.respaldo.meta.proyecto || '—'} · {fmtTxt(c.respaldo.meta.inicio) || '—'} → {fmtTxt(c.respaldo.meta.fin) || '—'}</li></ul></div>}
+                  {c.hitosDif && <div className="resp-g"><b>Hitos</b><ul><li>En el respaldo: {c.respaldo.hitos.map(h => h.nombre).join(', ') || 'ninguno'}</li></ul></div>}
                 </div>
               )}
             </div>

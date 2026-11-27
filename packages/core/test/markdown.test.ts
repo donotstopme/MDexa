@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { parseMD, toMD } from '../src';
+import { parseMD, toMD, VERSION_TXT } from '../src';
 
 const fixture = readFileSync(new URL('./fixtures/proyecto.md', import.meta.url), 'utf8');
 
@@ -55,7 +55,7 @@ describe('toMD', () => {
   it('es estable: parse → toMD → parse da lo mismo', () => {
     const d = parseMD(fixture);
     const d2 = parseMD(toMD(d));
-    expect(d2).toEqual(d);
+    expect(d2).toEqual({ ...d, meta: { ...d.meta, versionTxt: VERSION_TXT } });
   });
 
   it('reproduce el archivo de ejemplo salvo normalizaciones conocidas', () => {
@@ -64,7 +64,7 @@ describe('toMD', () => {
     expect(salida).toContain('- #2 [x] Wireframe');
     expect(salida).toContain('![boceto](imagenes/boceto%20final.png)');
     expect(salida).toContain('## Sección manual');
-    expect(salida).toMatch(/- Versión de MDexa: 18 \(v1\.34\.1\)/);
+    expect(salida).toMatch(/- Versión de MDexa: 18 \(v1\.35\.0\)/);
   });
 
   it('no escribe colores de etiquetas que ya no se usan', () => {

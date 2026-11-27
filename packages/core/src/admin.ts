@@ -1,6 +1,7 @@
 import { VERSION_MDEXA, VERSION_TXT } from './constantes';
 import type { Actividad, ColorEtiqueta, Documento, Estado } from './tipos';
 import { etqs, limpiaEtq, tieneEtq, todasEtq } from './etiquetas';
+import { renombrarNegocioHitos } from './hitos';
 import { conEstado } from './sesion';
 import { EST, addDias, dias, hoy as hoyDe, negocioDe, normaliza, unicos } from './utilidades';
 import { subtareasDe } from './utilidades';
@@ -20,7 +21,7 @@ export function renombrarNegocio(d: Documento, viejo: string, nuevo: string): { 
   const nombre = unicos(d.actividades.map(a => a.negocio)).find(x => x && x !== viejo && normaliza(x) === normaliza(nu0)) || nu0;
   let n = 0;
   const actividades = d.actividades.map(a => { if ((a.negocio || '') !== viejo) return a; n++; return { ...a, negocio: nombre }; });
-  return { doc: { ...d, actividades }, n, nombre };
+  return { doc: { ...d, actividades, hitos: renombrarNegocioHitos(d.hitos, viejo, nombre) }, n, nombre };
 }
 
 /* ============ Administrar etiquetas ============ */
@@ -75,6 +76,7 @@ export function crearSprint(d: Documento, o: OpcionesSprint, usuario: string, ar
   return {
     actividades, meta: { proyecto: o.nombre, inicio: o.inicio, fin: o.fin, version: VERSION_MDEXA, versionTxt: VERSION_TXT }, candado: null,
     notas: o.notas ? d.notas.filter(n => ids.has(n.act)).map(n => ({ ...n })) : [], extra: [], coloresEtq: { ...d.coloresEtq } as Record<string, ColorEtiqueta>, imagenes: [],
+    hitos: d.hitos.filter(h => actividades.some(a => a.hito === h.id)).map(h => ({ ...h })),
     bitacora: [{ fecha: ahora.toISOString(), autor: usuario || 'Sin nombre', act: null, accion: 'sprint', campos: [],
       detalle: `A partir de "${origen}" (${archivoOrigen}) · ${actividades.length} ${actividades.length === 1 ? 'actividad copiada' : 'actividades copiadas'}` }],
   };
@@ -82,5 +84,5 @@ export function crearSprint(d: Documento, o: OpcionesSprint, usuario: string, ar
 
 /** Documento vacío para un archivo nuevo */
 export const documentoNuevo = (meta: { proyecto: string; inicio: string; fin: string }): Documento => ({
-  actividades: [], meta: { ...meta, version: VERSION_MDEXA, versionTxt: VERSION_TXT }, candado: null, notas: [], bitacora: [], extra: [], coloresEtq: {}, imagenes: [],
+  actividades: [], meta: { ...meta, version: VERSION_MDEXA, versionTxt: VERSION_TXT }, candado: null, notas: [], bitacora: [], extra: [], coloresEtq: {}, imagenes: [], hitos: [],
 });

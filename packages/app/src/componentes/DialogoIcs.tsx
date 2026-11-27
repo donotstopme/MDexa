@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { actividadesIcs, generarICS, normaliza, type Actividad, type Documento } from '@mdexa/core';
+import { actividadesIcs, generarICS, hitosIcs, normaliza, type Actividad, type Documento } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { Dialogo } from './Dialogo';
 
@@ -7,14 +7,15 @@ const pl = (n: number, s: string, p: string) => `${n} ${n === 1 ? s : p}`;
 
 /** Exportar las fechas fin al calendario (.ics para Outlook, Google o Apple) */
 export function DialogoIcs({ doc, archivo, usuario, visibles, onExportar, onCerrar }: { doc: Documento; archivo: string; usuario: string; visibles: Actividad[]; onExportar(nombre: string, contenido: string, n: number): void; onCerrar(): void }) {
-  const [que, setQue] = useState<'mias' | 'filtradas' | 'todas'>(usuario ? 'mias' : 'todas'), [term, setTerm] = useState(false), [alarma, setAlarma] = useState(true);
+  const [que, setQue] = useState<'mias' | 'filtradas' | 'todas'>(usuario ? 'mias' : 'todas'), [term, setTerm] = useState(false), [alarma, setAlarma] = useState(true), [conHitos, setConHitos] = useState(true);
   const { lista, sinFin } = actividadesIcs(doc, que, visibles, usuario, term);
+  const hitos = conHitos ? hitosIcs(doc, que, visibles, usuario, term) : [];
   const enviar = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!lista.length) return;
+    if (!lista.length && !hitos.length) return;
     const slug = (s: string) => normaliza(s).replace(/[^a-z0-9]+/g, '-');
     const nombre = `${slug(doc.meta.proyecto || archivo.replace(/\.md$/i, '')) || 'actividades'}${que === 'mias' ? '-' + slug(usuario) : ''}.ics`;
-    onExportar(nombre, generarICS(doc, lista, alarma, archivo), lista.length);
+    onExportar(nombre, generarICS(doc, lista, alarma, archivo, new Date(), hitos), lista.length + hitos.length);
   };
   return (
     <Dialogo onCerrar={onCerrar}>
@@ -26,11 +27,12 @@ export function DialogoIcs({ doc, archivo, usuario, visibles, onExportar, onCerr
           <label className="check"><input type="radio" name="icsQue" checked={que === 'filtradas'} onChange={() => setQue('filtradas')} /> Las que se ven con los filtros actuales</label>
           <label className="check"><input type="radio" name="icsQue" checked={que === 'todas'} onChange={() => setQue('todas')} /> Todas</label>
           <label className="check"><input type="checkbox" checked={term} onChange={e => setTerm(e.target.checked)} /> Incluir terminadas y canceladas</label>
+          {!!doc.hitos.length && <label className="check"><input type="checkbox" checked={conHitos} onChange={e => setConHitos(e.target.checked)} /> Incluir hitos</label>}
           <label className="check"><input type="checkbox" checked={alarma} onChange={e => setAlarma(e.target.checked)} /> Recordatorio la tarde anterior (9:00 p.m.)</label>
         </div>
-        <p className="nd"><Ico n="calendario" t={14} /> Se exportarán <b>{pl(lista.length, 'actividad', 'actividades')}</b> como eventos de todo el día en su fecha fin.{sinFin > 0 && ` ${pl(sinFin, 'no tiene', 'no tienen')} fecha fin y se omitirá${sinFin === 1 ? '' : 'n'}.`}</p>
+        <p className="nd"><Ico n="calendario" t={14} /> Se exportarán <b>{pl(lista.length, 'actividad', 'actividades')}</b> como eventos de todo el día en su fecha fin{hitos.length ? <> y <b>{pl(hitos.length, 'hito', 'hitos')}</b></> : ''}.{sinFin > 0 && ` ${pl(sinFin, 'no tiene', 'no tienen')} fecha fin y se omitirá${sinFin === 1 ? '' : 'n'}.`}</p>
         <p className="nd" style={{ fontSize: 12 }}>Si vuelves a importar el archivo después, Outlook actualiza los eventos que ya tenía en lugar de duplicarlos.</p>
-        <div className="pie"><span /><div className="barra"><button type="button" onClick={onCerrar}>Cancelar</button><button type="submit" className="prim" disabled={!lista.length}><Ico n="descargar" /> Descargar .ics</button></div></div>
+        <div className="pie"><span /><div className="barra"><button type="button" onClick={onCerrar}>Cancelar</button><button type="submit" className="prim" disabled={!lista.length && !hitos.length}><Ico n="descargar" /> Descargar .ics</button></div></div>
       </form>
     </Dialogo>
   );

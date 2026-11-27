@@ -2,7 +2,7 @@ import {
   agregarImagenes, carpetaImagenes, filtrarImagenes, nombreVisible, quitarImagen, rutaImagen,
   absorberPropios, calcularNovedades, claveNota, compararRespaldo, hashTxt, restaurarRespaldo, sinCandado, sinNovedades,
   type Novedades, type Respaldo, candadoNuevo, decidirEscritura, decidirToma, deshacer, foto, historialVacio, parseMD, puedeSoltar, rehacer,
-  registrarDeshacer, toMD, VERSION_MDEXA, VERSION_TXT, type Documento, type Foto, type Historial,
+  quitarHitosAjenos, registrarDeshacer, toMD, VERSION_MDEXA, VERSION_TXT, type Documento, type Foto, type Historial,
 } from '@mdexa/core';
 import type { Almacenamiento, ArchivoAbierto } from '../almacenamiento/tipos';
 import { localEnMemoria, type Local } from '../almacenamiento/local';
@@ -84,7 +84,7 @@ export class Sesion {
 
   private aplicar(texto: string, nombre = this.estado.nombre): Documento {
     const doc = parseMD(texto);
-    this.textoCargado = texto; this.previo = foto(doc.actividades);
+    this.textoCargado = texto; this.previo = foto(doc.actividades, doc.hitos);
     this.historial = registrarDeshacer(historialVacio(), doc);   // estado base: el primer cambio también se puede deshacer
     this.set({ doc, nombre, masNuevo: (doc.meta.version || 0) > VERSION_MDEXA, error: '' });
     this.flags();
@@ -318,10 +318,13 @@ export class Sesion {
   editar(fn: (d: Documento) => Documento) {
     const { doc, modo } = this.estado;
     if (modo !== 'edicion' || !doc) return;
-    const nuevo = fn(doc);
-    if (nuevo === doc) return;
+    const cambiado = fn(doc);
+    if (cambiado === doc) return;
+    // Una actividad que cambia de negocio deja el hito que ya no le corresponde
+    const { doc: nuevo, quitados } = quitarHitosAjenos(doc, cambiado);
     this.set({ doc: nuevo });
     this.guardar();
+    if (quitados) this.ui.avisar(`${quitados === 1 ? 'Una actividad dejó' : `${quitados} actividades dejaron`} su hito porque es de otro negocio (se puede deshacer)`);
   }
 
   /**
@@ -434,7 +437,7 @@ export class Sesion {
       this.visto = v.acts; this.vistoFecha = v.fecha;
       this.notasVistas = new Set(v.notas || doc.notas.filter(n => n.fecha <= v.fecha).map(claveNota));
     } else {   // primera vez con este archivo: lo que hay ahora es la base, sin novedades
-      this.visto = foto(doc.actividades); this.vistoFecha = new Date().toISOString(); this.notasVistas = new Set(doc.notas.map(claveNota));
+      this.visto = foto(doc.actividades, doc.hitos); this.vistoFecha = new Date().toISOString(); this.notasVistas = new Set(doc.notas.map(claveNota));
       this.guardarVisto();
     }
     this.inicioVisita = Date.now(); this.mencionesAvisadas = new Set();
@@ -455,7 +458,7 @@ export class Sesion {
   marcarVisto(id: number | null = null) {
     const doc = this.estado.doc;
     if (!doc || !this.visto) return;
-    const actual = foto(doc.actividades);
+    const actual = foto(doc.actividades, doc.hitos);
     if (id === null) { this.visto = actual; this.vistoFecha = new Date().toISOString(); this.notasVistas = new Set(doc.notas.map(claveNota)); }
     else if (actual[id]) this.visto[id] = actual[id]; else delete this.visto[id];
     this.guardarVisto(); this.set({ vistoFecha: this.vistoFecha }); this.recalcular();
@@ -468,7 +471,7 @@ export class Sesion {
   async cerrarVisita() {
     const doc = this.estado.doc;
     if (!doc || !this.visto || Date.now() - this.inicioVisita < VISITA_MIN) return;
-    this.visto = foto(doc.actividades); this.vistoFecha = new Date().toISOString(); this.notasVistas = new Set(doc.notas.map(claveNota));
+    this.visto = foto(doc.actividades, doc.hitos); this.vistoFecha = new Date().toISOString(); this.notasVistas = new Set(doc.notas.map(claveNota));
     this.guardarVisto();
   }
 

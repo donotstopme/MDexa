@@ -9,8 +9,8 @@ export const PX_DIA: Record<Zoom, number> = { dia: 34, semana: 15, mes: 5 };
 export interface RangoGantt { ini: string; fin: string; nd: number }
 
 /** Rango visible: desde el lunes anterior a la primera fecha hasta 10 días después de la última */
-export function rangoGantt(acts: Actividad[], meta: Pick<Meta, 'inicio' | 'fin'>, hoyStr: string): RangoGantt {
-  const fechas = [hoyStr, meta.inicio, meta.fin, ...acts.flatMap(a => [a.inicio, a.fin])].filter(Boolean).sort();
+export function rangoGantt(acts: Actividad[], meta: Pick<Meta, 'inicio' | 'fin'>, hoyStr: string, otras: string[] = []): RangoGantt {
+  const fechas = [hoyStr, meta.inicio, meta.fin, ...otras, ...acts.flatMap(a => [a.inicio, a.fin])].filter(Boolean).sort();
   let ini = addDias(fechas[0], -3);
   ini = addDias(ini, -((new Date(ini + 'T00:00').getDay() + 6) % 7));
   const fin = addDias(fechas[fechas.length - 1], 10);

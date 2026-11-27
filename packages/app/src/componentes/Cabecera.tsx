@@ -11,7 +11,7 @@ const SIG: Record<Tema, Tema> = { auto: 'claro', claro: 'oscuro', oscuro: 'auto'
 export interface Props {
   titulo: string; archivo: string; usuario: string; hayArchivo: boolean;
   novedades: number; menciones: number; tema: Tema;
-  onAbrir(): void; onRefrescar(): void; onNovedades(): void; onBitacora(): void; onReporte(): void; onManual(): void; onTema(t: Tema): void; onUsuario(): void;
+  onAbrir(): void; onRefrescar(): void; onNovedades(): void; onBitacora(): void; onHitos?(): void; onReporte(): void; onManual(): void; onTema(t: Tema): void; onUsuario(): void;
   extras: { titulo: string; desc: string; onClick(): void }[];
   version?: string;
 }
@@ -54,6 +54,7 @@ export function Cabecera(p: Props) {
           <Ico n="campana" /> Novedades{p.novedades > 0 && <span className={`nov-badge ${p.menciones ? 'con-men' : ''}`}>{(p.menciones ? '@ ' : '') + (p.novedades > 99 ? '99+' : p.novedades)}</span>}
         </button>
         <button onClick={p.onBitacora} title="Quién cambió qué y cuándo" disabled={!p.hayArchivo}><Ico n="reloj" /> Bitácora</button>
+        <button onClick={p.onHitos} title="Hitos y fases: fechas, avance y estado" disabled={!p.hayArchivo}><Ico n="bandera" /> Hitos</button>
         <button onClick={p.onReporte} disabled={!p.hayArchivo}><Ico n="grafica" /> Reporte</button>
         <button onClick={p.onManual} title="Manual de uso"><Ico n="libro" /> Manual</button>
         <button className="btn-tema" aria-label="Tema" onClick={() => p.onTema(SIG[p.tema])}

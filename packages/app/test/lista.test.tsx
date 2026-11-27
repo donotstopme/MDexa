@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { datosAvance, analizarMeta, armarBloques, filtrar, filtrosVacios, parseMD, statsNegocios, type Agrupar } from '@mdexa/core';
 import { Lista } from '../src/vistas/Lista';
 import { Banner } from '../src/componentes/Banner';
@@ -21,6 +21,9 @@ const lista = (d = doc, por: Agrupar = 'negocio', edicion = false) => {
 };
 
 describe('Lista (diseño original)', () => {
+  // «vencidas» depende del día: se fija para que la prueba no cambie con el calendario
+  beforeAll(() => { vi.useFakeTimers(); vi.setSystemTime(new Date(HOY + 'T12:00:00')); });
+  afterAll(() => { vi.useRealTimers(); });
   it('agrupa por negocio con encabezados y resumen del grupo', () => {
     const h = lista(demo).replaceAll('<!-- -->', '');
     expect(h).toContain('class="grupo');

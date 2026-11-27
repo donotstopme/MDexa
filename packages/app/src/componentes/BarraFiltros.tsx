@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ESTADOS, PRIORIDADES, SIN_ETQ, SIN_NEGOCIO, SIN_PRI, SIN_RESP, SIN_TAM, TAMANOS, colorEtq, etqs, negocioDe, todasEtq, unicos, type Agrupar, type Documento } from '@mdexa/core';
+import { ESTADOS, PRIORIDADES, SIN_ETQ, SIN_HITO, SIN_NEGOCIO, hitosOrdenados, SIN_PRI, SIN_RESP, SIN_TAM, TAMANOS, colorEtq, etqs, negocioDe, todasEtq, unicos, type Agrupar, type Documento } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { COLS_OPC, VISTAS, type UI, type Vista } from '../estado/ui';
 import { Msel } from './Msel';
@@ -38,8 +38,8 @@ function Columnas({ ui }: { ui: UI }) {
   );
 }
 
-export function BarraFiltros({ doc, ui, personas, persona, editando, nBacklog, onNueva, onPresentar }: {
-  doc: Documento; ui: UI; personas: string[]; persona: string; editando: boolean; nBacklog: number; onNueva(): void; onPresentar(): void;
+export function BarraFiltros({ doc, ui, personas, persona, editando, nBacklog, onNueva, onNuevoHito, onPresentar }: {
+  doc: Documento; ui: UI; personas: string[]; persona: string; editando: boolean; nBacklog: number; onNueva(): void; onNuevoHito?(): void; onPresentar(): void;
 }) {
   const f = ui.filtros, v = ui.vista, acts = doc.actividades;
   const negs = unicos(acts.map(a => a.negocio)), resp = unicos(acts.map(a => a.responsable)), etiquetas = todasEtq(acts);
@@ -68,6 +68,7 @@ export function BarraFiltros({ doc, ui, personas, persona, editando, nBacklog, o
       <Msel todos="Todas las prioridades" varios="prioridades" sel={f.pri} onChange={pri => ui.setFiltros({ pri })} opciones={[...Object.keys(PRIORIDADES).map(p => ({ v: p, cls: `pri-punto pri-${p}` })), SIN_PRI]} />
       <Msel todos="Todas las etiquetas" varios="etiquetas" sel={f.etq} onChange={etq => ui.setFiltros({ etq })}
         opciones={[...etiquetas.map(t => ({ v: t, cls: `etq-punto etq-${colorEtq(t, doc.coloresEtq)}` })), ...(acts.some(a => !etqs(a).length) ? [SIN_ETQ] : [])]} />
+      {!!doc.hitos.length && <Msel todos="Todos los hitos" varios="hitos" sel={f.hito} onChange={hito => ui.setFiltros({ hito })} opciones={[...hitosOrdenados(doc.hitos).map(h => h.nombre), SIN_HITO]} />}
       <label className="check" title="Mostrar u ocultar las actividades en Backlog">
         <input type="checkbox" checked={f.verBacklog} onChange={e => ui.setFiltros({ verBacklog: e.target.checked })} /> <span>Mostrar backlog{nBacklog ? ` (${nBacklog})` : ''}</span></label>
       {v === 'lista' && <Columnas ui={ui} />}
@@ -75,8 +76,9 @@ export function BarraFiltros({ doc, ui, personas, persona, editando, nBacklog, o
       {!['mias', 'cal', 'carga'].includes(v) && (
         <label className="check">Agrupar por <select className="sel-agrupar" title="Agrupa la lista, el tablero y la línea de tiempo" value={ui.agrupar} onChange={e => ui.setAgrupar(e.target.value as Agrupar)}>
           <option value="negocio">Negocio</option><option value="responsable">Responsable</option><option value="prioridad">Prioridad</option>
-          <option value="estado">Estado</option><option value="etiqueta">Etiqueta</option><option value="">Sin agrupar</option></select></label>
+          <option value="estado">Estado</option><option value="etiqueta">Etiqueta</option><option value="hito">Hito</option><option value="">Sin agrupar</option></select></label>
       )}
+      {editando && <button title="Crear un hito y elegir sus actividades" onClick={onNuevoHito}><Ico n="bandera" /> Nuevo hito</button>}
       {editando && <button className="prim" title="Nueva actividad (tecla N)" onClick={onNueva}><Ico n="mas" /> Nueva actividad</button>}
     </div>
   );

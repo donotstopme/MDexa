@@ -21,7 +21,11 @@ export interface Actividad {
   estado: Estado;
   terminada: string;   // AAAA-MM-DD, sólo si estado === 'Terminado'
   subtareas?: Subtarea[];
+  hito?: number;       // id del hito al que pertenece
 }
+
+/** Un hito (también funciona como fase) de uno o varios negocios; `cumplido` = fecha si se marcó a mano */
+export interface Hito { id: number; nombre: string; fecha: string; negocios: string[]; cumplido: string; descripcion: string }
 
 export interface Meta {
   proyecto: string;
@@ -57,4 +61,5 @@ export interface Documento {
   /** nombre normalizado de etiqueta → color elegido a mano */
   coloresEtq: Record<string, ColorEtiqueta>;
   imagenes: Imagen[];
+  hitos: Hito[];
 }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import {
   ESTADOS, SIN_NEGOCIO, toMD, carpetaImagenes, datosAvance, agregarNota, analizarMeta, armarBloques, backlogOculto, claveNota, conColorEtiqueta, conEstado, conMeta, conSubtareas, estadoEscritura, mencionesEn,
-  borrarEtiqueta, crearSprint, documentoNuevo, normaliza, renombrarEtiqueta, renombrarNegocio, type OpcionesSprint,
+  gruposDe, hitosVisibles, moverHito, borrarEtiqueta, crearSprint, documentoNuevo, normaliza, renombrarEtiqueta, renombrarNegocio, type OpcionesSprint,
   aplicarImportacion, bloqueadasAlMover, exportarCsv, loteEliminar, loteEstado, loteFechas, loteNegocio, lotePrioridad, loteResponsable, loteTamano, rangoSeleccion, type Estado, type Prioridad, type Tamano, type FilaImp, type Mapa,
   nomCorto, pendientesAlMover, personasConocidas, ponerEtiqueta, quitarNota, subtareasDe, negocioDe, type Nota, type Subtarea, EST, fechaISO, filtrar, statsNegocios, unicos, type Bloque, type Documento,
 } from '@mdexa/core';
@@ -23,6 +23,8 @@ import { Gantt } from './vistas/Gantt';
 import { IconoBloque, Lista } from './vistas/Lista';
 import { Mias } from './vistas/Mias';
 import { BarraMasiva } from './componentes/BarraMasiva';
+import { DialogoHitos } from './componentes/DialogoHitos';
+import { FormHito } from './componentes/FormHito';
 import { DialogoExportar } from './componentes/DialogoExportar';
 import { DialogoImportar } from './componentes/DialogoImportar';
 import { DialogoMasivo, type CambioMasivo, type TipoMasivo } from './componentes/DialogoMasivo';
@@ -69,7 +71,7 @@ export function App() {
   const editando = modo === 'edicion';
   const ed = editando ? sesion : undefined;
   const ui = useUI(e.nombre, doc?.meta.proyecto ?? '');
-  const [dlg, setDlg] = useState<'novedades' | 'respaldos' | 'bitacora' | 'reporte' | 'semanal' | 'importar' | 'exportar' | 'renombrar' | 'etqadmin' | 'sprint' | 'ics' | 'atajos' | 'manual' | null>(null);
+  const [dlg, setDlg] = useState<'novedades' | 'respaldos' | 'bitacora' | 'reporte' | 'semanal' | 'importar' | 'exportar' | 'renombrar' | 'etqadmin' | 'sprint' | 'ics' | 'atajos' | 'manual' | 'hitos' | null>(null);
   const [bitAct, setBitAct] = useState<number | null>(null);
   const [seleccion, setSeleccion] = useState<Set<number>>(new Set());
   const ultimoSel = useRef<number | null>(null);
@@ -85,6 +87,7 @@ export function App() {
   const [presZoom, setPresZoom] = useState(() => { try { return Math.min(2, Math.max(1, parseFloat(localStorage.getItem('mdexa.presZoom') || '') || 1.3)); } catch { return 1.3; } });
   const presNeg = useRef<string[] | null>(null), presFs = useRef(false);
   const [, setReloj] = useState(0);
+  const [formHito, setFormHito] = useState<{ id: number | null } | null>(null);
   const [renNeg, setRenNeg] = useState<string | undefined>(undefined);
   const [negElegido, setNegElegido] = useState('');
   const hoy = fechaISO(new Date());
@@ -119,7 +122,7 @@ export function App() {
     if (!doc) return [];
     const favL = lista.filter(a => ui.favs.has(a.id)), resto = lista.filter(a => !ui.favs.has(a.id));
     if (!ui.agrupar) return [{ g: null, titulo: '', items: [...favL, ...resto] }];
-    return [...(favL.length ? [{ g: '__fav', titulo: 'Mis favoritas', items: favL }] : []), ...armarBloques(resto, ui.agrupar, doc.actividades)];
+    return [...(favL.length ? [{ g: '__fav', titulo: 'Mis favoritas', items: favL }] : []), ...armarBloques(resto, ui.agrupar, doc.actividades, doc.hitos)];
   }, [doc, lista, ui.agrupar, ui.favs]);
   const stats = useMemo(() => (doc ? statsNegocios(doc, lista, hoy) : []), [doc, lista, hoy]);
   const analisis = useMemo(() => (doc ? analizarMeta(doc, hoy) : null), [doc, hoy]);
@@ -168,6 +171,14 @@ export function App() {
     },
     grupo: ids => setSeleccion(s => { const n = new Set(s), todas = ids.every(i => s.has(i)); ids.forEach(i => (todas ? n.delete(i) : n.add(i))); return n; }),
   } : undefined;
+  const hitosVista = doc ? hitosVisibles(doc.hitos, ui.filtros.neg, ui.filtros.hito) : [];
+  const abrirHito = (id: number) => { if (editando) setFormHito({ id }); else setDlg('hitos'); };
+  const cambiarFechaHito = (id: number, fecha: string) => {
+    const h = doc?.hitos.find(x => x.id === id);
+    if (!h || h.fecha === fecha) return;
+    sesion.editar(d => moverHito(d, id, fecha, e.usuario));
+    sesion.avisar(`Hito «${h.nombre}»: ${fecha}`);
+  };
   const lote = (fn: (d: Documento) => Documento, desc: string) => {
     const n = seleccion.size; if (!n) return;
     sesion.editar(fn); sesion.avisar(`${desc} · ${n} ${n === 1 ? 'actividad' : 'actividades'}`);
@@ -327,6 +338,7 @@ export function App() {
     if (ui.vista === 'mias' && (a.responsable || '') !== (ui.persona || e.usuario)) ui.setVista('lista');
     if (!lista.some(x => x.id === id)) { ui.limpiarFiltros(); ui.setFiltros({ verBacklog: true }); }
     ui.abrirGrupo(negocioDe(a)); ui.abrirGrupo('__fav');
+    if (ui.agrupar) gruposDe(a, ui.agrupar, doc!.actividades, doc!.hitos).forEach(ui.abrirGrupo);
     setTimeout(() => {
       const el = document.querySelector(`#tabla tr[data-id="${id}"], .k-tarjeta[data-id="${id}"], .c-chip[data-id="${id}"], .g-fila[data-id="${id}"]`);
       if (!el) return;
@@ -377,7 +389,7 @@ export function App() {
         onNegocio={pasarNegocio} onZoom={zoomPres} onSalir={salirPres} />}
       <Cabecera titulo={doc?.meta.proyecto || (e.nombre ? e.nombre.replace(/\.md$/i, '') : 'Sin proyecto abierto')} archivo={e.nombre} hayArchivo={!!doc} usuario={e.usuario}
         novedades={e.novedades.total} menciones={e.novedades.menciones.length} tema={ui.tema}
-        onAbrir={() => sesion.abrir()} onRefrescar={() => sesion.refrescar()} onNovedades={() => setDlg(dlg === 'novedades' ? null : 'novedades')} onBitacora={() => { setBitAct(null); setDlg('bitacora'); }} onManual={() => setDlg('manual')}
+        onAbrir={() => sesion.abrir()} onRefrescar={() => sesion.refrescar()} onNovedades={() => setDlg(dlg === 'novedades' ? null : 'novedades')} onBitacora={() => { setBitAct(null); setDlg('bitacora'); }} onHitos={() => setDlg('hitos')} onManual={() => setDlg('manual')}
         onReporte={async () => { if (modo === 'lectura') await sesion.refrescar({ silencioso: true }); setDlg('reporte'); }}
         onTema={ui.setTema} onUsuario={() => sesion.cambiarUsuario()}
         extras={[{ titulo: 'Nuevo .md', desc: 'Archivo vacío para un proyecto nuevo', onClick: () => setFormMeta('nuevo') }, ...(doc ? [{ titulo: 'Nuevo sprint', desc: 'Copia actividades elegidas a un archivo nuevo', onClick: () => setDlg('sprint') }, { titulo: 'Importar desde Excel o CSV', desc: 'Carga actividades de un archivo o pegadas de Excel', onClick: () => setDlg('importar') }, { titulo: 'Exportar a CSV', desc: 'Las actividades en un archivo para Excel', onClick: () => setDlg('exportar') }, { titulo: 'Reporte semanal', desc: 'Resumen de la semana listo para un correo', onClick: () => setDlg('semanal') }, { titulo: 'Exportar al calendario (.ics)', desc: 'Fechas fin para Outlook, Google o Apple', onClick: () => setDlg('ics') }, { titulo: 'Renombrar negocio', desc: 'Cambia el nombre en todas sus actividades', onClick: () => abrirRenombrar() }, { titulo: 'Administrar etiquetas', desc: 'Renombrar, recolorear o borrar etiquetas', onClick: () => setDlg('etqadmin') }, { titulo: 'Respaldos', desc: 'Ver o restaurar versiones anteriores', onClick: () => setDlg('respaldos') }, { titulo: 'Descargar copia .md', desc: 'Guarda la versión actual en tu computadora', onClick: () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([toMD(doc)], { type: 'text/markdown' })); a.download = e.nombre || 'actividades.md'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); } }] : []), { titulo: 'Atajos de teclado', desc: 'Tecla ? en cualquier momento', onClick: () => setDlg('atajos') }]} />
@@ -391,11 +403,11 @@ export function App() {
           onElegir={elegirNegocio} favs={ui.favs.size && ui.vista !== 'mias' ? { n: ui.favs.size, visible: lista.some(a => ui.favs.has(a.id)) } : null} />}
         <main>
           {doc && analisis && <TarjetaMeta doc={doc} a={analisis} editando={editando} onEditar={() => setFormMeta('editar')} verAvance={ui.verAvance} onVerAvance={ui.setVerAvance}
-          unidad={ui.unidadAvance} onUnidad={ui.setUnidadAvance} avance={datosAvance(doc, ui.unidadAvance, hoy)} />}
+          unidad={ui.unidadAvance} onUnidad={ui.setUnidadAvance} avance={datosAvance(doc, ui.unidadAvance, hoy)} hoy={hoy} onHito={abrirHito} onHitos={() => setDlg('hitos')} />}
           <div className="card">
             {doc ? (
               <>
-                <BarraFiltros doc={doc} ui={ui} personas={personas} persona={ui.persona || e.usuario} editando={editando} nBacklog={nBacklog} onNueva={() => abrirForm(null)} onPresentar={entrarPres} />
+                <BarraFiltros doc={doc} ui={ui} personas={personas} persona={ui.persona || e.usuario} editando={editando} nBacklog={nBacklog} onNueva={() => abrirForm(null)} onNuevoHito={() => setFormHito({ id: null })} onPresentar={entrarPres} />
                 {ui.vista === 'lista' && <Lista sel={sel} renombrar={editando && porNegocio ? abrirRenombrar : undefined} doc={doc} bloques={bloques} texto={ui.filtros.texto} edicion={ed} novIds={novIds} orden={ui.orden} onOrden={ui.setOrden}
                   colsOcultas={ui.colsOcultas} agrupaPorNegocio={porNegocio} hayAgrupacion={!!ui.agrupar} colapsados={ui.colapsados} onGrupo={ui.alternarGrupo}
                   favs={ui.favs} onFav={ui.alternarFav} acc={acc} onEditar={id => abrirForm(id)} onEliminar={eliminar}
@@ -405,8 +417,8 @@ export function App() {
                   msgVacio={msgVacio} icono={b => <IconoBloque b={b} doc={doc} />} />}
                 {ui.vista === 'gantt' && <Gantt sel={sel} renombrar={editando && porNegocio ? abrirRenombrar : undefined} doc={doc} bloques={bloques} texto={ui.filtros.texto} zoom={ui.zoom} hoy={hoy} edicion={ed} novIds={novIds} colapsados={ui.colapsados} onGrupo={ui.alternarGrupo}
                   favs={ui.favs} onFav={ui.alternarFav} acc={acc} onEditar={id => abrirForm(id)} aviso={m => sesion.avisar(m)} msgVacio={msgVacio} agrupaPorNegocio={porNegocio}
-                  icono={b => <IconoBloque b={b} doc={doc} />} />}
-                {ui.vista === 'cal' && <Calendario doc={doc} lista={lista} hoy={hoy} edicion={ed} novIds={novIds} favs={ui.favs} onEditar={id => abrirForm(id)} onNotas={acc.notas}
+                  icono={b => <IconoBloque b={b} doc={doc} />} hitos={hitosVista} onHito={abrirHito} onMoverHito={cambiarFechaHito} />}
+                {ui.vista === 'cal' && <Calendario hitos={hitosVista} onHito={abrirHito} onMoverHito={cambiarFechaHito} doc={doc} lista={lista} hoy={hoy} edicion={ed} novIds={novIds} favs={ui.favs} onEditar={id => abrirForm(id)} onNotas={acc.notas}
                   onNueva={fin => abrirForm(null, { fin })} aviso={m => sesion.avisar(m)} msgVacio={msgVacio} />}
                 {ui.vista === 'carga' && <Carga doc={doc} lista={lista} hoy={hoy} onIr={id => { ui.setVista('lista'); setTimeout(() => irA(id), 80); }} msgVacio={msgVacio} />}
                 {ui.vista === 'mias' && <Mias sel={sel} doc={doc} lista={lista} quien={ui.persona || e.usuario} usuario={e.usuario} hoy={hoy} edicion={ed} novIds={novIds} favs={ui.favs} onFav={ui.alternarFav}
@@ -434,6 +446,8 @@ export function App() {
       {doc && dlg === 'semanal' && <DialogoSemanal doc={doc} archivo={e.nombre} aviso={m => sesion.avisar(m)} onCerrar={() => setDlg(null)} />}
       {doc && dlg === 'ics' && <DialogoIcs doc={doc} archivo={e.nombre} usuario={e.usuario} visibles={lista} onCerrar={() => setDlg(null)}
         onExportar={(nombre, contenido, n) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([contenido], { type: 'text/calendar' })); a.download = nombre; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); setDlg(null); sesion.avisar(`${n} ${n === 1 ? 'evento' : 'eventos'} en ${nombre}. Ábrelo para agregarlo a Outlook`); }} />}
+      {doc && dlg === 'hitos' && <DialogoHitos doc={doc} usuario={e.usuario} editando={editando} onNuevo={() => setFormHito({ id: null })} onEditarHito={id => setFormHito({ id })} onEditar={fn => sesion.editar(fn)} aviso={m => sesion.avisar(m)} onCerrar={() => setDlg(null)} />}
+      {doc && formHito && editando && <FormHito key={formHito.id ?? 'nuevo'} doc={doc} id={formHito.id} usuario={e.usuario} onGuardar={fn => sesion.editar(fn)} aviso={m => sesion.avisar(m)} onCerrar={() => setFormHito(null)} />}
       {dlg === 'manual' && <DialogoManual onCerrar={() => setDlg(null)} />}
       {dlg === 'atajos' && <DialogoAtajos onCerrar={() => setDlg(null)} />}
       {doc && dlg === 'importar' && <DialogoImportar doc={doc} editando={editando} onImportar={(f, m) => void importar(f, m)} onCerrar={() => setDlg(null)} />}

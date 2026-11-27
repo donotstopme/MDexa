@@ -2,6 +2,7 @@ export * from './tipos';
 export * from './constantes';
 export * from './utilidades';
 export * from './etiquetas';
+export * from './hitos';
 export * from './dependencias';
 export * from './recurrencia';
 export * from './bitacora';

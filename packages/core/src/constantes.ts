@@ -2,8 +2,11 @@ import type { Estado, Tamano, Prioridad, Repite, ColorEtiqueta } from './tipos';
 
 export const NOMBRE_APP = 'MDexa';
 /** Número de compatibilidad del formato del .md: sólo sube cuando cambia lo que se guarda. */
-export const VERSION_MDEXA = 18;
-export const VERSION_TXT = '1.34.1';
+export const VERSION_MDEXA = 19;
+/** Con la que se guardan los archivos sin hitos, para que las versiones anteriores puedan seguir editándolos */
+export const VERSION_SIN_HITOS = 18;
+export const VERSION_TXT = '1.35.0';
+export const SIN_HITO = 'Sin hito';
 
 export const SIN_NEGOCIO = 'Sin negocio';
 export const TTL_CANDADO = 5 * 60e3;
@@ -57,7 +60,7 @@ export const DIAS_SEM = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', '
 /** Etiquetas de campo para la bitácora y las novedades */
 export const CAMPOS_NOV: Record<string, string> = {
   estado: 'Estado', responsable: 'Responsable', fin: 'Fin', inicio: 'Inicio', tamano: 'Tamaño', prioridad: 'Prioridad',
-  etiquetas: 'Etiquetas', depende: 'Depende de', subtareas: 'Subtareas', repite: 'Se repite', negocio: 'Negocio', actividad: 'Actividad',
+  etiquetas: 'Etiquetas', depende: 'Depende de', subtareas: 'Subtareas', repite: 'Se repite', negocio: 'Negocio', actividad: 'Actividad', hito: 'Hito',
 };
 export const ETQ_BIT: Record<string, string> = { ...CAMPOS_NOV, proyecto: 'Proyecto', metaInicio: 'Meta inicio', metaFin: 'Meta fin' };
 
@@ -67,7 +70,7 @@ export const SIN_RESP = 'Sin responsable', SIN_TAM = 'Sin tamaño', SIN_PRI = 'S
 export const ACCIONES_BIT: Record<string, { ic: string; c: string; t: string }> = {
   'creó': { ic: 'mas', c: 'verde', t: 'Creó' }, 'cambió': { ic: 'lapiz', c: 'amar', t: 'Cambió' }, 'eliminó': { ic: 'basura', c: 'rojo', t: 'Eliminó' },
   'meta': { ic: 'bandera', c: 'azul', t: 'Cambió la meta' }, 'restauró': { ic: 'reloj', c: 'azul', t: 'Restauró un respaldo' }, 'sprint': { ic: 'nuevo', c: 'azul', t: 'Creó el sprint' },
-  'recuperó': { ic: 'reloj', c: 'verde', t: 'Recuperó' }, 'imagen': { ic: 'imagen', c: 'azul', t: 'Imagen' },
+  'recuperó': { ic: 'reloj', c: 'verde', t: 'Recuperó' }, 'imagen': { ic: 'imagen', c: 'azul', t: 'Imagen' }, 'hito': { ic: 'bandera', c: 'azul', t: 'Hito' },
 };
 
 export const ORDEN_TAMANOS = Object.keys(TAMANOS);

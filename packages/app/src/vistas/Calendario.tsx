@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  ESTADOS, EST, abrevNeg, cerrada, diasDelMes, mesMas, moverFin, negocioDe, nomCorto, vencida, descRepite, type Actividad, type Documento, type Novedades,
+  ESTADOS, EST, abrevNeg, infoHito, type Hito, cerrada, diasDelMes, mesMas, moverFin, negocioDe, nomCorto, vencida, descRepite, type Actividad, type Documento, type Novedades,
 } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { PriBadge, colorEstado, fmtTxt } from '../original/piezas';
@@ -9,14 +9,16 @@ import type { Edicion } from './Lista';
 const MAX_POR_DIA = 4;
 const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
-export function Calendario({ doc, lista, hoy, edicion, novIds, favs, onEditar, onNotas, onNueva, aviso, msgVacio }: {
+export function Calendario({ doc, lista, hoy, edicion, novIds, favs, onEditar, onNotas, onNueva, aviso, msgVacio, hitos = [], onHito, onMoverHito }: {
   doc: Documento; lista: Actividad[]; hoy: string; edicion?: Edicion; novIds?: Novedades['porId']; favs: Set<number>;
   onEditar(id: number): void; onNotas(id: number): void; onNueva(fin: string): void; aviso?(m: string): void; msgVacio: string;
+  hitos?: Hito[]; onHito?(id: number): void; onMoverHito?(id: number, fecha: string): void;
 }) {
   const [mes, setMes] = useState(hoy.slice(0, 7));
   const [abiertos, setAbiertos] = useState<Set<string>>(new Set());
   const [arr, setArr] = useState<number | null>(null);
   const [sobre, setSobre] = useState('');
+  const [arrH, setArrH] = useState<number | null>(null);
   const ed = !!edicion;
   if (!doc.actividades.length) return <div className="cal"><div className="vacio">{msgVacio}</div></div>;
 
@@ -30,6 +32,7 @@ export function Calendario({ doc, lista, hoy, edicion, novIds, favs, onEditar, o
   const nav = (n: number | 'hoy') => { setMes(n === 'hoy' ? hoy.slice(0, 7) : mesMas(mes, n)); setAbiertos(new Set()); };
 
   const soltar = (dia: string) => {
+    if (arrH !== null) { setArrH(null); setSobre(''); if (dia) onMoverHito?.(arrH, dia); return; }
     const a = doc.actividades.find(x => x.id === arr);
     setArr(null); setSobre('');
     if (!a || !edicion || (a.fin || '') === dia) return;
@@ -37,7 +40,7 @@ export function Calendario({ doc, lista, hoy, edicion, novIds, favs, onEditar, o
     aviso?.(dia ? `${nomCorto(a)}: fecha fin ${fmtTxt(dia)}` : `${nomCorto(a)}: sin fecha fin`);
   };
   const zona = (dia: string, clave: string) => ({
-    onDragOver: (e: React.DragEvent) => { if (arr !== null) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setSobre(clave); } },
+    onDragOver: (e: React.DragEvent) => { if (arr !== null || (arrH !== null && dia)) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setSobre(clave); } },
     onDragLeave: (e: React.DragEvent) => { if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) setSobre(s => (s === clave ? '' : s)); },
     onDrop: (e: React.DragEvent) => { e.preventDefault(); soltar(dia); },
   });
@@ -82,6 +85,15 @@ export function Calendario({ doc, lista, hoy, edicion, novIds, favs, onEditar, o
                 {d === doc.meta.inicio && <span className="c-marca" title="Inicio de la meta"><Ico n="bandera" t={10} /> Inicio meta</span>}
                 {d === doc.meta.fin && <span className="c-marca" title="Fin de la meta"><Ico n="bandera" t={10} /> Fin meta</span>}
                 {items.length > 0 && <span className="c-cuenta">{items.length}</span>}</div>
+              {hitos.filter(h => h.fecha === d).map(h => {
+                const info = infoHito(doc, h, hoy);
+                return (
+                  <button type="button" key={h.id} data-hito={h.id} className={`c-hito h-${info.estado.replace(' ', '-')}`} draggable={ed}
+                    title={`Hito: ${h.nombre}\n${info.estado} · ${info.hechas}/${info.total} actividades${h.descripcion ? '\n' + h.descripcion : ''}${ed ? '\n\nArrastra a otro día para cambiar la fecha · clic para editar' : ''}`}
+                    onDragStart={e => { e.stopPropagation(); e.dataTransfer.setData('text/plain', 'H' + h.id); e.dataTransfer.effectAllowed = 'move'; setArrH(h.id); }} onDragEnd={() => { setArrH(null); setSobre(''); }}
+                    onClick={e => { e.stopPropagation(); onHito?.(h.id); }}><i /><span>{h.nombre}</span></button>
+                );
+              })}
               <div className="c-items">{(abierto ? items : items.slice(0, MAX_POR_DIA)).map(chip)}
                 {items.length > MAX_POR_DIA && <button className="c-mas" onClick={e => { e.stopPropagation(); setAbiertos(s => { const n = new Set(s); if (n.has(d)) n.delete(d); else n.add(d); return n; }); }}>{abierto ? 'Ver menos' : `+${items.length - MAX_POR_DIA} más`}</button>}</div>
             </div>

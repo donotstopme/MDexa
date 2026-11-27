@@ -46,6 +46,7 @@ export function DialogoBitacora({ doc, act, onIr, onCerrar }: { doc: Documento; 
                 <div className="bit-cuerpo">
                   <div className="bit-l1"><b>{e.autor}</b> <span className={`bit-acc es-${ac.c}`}><Ico n={ac.ic} t={13} /> {ac.t}</span>
                     {a && <>{a.existe ? <a href="#" onClick={ev => { ev.preventDefault(); onCerrar(); onIr(e.act!); }}>{a.nombre}</a> : <span className="tachado" title="Esta actividad ya no existe">{a.nombre}</span>} <span className="nd">{a.negocio}</span></>}</div>
+                  {e.accion === 'hito' && <div className="nd">{e.detalle}</div>}
                   {e.campos.length > 0 && <ul className="nov-cambios">{e.campos.map(c => <li key={c.k}>{c.etq}: <s>{fmtV(c.k, c.antes)}</s> → <b>{fmtV(c.k, c.despues)}</b></li>)}</ul>}
                 </div>
               </div>

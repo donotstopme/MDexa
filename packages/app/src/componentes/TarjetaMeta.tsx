@@ -1,15 +1,31 @@
-import type { AnalisisMeta, DatosAvance, Documento, UnidadAvance } from '@mdexa/core';
+import { proximosHitos, type AnalisisMeta, type DatosAvance, type Documento, type UnidadAvance } from '@mdexa/core';
+import { COLOR_HITO } from './DialogoHitos';
 import { BloqueAvance } from './GraficaAvance';
 import { Ico } from '../original/iconos';
 import { fmtTxt } from '../original/piezas';
 
-export function TarjetaMeta({ doc, a, editando, onEditar, verAvance, onVerAvance, unidad, onUnidad, avance }: {
+export function TarjetaMeta({ doc, a, editando, onEditar, verAvance, onVerAvance, unidad, onUnidad, avance, hoy, onHito, onHitos }: {
   doc: Documento; a: AnalisisMeta; editando: boolean; onEditar(): void; verAvance: boolean; onVerAvance(v: boolean): void; unidad: UnidadAvance; onUnidad(u: UnidadAvance): void; avance: DatosAvance | null;
+  hoy?: string; onHito?(id: number): void; onHitos?(): void;
 }) {
   const m = doc.meta, t = a.tiempo;
   const btn = editando && <button onClick={onEditar}><Ico n="calendario" /> {m.inicio ? 'Editar meta' : 'Definir meta'}</button>;
+  const prox = proximosHitos(doc, hoy), MAX = 4;
+  const hitos = !!doc.hitos.length && (
+    <div className="m-hitos">
+      <div className="m-hitos-cab"><span className="etq"><Ico n="bandera" t={13} /> Próximos hitos</span>
+        <button type="button" onClick={onHitos}>Ver todos ({doc.hitos.length})</button></div>
+      {!prox.length && <div className="nd">Todos los hitos están cumplidos.</div>}
+      {prox.slice(0, MAX).map(({ h, info }) => (
+        <button type="button" key={h.id} className="m-hito" data-hito={h.id} onClick={() => onHito?.(h.id)} title={`${h.negocios.join(', ')}${h.descripcion ? '\n' + h.descripcion : ''}`}>
+          <span className="m-hito-nom">{h.nombre}</span><span className="nd">{fmtTxt(h.fecha)}</span>
+          <span className="bar"><span className="f-verde" style={{ width: `${info.pct}%` }} /></span><span className="nd">{info.hechas}/{info.total}</span>
+          <b className={COLOR_HITO[info.estado]} title={info.detalle}>{info.estado}</b></button>))}
+      {prox.length > MAX && <div className="nd">y {prox.length - MAX} más</div>}
+    </div>
+  );
   if (!t) return (
-    <div className="card" id="metaCard"><div className="meta-top"><div><div className="etq"><Ico n="bandera" t={13} /> Meta del proyecto</div><div className="rango nd">Sin meta definida</div></div><div className="barra">{btn}</div></div></div>
+    <div className="card" id="metaCard"><div className="meta-top"><div><div className="etq"><Ico n="bandera" t={13} /> Meta del proyecto</div><div className="rango nd">Sin meta definida</div></div><div className="barra">{btn}</div></div>{hitos}</div>
   );
   return (
     <div className="card" id="metaCard">
@@ -27,6 +43,7 @@ export function TarjetaMeta({ doc, a, editando, onEditar, verAvance, onVerAvance
       </div>
       <div className="meta-pie">{a.ritmo ? <div className={`ritmo ${a.ritmo.cls}`} title={a.ritmo.det}>{a.ritmo.txt}</div> : <span />}
         <button className="av-toggle" aria-expanded={verAvance} onClick={() => onVerAvance(!verAvance)}><Ico n="grafica" t={14} /> {verAvance ? 'Ocultar gráfica de avance' : 'Ver gráfica de avance'}</button></div>
+      {hitos}
       {verAvance && <BloqueAvance d={avance} unidad={unidad} onUnidad={onUnidad} />}
     </div>
   );

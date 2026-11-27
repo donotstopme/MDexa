@@ -1,6 +1,7 @@
 import type { Actividad, Documento } from './tipos';
 import { analizarMeta, type AnalisisMeta } from './lista';
 import { bloqueada, pendientesDe } from './dependencias';
+import { hitosSemana } from './hitos';
 import { EST, addDias, cerrada, dias, hoy as hoyDe, negocioDe, nomCorto, txtSubsDe } from './utilidades';
 
 const fmtCorta = (d: string) => (d ? new Date(d + 'T00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) : '');
@@ -42,7 +43,13 @@ export function textoSemanal(doc: Documento, s: DatosSemana, html: boolean, o: {
   const diasAtraso = (a: Actividad) => dias(a.fin, s.corte > h ? h : s.corte);
   const titulo = `Avance semanal · ${meta.proyecto || o.archivo.replace(/\.md$/i, '')} · ${rango(s.lunes, s.domingo)}`;
   const resumen = `Avance del proyecto: ${s.x.pctAv}% (${s.x.terminadas} de ${s.x.medibles} actividades terminadas)${meta.fin ? ` · meta al ${fmtTxt(meta.fin)}` : ''}${s.x.ritmo ? ` · ${s.x.ritmo.txt}` : ''}.`;
+  const hs = hitosSemana(doc, s.lunes, s.domingo, s.pFin, h);
+  const detH = (x: (typeof hs)[number]) => `${fmtCorta(x.h.fecha) || 'sin fecha'} · ${x.info.estado}${x.info.total ? ` · ${x.info.hechas} de ${x.info.total} actividades` : ''}`;
+  const secHitos = !hs.length ? [] : [html
+    ? `<h3 style="font-size:15px;margin:18px 0 6px">Hitos (${hs.length})</h3><ul style="margin:0;padding-left:20px">${hs.map(x => `<li><b>${esc(x.h.nombre)}</b> <span style="color:#667085">— ${esc(detH(x))}</span></li>`).join('')}</ul>`
+    : `HITOS (${hs.length})\n${hs.map(x => `  • ${x.h.nombre} — ${detH(x)}`).join('\n')}\n`];
   const partes = [
+    ...secHitos,
     sec('Terminadas esta semana', s.terminadas, a => item(a, a.fin && a.terminada > a.fin ? `terminó ${fmtCorta(a.terminada)}, ${pl(dias(a.fin, a.terminada), 'día', 'días')} tarde` : `terminó ${fmtCorta(a.terminada)}`), 'Ninguna.'),
     sec('Atrasadas', s.atrasadas, a => item(a, `vencía ${fmtCorta(a.fin)} · ${pl(diasAtraso(a), 'día', 'días')} de atraso · ${EST(a)}`), 'Ninguna. ¡Todo al día!'),
     ...(s.bloq.length ? [sec('Bloqueadas por otra actividad', s.bloq, a => item(a, `espera a ${pendientesDe(A, a).map(x => '#' + x.id + ' ' + nomCorto(x)).join(', ')}`), '')] : []),

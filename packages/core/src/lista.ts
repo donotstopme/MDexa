@@ -1,20 +1,21 @@
-import { ESTADOS, PRIORIDADES, SIN_ETQ, SIN_NEGOCIO, SIN_PRI, SIN_RESP, SIN_TAM, TAMANOS } from './constantes';
+import { ESTADOS, PRIORIDADES, SIN_ETQ, SIN_HITO, SIN_NEGOCIO, SIN_PRI, SIN_RESP, SIN_TAM, TAMANOS } from './constantes';
 import type { Actividad, Documento, Estado } from './tipos';
 import { coincideBusqueda, palabras } from './buscador';
 import { bloqueada, choqueFechas } from './dependencias';
 import { canonEtqEn, colorEtq, etqs, tieneEtq } from './etiquetas';
 import { conEstado } from './sesion';
+import { conHito, hitosOrdenados, nombreHitoDe } from './hitos';
 import { EST, cerrada, dias, hoy as hoyDe, medible, negocioDe, normaliza, unicos, vencida } from './utilidades';
 
 /* ============ Filtros y orden ============ */
 
-export type Agrupar = '' | 'negocio' | 'responsable' | 'prioridad' | 'estado' | 'etiqueta';
+export type Agrupar = '' | 'negocio' | 'responsable' | 'prioridad' | 'estado' | 'etiqueta' | 'hito';
 export interface Filtros {
   texto: string;
-  neg: string[]; resp: string[]; est: string[]; tam: string[]; pri: string[]; etq: string[];
+  neg: string[]; resp: string[]; est: string[]; tam: string[]; pri: string[]; etq: string[]; hito: string[];
   verBacklog: boolean;
 }
-export const filtrosVacios = (): Filtros => ({ texto: '', neg: [], resp: [], est: [], tam: [], pri: [], etq: [], verBacklog: true });
+export const filtrosVacios = (): Filtros => ({ texto: '', neg: [], resp: [], est: [], tam: [], pri: [], etq: [], hito: [], verBacklog: true });
 export type ClaveOrden = 'negocio' | 'actividad' | 'prioridad' | 'tamano' | 'responsable' | 'inicio' | 'fin' | 'estado';
 export interface Orden { k: ClaveOrden; asc: boolean }
 
@@ -35,13 +36,15 @@ export function filtrar(doc: Documento, f: Filtros, o: Orden, ctx: ContextoFiltr
   const pasaEst = (a: Actividad) => !f.est.length || f.est.some(v =>
     v === 'Vencida' ? vencida(a, h) : v === 'Bloqueada' ? bloqueada(acts, a) : v === 'Recurrente' ? !!a.repite : v === 'Con novedades' ? !!ctx.conNovedades?.has(a.id) : EST(a) === v);
   const pasaEtq = (a: Actividad) => !f.etq.length || f.etq.some(v => (v === SIN_ETQ ? !etqs(a).length : tieneEtq(a, v)));
+  // Un hito que ya no existe (se renombró o se borró) deja de filtrar
+  const fHito = f.hito.filter(v => v === SIN_HITO || doc.hitos.some(x => x.nombre === v));
   const valor = (a: Actividad, k: ClaveOrden): string =>
     k === 'estado' ? String(ESTADOS.indexOf(EST(a))) : k === 'tamano' ? (a.tamano ? String(ORDEN_TAM.indexOf(a.tamano)) : '')
       : k === 'prioridad' ? (a.prioridad ? String(ORDEN_PRI.indexOf(a.prioridad)) : '') : k === 'negocio' ? negocioDe(a) : ((a as unknown as Record<string, string>)[k] || '');
   return acts
     .filter(a => (!pals.length || coincideBusqueda(a, pals, notasPor.get(a.id))) && (!f.neg.length || f.neg.includes(negocioDe(a)))
       && (ctx.ignorarResp || !f.resp.length || f.resp.includes(a.responsable || SIN_RESP)) && pasaEst(a)
-      && (!f.tam.length || f.tam.includes(a.tamano || SIN_TAM)) && (!f.pri.length || f.pri.includes(a.prioridad || SIN_PRI)) && pasaEtq(a) && !(oculta && EST(a) === 'Backlog'))
+      && (!f.tam.length || f.tam.includes(a.tamano || SIN_TAM)) && (!f.pri.length || f.pri.includes(a.prioridad || SIN_PRI)) && pasaEtq(a) && (!fHito.length || fHito.includes(nombreHitoDe(doc, a))) && !(oculta && EST(a) === 'Backlog'))
     .sort((a, b) => {
       const va = valor(a, o.k), vb = valor(b, o.k);
       if (!va !== !vb) return va ? -1 : 1;
@@ -52,7 +55,8 @@ export function filtrar(doc: Documento, f: Filtros, o: Orden, ctx: ContextoFiltr
 /* ============ Grupos ============ */
 
 /** Claves de grupo: el negocio tal cual; los demás llevan prefijo ("responsable:Ana") */
-export function gruposDe(a: Actividad, por: Agrupar, todas: Actividad[]): string[] {
+export function gruposDe(a: Actividad, por: Agrupar, todas: Actividad[], hitos: Documento['hitos'] = []): string[] {
+  if (por === 'hito') return ['hito:' + (hitos.some(h => h.id === a.hito) ? a.hito : '')];
   if (por === 'negocio') return [negocioDe(a)];
   if (por === 'responsable') return ['responsable:' + (a.responsable || '')];
   if (por === 'prioridad') return ['prioridad:' + (a.prioridad || '')];
@@ -61,10 +65,14 @@ export function gruposDe(a: Actividad, por: Agrupar, todas: Actividad[]): string
   return [''];
 }
 
-export interface InfoGrupo { titulo: string; icono: 'tienda' | 'usuario' | 'prioridad' | 'estado' | 'etiqueta'; orden: string; valor: string }
-export function infoGrupo(g: string, por: Agrupar): InfoGrupo {
+export interface InfoGrupo { titulo: string; icono: 'tienda' | 'usuario' | 'prioridad' | 'estado' | 'etiqueta' | 'bandera'; orden: string; valor: string }
+export function infoGrupo(g: string, por: Agrupar, hitos: Documento['hitos'] = []): InfoGrupo {
   if (por === 'negocio') return { titulo: g || SIN_NEGOCIO, icono: 'tienda', orden: g && g !== SIN_NEGOCIO ? '0' + g : '9', valor: g };
   const i = g.indexOf(':'), valor = i < 0 ? g : g.slice(i + 1);
+  if (por === 'hito') {
+    const orden = hitosOrdenados(hitos), n = orden.findIndex(h => String(h.id) === valor);
+    return { titulo: n < 0 ? SIN_HITO : orden[n].nombre, icono: 'bandera', orden: n < 0 ? '9' : '0' + String(n).padStart(5, '0'), valor };
+  }
   if (por === 'responsable') return { titulo: valor || SIN_RESP, icono: 'usuario', orden: valor ? '0' + valor : '9', valor };
   if (por === 'prioridad') return { titulo: valor || SIN_PRI, icono: 'prioridad', orden: String(valor ? ORDEN_PRI.indexOf(valor) : 9), valor };
   if (por === 'estado') return { titulo: valor, icono: 'estado', orden: String(ESTADOS.indexOf(valor as Estado)), valor };
@@ -74,11 +82,11 @@ export function infoGrupo(g: string, por: Agrupar): InfoGrupo {
 
 export interface Bloque { g: string | null; titulo: string; info?: InfoGrupo; items: Actividad[] }
 /** Bloques (grupos) que comparten la lista, el tablero y la línea de tiempo */
-export function armarBloques(lista: Actividad[], por: Agrupar, todas: Actividad[]): Bloque[] {
+export function armarBloques(lista: Actividad[], por: Agrupar, todas: Actividad[], hitos: Documento['hitos'] = []): Bloque[] {
   if (!por) return [{ g: null, titulo: '', items: lista }];
   const grupos = new Map<string, Actividad[]>();
-  lista.forEach(a => gruposDe(a, por, todas).forEach(k => grupos.set(k, [...(grupos.get(k) ?? []), a])));
-  return [...grupos.keys()].map(g => ({ g, info: infoGrupo(g, por) }))
+  lista.forEach(a => gruposDe(a, por, todas, hitos).forEach(k => grupos.set(k, [...(grupos.get(k) ?? []), a])));
+  return [...grupos.keys()].map(g => ({ g, info: infoGrupo(g, por, hitos) }))
     .sort((a, b) => a.info.orden.localeCompare(b.info.orden, 'es'))
     .map(x => ({ g: x.g, titulo: x.info.titulo, info: x.info, items: grupos.get(x.g)! }));
 }
@@ -155,12 +163,17 @@ export function valorDeGrupo(g: string | null, por: Agrupar): { campo: string; v
  * Efecto de soltar una tarjeta en la columna `estado` del carril `g`: cambia el estado y, según cómo se agrupe,
  * el negocio, el responsable o la prioridad. Devuelve la actividad nueva y una descripción de los cambios.
  */
-export function aplicarSoltar(a: Actividad, estado: Estado, g: string | null, por: Agrupar, ahora: Date = new Date()): { a: Actividad; cambios: string[] } {
+export function aplicarSoltar(a: Actividad, estado: Estado, g: string | null, por: Agrupar, ahora: Date = new Date(), hitos: Documento['hitos'] = []): { a: Actividad; cambios: string[]; rechazo?: string } {
   let x = a; const cambios: string[] = [];
   if (EST(a) !== estado) { x = conEstado(x, estado, undefined, ahora); cambios.push(estado); }
   const v = valorDeGrupo(g, por);
   if (v?.campo === 'negocio' && v.valor && v.valor !== negocioDe(a)) { x = { ...x, negocio: v.valor }; cambios.push(`negocio ${v.valor}`); }
   else if (v?.campo === 'responsable' && v.valor !== (a.responsable || '')) { x = { ...x, responsable: v.valor }; cambios.push(v.valor ? `responsable ${v.valor}` : 'sin responsable'); }
   else if (v?.campo === 'prioridad' && v.valor !== (a.prioridad || '')) { x = { ...x, prioridad: v.valor as Actividad['prioridad'] }; cambios.push(v.valor ? `prioridad ${v.valor}` : 'sin prioridad'); }
+  else if (v?.campo === 'hito' && (+v.valor || 0) !== (a.hito || 0)) {
+    const y = conHito({ hitos }, x, +v.valor || 0), h = hitos.find(z => z.id === +v.valor);
+    if (!y) return { a: x, cambios, rechazo: `El hito «${h?.nombre}» es de ${h?.negocios.join(', ')}` };
+    x = y; cambios.push(h ? `hito ${h.nombre}` : 'sin hito');
+  }
   return { a: x, cambios };
 }

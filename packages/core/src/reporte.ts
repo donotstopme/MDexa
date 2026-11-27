@@ -2,6 +2,7 @@ import { ESTADOS, TAMANOS, SIN_NEGOCIO, SIN_RESP } from './constantes';
 import type { Actividad, Documento, Estado } from './tipos';
 import { analizarMeta, type AnalisisMeta } from './lista';
 import { bloqueada, choqueFechas } from './dependencias';
+import { hitosOrdenados, infoHito } from './hitos';
 import { datosAvance, etqUnidad, filasAvance, resumenAvanceTxt } from './avance';
 import { EST, addDias, dias, hoy as hoyDe, medible, negocioDe, vencida } from './utilidades';
 
@@ -90,6 +91,9 @@ export function analizarReporte(d: Documento, h: string = hoyDe()): AnalisisRepo
   add(noTerm.filter(a => !a.fin), n => `${pl(n, 'actividad sin terminar no tiene', 'actividades sin terminar no tienen')} fecha fin.`);
   if (meta.fin) add(activas.filter(a => a.fin && a.fin > meta.fin), n => `${pl(n, 'actividad termina', 'actividades terminan')} después de la meta (${fmtTxt(meta.fin)}).`);
   if (meta.inicio) add(activas.filter(a => a.inicio && a.inicio < meta.inicio), n => `${pl(n, 'actividad inicia', 'actividades inician')} antes de la meta (${fmtTxt(meta.inicio)}).`);
+  const estadosH = d.hitos.map(x => infoHito(d, x, h).estado);
+  add(estadosH.filter(e => e === 'Vencido'), n => `${pl(n, 'hito está vencido', 'hitos están vencidos')}.`);
+  add(estadosH.filter(e => e === 'En riesgo'), n => `${pl(n, 'hito está en riesgo', 'hitos están en riesgo')}: tiene actividades que terminan después de su fecha.`);
   const porTam = [...ORDEN_TAM, ''].map(tz => { const l = medibles.filter(a => (a.tamano || '') === tz); return { t: tz, total: l.length, comp: l.filter(a => a.est === 'Terminado').length, horas: horas(l) }; });
   return {
     ...base, h, acts, comp, activas, canc, noTerm, venc, conRetrasoL: comp.filter(tarde), alertas, porTam, horasTotal: horas(medibles), horasHechas: horas(comp),
@@ -111,6 +115,8 @@ export function reporteMd(d: Documento, x: AnalisisReporte, o: { usuario?: strin
   const dav = datosAvance(d, 'act', x.h);
   if (dav && dav.total) m += `\n## Avance acumulado contra la meta\n\n${resumenAvanceTxt(dav)}\n\n| Fecha | Terminadas | Ideal | Diferencia |\n|---|---|---|---|\n` +
     filasAvance(dav).map(r => `| ${fmtTxt(r.f)}${r.marca} | ${r.real == null ? '—' : etqUnidad(r.real, 'act')} | ${etqUnidad(r.ideal, 'act')} | ${r.dif == null ? '—' : (r.dif > 0 ? '+' : '') + etqUnidad(r.dif, 'act')} |`).join('\n') + '\n';
+  if (d.hitos.length) m += `\n## Hitos\n\n| Fecha | Hito | Negocios | Actividades terminadas | Avance | Estado | Detalle |\n|---|---|---|---|---|---|---|\n` +
+    hitosOrdenados(d.hitos).map(h => { const i = infoHito(d, h, x.h); return `| ${fmtTxt(h.fecha) || '—'} | ${c(h.nombre)}${h.descripcion ? `<br>${c(h.descripcion)}` : ''} | ${c(h.negocios.join(', ') || '—')} | ${i.hechas} de ${i.total} | ${i.pct}% | ${i.estado} | ${i.detalle} |`; }).join('\n') + '\n';
   m += `\n## Alertas\n\n` + (x.alertas.length ? x.alertas.map(a => `- ${a}`).join('\n') : '- Sin alertas.') + '\n';
   const tabla = (titulo: string, lista: Resumen[], col: string) => `\n## ${titulo}\n\n| ${col} | Asignadas | Terminadas | A tiempo | Con retraso | En progreso | Planeadas | Backlog | Canceladas | Vencidas | Cumplimiento |\n|---|---|---|---|---|---|---|---|---|---|---|\n` +
     lista.map(r => `| ${c(r.k)} | ${r.total} | ${r.comp} | ${r.aTiempo} | ${r.retraso} | ${r.prog} | ${r.plan} | ${r.porIni} | ${r.canc} | ${r.venc} | ${r.pct}% |`).join('\n') + '\n';

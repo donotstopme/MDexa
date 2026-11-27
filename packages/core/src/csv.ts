@@ -4,6 +4,7 @@ import { leerDeps, txtDeps } from './dependencias';
 import { canonEtqEn, etqs, leerEtqs } from './etiquetas';
 import { leerRepite } from './recurrencia';
 import { conEstado } from './sesion';
+import { conHito, hitoDe } from './hitos';
 import { EST, fechaISO, negocioDe, normaliza, siguienteId, txtSubsDe, vencida, hoy as hoyDe } from './utilidades';
 
 export interface CampoCsv { k: string; t: string; req?: boolean; alias: string[]; ayuda?: string }
@@ -20,6 +21,7 @@ export const CAMPOS_CSV: CampoCsv[] = [
   { k: 'inicio', t: 'Fecha inicio', alias: ['inicio', 'fecha inicio', 'fecha de inicio', 'start', 'desde'] },
   { k: 'fin', t: 'Fecha fin', alias: ['fin', 'fecha fin', 'fecha de fin', 'fecha limite', 'vencimiento', 'entrega', 'end', 'hasta'] },
   { k: 'estado', t: 'Estado', alias: ['estado', 'estatus', 'status', 'situacion'] },
+  { k: 'hito', t: 'Hito', alias: ['hito', 'fase', 'milestone'], ayuda: 'Nombre de un hito que ya exista' },
   { k: 'terminada', t: 'Fecha terminada', alias: ['terminada', 'fecha terminada', 'fecha de termino', 'completada', 'cerrada'] },
 ];
 const ALIAS_CSV_ESTADO: Record<string, Estado> = {
@@ -71,7 +73,7 @@ export function mapaInicial(filas: string[][]): { mapa: Mapa; conEncabezado: boo
   return { mapa, conEncabezado };
 }
 
-export interface FilaImp { fila: number; errores: string[]; avisos: string[]; a: Partial<Actividad> & { negocio: string; actividad: string; estado: Estado; terminada: string; etiquetas: string[]; depende: number[] }; csvId: number | null; accion: 'omitir' | 'actualizar' | 'agregar'; id?: number }
+export interface FilaImp { fila: number; errores: string[]; avisos: string[]; a: Partial<Actividad> & { negocio: string; actividad: string; estado: Estado; terminada: string; etiquetas: string[]; depende: number[] }; csvId: number | null; accion: 'omitir' | 'actualizar' | 'agregar'; id?: number; hito?: number }
 export interface OpcionesImp { encabezado: boolean; modo: 'agregar' | 'actualizar'; negocioDefecto: string }
 
 /** Lo que haría la importación con cada fila (con errores y avisos) */
@@ -97,6 +99,13 @@ export function filasImportar(doc: Documento, filas: string[][], mapa: Mapa, o: 
     const id = parseInt(g('id'), 10);
     r.accion = r.errores.length ? 'omitir' : o.modo === 'actualizar' && id && ids.has(id) ? 'actualizar' : 'agregar';
     if (r.accion === 'actualizar') r.id = id;
+    const hz = g('hito');
+    if (hz) {
+      const h = doc.hitos.find(x => normaliza(x.nombre) === normaliza(hz));
+      if (!h) r.avisos.push(`no existe el hito "${hz}"`);
+      else if (h.negocios.length && !h.negocios.includes(r.a.negocio)) r.avisos.push(`el hito "${hz}" no incluye el negocio ${r.a.negocio}`);
+      else r.hito = h.id;
+    }
     return r;
   });
 }
@@ -115,11 +124,14 @@ export function aplicarImportacion(doc: Documento, filas: FilaImp[], mapa: Mapa,
       if (mapa.repite != null) a.repite = r.a.repite ?? '';
       if (mapa.depende != null) conDeps.push([a.id, r.a.depende]);
       if (mapa.estado != null) a = conEstado(a, r.a.estado, r.a.terminada, ahora);
+      // una celda vacía no quita el hito: se quita desde la ventana del hito
+      if (r.hito) a = conHito(doc, a, r.hito) ?? a;
       acts[i] = a; actualizadas++;
     } else {
       const base: Actividad = { id: sig++, negocio: r.a.negocio, actividad: r.a.actividad, tamano: r.a.tamano ?? '', prioridad: r.a.prioridad ?? '', etiquetas: r.a.etiquetas, depende: [], repite: r.a.repite ?? '',
         responsable: r.a.responsable ?? '', inicio: r.a.inicio ?? '', fin: r.a.fin ?? '', estado: 'Backlog', terminada: '' };
-      acts.push(conEstado(base, r.a.estado, r.a.terminada, ahora)); nuevas++;
+      const nueva = conEstado(base, r.a.estado, r.a.terminada, ahora);
+      acts.push((r.hito && conHito(doc, nueva, r.hito)) || nueva); nuevas++;
       if (r.csvId) mapaIds.set(r.csvId, base.id);
       if (mapa.depende != null) conDeps.push([base.id, r.a.depende]);
     }
@@ -137,11 +149,11 @@ export const PLANTILLA_CSV = '﻿' + ['Negocio,Actividad,Tamaño,Prioridad,Respo
 /** CSV para Excel (con BOM y CRLF): las actividades ordenadas por negocio */
 export function exportarCsv(doc: Documento, lista: Actividad[], conNotas: boolean, h: string = hoyDe()): string {
   const fmtHora = (iso: string) => new Date(iso).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-  const cab = ['ID', 'Negocio', 'Actividad', 'Tamaño', 'Prioridad', 'Responsable', 'Inicio', 'Fin', 'Estado', 'Terminada', 'Etiquetas', 'Depende de', 'Subtareas', 'Se repite', 'Vencida', 'Notas', 'Imágenes'].concat(conNotas ? ['Texto de las notas'] : []);
+  const cab = ['ID', 'Negocio', 'Actividad', 'Tamaño', 'Prioridad', 'Responsable', 'Inicio', 'Fin', 'Estado', 'Terminada', 'Etiquetas', 'Depende de', 'Subtareas', 'Se repite', 'Vencida', 'Notas', 'Imágenes', 'Hito'].concat(conNotas ? ['Texto de las notas'] : []);
   const filas = [...lista].sort((a, b) => negocioDe(a).localeCompare(negocioDe(b), 'es') || a.id - b.id).map(a => {
     const ns = doc.notas.filter(n => n.act === a.id).sort((x, y) => x.fecha.localeCompare(y.fecha));
     return [a.id, a.negocio, a.actividad.replace(/\n/g, ' / '), a.tamano, a.prioridad, a.responsable, a.inicio, a.fin, EST(a), a.terminada, etqs(a).join(', '), txtDeps(doc.actividades, a), txtSubsDe(a),
-      (a.repite && REPITE[a.repite]) || '', vencida(a, h) ? 'Sí' : 'No', ns.length, doc.imagenes.filter(x => x.act === a.id).length]
+      (a.repite && REPITE[a.repite]) || '', vencida(a, h) ? 'Sí' : 'No', ns.length, doc.imagenes.filter(x => x.act === a.id).length, hitoDe(doc, a)?.nombre ?? '']
       .concat(conNotas ? [ns.map(n => `${fmtHora(n.fecha)} ${n.autor}: ${n.texto.replace(/\n/g, ' ')}`).join(' | ')] : []).map(q).join(',');
   });
   return '﻿' + [cab.map(q).join(','), ...filas].join('\r\n') + '\r\n';

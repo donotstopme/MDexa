@@ -58,11 +58,12 @@ Para equipos de 2 a 15 personas que llevan sus pendientes en Excel, en notas sue
 |---|---|
 | **Ver el trabajo de seis maneras** | Lista · Línea de tiempo (Gantt con dependencias) · Tablero (Kanban) · Calendario · Mis actividades · Carga por persona y semana |
 | **Describir cada actividad** | Negocio, responsable, tamaño, prioridad, fechas, estado, etiquetas de color, subtareas, notas con `@menciones`, imágenes, dependencias entre actividades y repetición automática |
+| **Planear por hitos y fases** | Entregables con fecha y descripción, de uno o varios negocios; sus actividades entran solas, con avance y estado (en tiempo, en riesgo, vencido o cumplido) |
 | **Trabajar en equipo sin servidor** | Quien edita "toma" el archivo y los demás lo ven en solo lectura; los cambios ajenos aparecen solos y se resumen en **Novedades** |
 | **Dar seguimiento** | Avance contra la meta del proyecto con gráfica y proyección de la fecha de término, bitácora de quién cambió qué, respaldos restaurables, deshacer y rehacer |
 | **Reportar** | Reporte completo (pantalla, PDF, `.html` o `.md`), reporte semanal listo para pegar en un correo y modo **Presentar** para las juntas |
 | **Mover datos** | Importar desde Excel o CSV, exportar a CSV, exportar fechas al calendario (`.ics` para Outlook, Google o Apple), crear un sprint nuevo a partir del actual |
-| **Trabajar en volumen** | Selección múltiple con cambios en lote, filtros múltiples, agrupar por negocio, responsable, prioridad, estado o etiqueta, renombrar negocios y etiquetas |
+| **Trabajar en volumen** | Selección múltiple con cambios en lote, filtros múltiples, agrupar por negocio, responsable, prioridad, estado, etiqueta o hito, renombrar negocios y etiquetas |
 
 <table>
   <tr>
@@ -125,6 +126,23 @@ El repositorio incluye un flujo de GitHub Actions ([.github/workflows/escritorio
 - **Meta del proyecto**: un periodo (inicio y fin) contra el cual se mide el avance y se proyecta la fecha de término.
 - **Dependencias**: una actividad puede depender de otras (`#12`); si la anterior no termina, aparece como *bloqueada*, y la Línea de tiempo dibuja la flecha.
 
+- **Hito**: un entregable con fecha (también funciona como **fase**). Ver [Hitos y fases](#hitos-y-fases).
+
+### Hitos y fases
+
+1. Con el archivo tomado, pulsa **Nuevo hito**: nombre, fecha, descripción (opcional) y uno o varios negocios.
+2. Las actividades de esos negocios que siguen abiertas y terminan a tiempo **entran solas**; desmarca las excepciones y guarda.
+3. La selección queda fija: si una actividad se atrasa, el hito aparece **En riesgo**.
+
+Los hitos se ven en la **Línea de tiempo** y el **Calendario** (arrástralos para cambiar su fecha), en la tarjeta de meta (**Próximos hitos**), en el botón **Hitos**, en los reportes, en el CSV y en el `.ics`.
+
+<table>
+  <tr>
+    <td><img src="docs/capturas/hitos.png" alt="Ventana para crear un hito eligiendo negocios y actividades"><br><sub>Nuevo hito: negocios, descripción y actividades que entran solas</sub></td>
+    <td><img src="docs/capturas/hitos-linea.png" alt="Hitos en la línea de tiempo y en la tarjeta de meta"><br><sub>Próximos hitos y rombos en la Línea de tiempo</sub></td>
+  </tr>
+</table>
+
 ### Día a día
 
 1. **Abrir .md** y elegir el archivo del equipo. Si nadie lo está editando, verás "Solo lectura".
@@ -164,7 +182,7 @@ El candado es un acuerdo guardado en el archivo, no un bloqueo del sistema opera
 
 ## Formato del archivo
 
-Un `.md` normal: encabezado con el proyecto y la meta, una tabla de actividades y secciones `##` para etiquetas, notas, subtareas, imágenes y bitácora. Se puede editar a mano con cuidado.
+Un `.md` normal: encabezado con el proyecto y la meta, una tabla de actividades y secciones `##` para hitos, etiquetas, notas, subtareas, imágenes y bitácora. Se puede editar a mano con cuidado.
 
 ```markdown
 # Mi proyecto
@@ -184,6 +202,7 @@ Un `.md` normal: encabezado con el proyecto y la meta, una tabla de actividades 
 - #2 | 2026-10-20T15:30:00.000Z | Luis | Falta el logo final. @Ana ¿lo tienes?
 ```
 
+- Los hitos van en `## Hitos` (`- H1 | fecha | nombre | negocio; negocio | cumplido | descripción`) y la tabla gana la columna `Hito`. Un archivo con hitos se guarda con el formato **19**: las versiones anteriores a la 1.35.0 lo abren en solo lectura. Sin hitos, el formato sigue siendo el 18.
 - Las secciones `##` que la aplicación no conoce (por ejemplo, una que agregues a mano) se conservan al guardar.
 - Un archivo guardado por una versión **más nueva** se abre en solo lectura, para no borrar información que esta versión no entiende.
 - Las imágenes se guardan en una carpeta `nombre-del-archivo-imagenes/` junto al `.md` y se enlazan desde la sección `## Imágenes`, así también se ven en Obsidian, VS Code o GitHub.

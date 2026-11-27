@@ -1,4 +1,4 @@
-import { ALIAS_ESTADO, ALIAS_PRI, COLORES_ETQ, MAX_BITACORA, REPITE, TAMANOS, VERSION_MDEXA, VERSION_TXT } from './constantes';
+import { ALIAS_ESTADO, ALIAS_PRI, COLORES_ETQ, MAX_BITACORA, REPITE, TAMANOS, VERSION_MDEXA, VERSION_SIN_HITOS, VERSION_TXT } from './constantes';
 import type { Actividad, ColorEtiqueta, Documento, Estado, Tamano } from './tipos';
 import { detalleBit, leerEntradaBit } from './bitacora';
 import { leerDeps, txtDeps } from './dependencias';
@@ -6,10 +6,27 @@ import { etqs, leerEtqs, todasEtq } from './etiquetas';
 import { leerRepite } from './recurrencia';
 import { EST, limpiaSub, normaliza, subtareasDe } from './utilidades';
 
+const LINEA_HITO = /^[-*]\s*H(\d+)\s*\|\s*(\d{4}-\d{2}-\d{2})?\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*(?:\|\s*(\d{4}-\d{2}-\d{2})?\s*(?:\|(.*))?)?$/;
+
+/** Una sección "## Hitos" sólo se interpreta si todas sus líneas tienen el formato; una escrita a mano se conserva tal cual */
+function esSeccionHitos(lineas: string[], desde: number): boolean {
+  for (let i = desde; i < lineas.length; i++) {
+    const l = lineas[i].trim();
+    if (/^#{1,6}\s/.test(l)) break;
+    if (l && !LINEA_HITO.test(l)) return false;
+  }
+  return true;
+}
+
+/** Número de compatibilidad con que se guarda un documento: sólo sube si usa hitos */
+export const versionDe = (d: Pick<Documento, 'hitos' | 'actividades'>): number =>
+  d.hitos.length || d.actividades.some(a => a.hito) ? VERSION_MDEXA : VERSION_SIN_HITOS;
+
 /*
  * Formato del archivo:
  *   - Proyecto: ...    - Meta inicio: AAAA-MM-DD    - Meta fin: AAAA-MM-DD
  *   - En edición: Nombre | desde | último latido     (sólo mientras alguien edita)
+ *   ## Hitos: - H1 | fecha | nombre | negocio; negocio | cumplido | descripción  (y columna "Hito" en la tabla, sólo si hay hitos)
  *   | ID | Negocio | Actividad | Tamaño | Prioridad | Responsable | Inicio | Fin | Estado | Terminada | Etiquetas | Depende de | Repite |
  *   ## Etiquetas · ## Notas · ## Subtareas · ## Imágenes · ## Bitácora · (otras ## se conservan)
  */
@@ -19,19 +36,27 @@ export function parseMD(txt: string): Documento {
   const coloresEtq: Record<string, ColorEtiqueta> = {}, imagenes: Documento['imagenes'] = [];
   const subsPorAct: Record<number, { t: string; ok: boolean }[]> = {};
   let candado: Documento['candado'] = null, cols: string[] | null = null;
-  let enNotas = false, enBit = false, enEtq = false, enImg = false, enSub = false, enOtra = false;
+  let enNotas = false, enBit = false, enEtq = false, enImg = false, enSub = false, enHitos = false, enOtra = false;
+  const hitos: Documento['hitos'] = [], lineas = txt.split(/\r?\n/);
 
-  for (const linea of txt.split(/\r?\n/)) {
-    const l = linea.trim();
+  for (let num = 0; num < lineas.length; num++) {
+    const linea = lineas[num], l = linea.trim();
     if (/^#{1,6}\s/.test(l)) {
       const t = normaliza(l);
       enNotas = /^##\s+notas\b/.test(t); enBit = /^##\s+bitacora\b/.test(t); enEtq = /^##\s+etiquetas\s*$/.test(t);
       enImg = /^##\s+imagenes\s*$/.test(t); enSub = /^##\s+subtareas\s*$/.test(t);
-      enOtra = /^##\s/.test(l) && !enNotas && !enBit && !enEtq && !enImg && !enSub;
+      enHitos = /^##\s+hitos\s*$/.test(t) && esSeccionHitos(lineas, num + 1);
+      enOtra = /^##\s/.test(l) && !enNotas && !enBit && !enEtq && !enImg && !enSub && !enHitos;
       if (enOtra) extra.push(linea.replace(/\s+$/, ''));
       continue;
     }
     if (enOtra) { extra.push(linea.replace(/\s+$/, '')); continue; }
+    if (enHitos) {
+      const mh = l.match(LINEA_HITO);
+      if (mh) hitos.push({ id: +mh[1], fecha: mh[2] || '', nombre: mh[3], negocios: mh[4].split(';').map(s => s.trim()).filter(Boolean), cumplido: mh[5] || '',
+        descripcion: (mh[6] || '').trim().replace(/<br\s*\/?>/gi, '\n') });
+      continue;
+    }
     if (enSub) {
       const ms = l.match(/^[-*]\s*#(\d+)\s*\[([ xX])\]\s?(.*)$/);
       if (ms && ms[3].trim()) { const k = +ms[1]; (subsPorAct[k] = subsPorAct[k] || []).push({ t: ms[3].trim(), ok: ms[2] !== ' ' }); }
@@ -93,24 +118,28 @@ export function parseMD(txt: string): Documento {
       etiquetas: leerEtqs(g('etiquetas')), depende: leerDeps(g('depende de')), repite: leerRepite(g('repite')),
       responsable: g('responsable'), inicio: g('inicio'), fin: g('fin'),
       estado, terminada: estado === 'Terminado' ? g('terminada') : '',
+      ...(/^H\d+$/i.test(g('hito')) ? { hito: +g('hito').slice(1) } : {}),
     });
   }
   acts.forEach(a => { if (subsPorAct[a.id]) a.subtareas = subsPorAct[a.id]; });
   let max = Math.max(0, ...acts.map(a => a.id));
   acts.forEach(a => { if (!a.id) a.id = ++max; });
   while (extra.length && !extra[extra.length - 1].trim()) extra.pop();
-  return { actividades: acts, meta, candado, notas, bitacora, extra, coloresEtq, imagenes };
+  return { actividades: acts, meta, candado, notas, bitacora, extra, coloresEtq, imagenes, hitos };
 }
 
-export function toMD(doc: Documento, version: { num: number; txt: string } = { num: VERSION_MDEXA, txt: VERSION_TXT }): string {
-  const { actividades, meta, candado, notas, bitacora, extra, coloresEtq, imagenes } = doc;
+export function toMD(doc: Documento, version: { num: number; txt: string } = { num: versionDe(doc), txt: VERSION_TXT }): string {
+  const { actividades, meta, candado, notas, bitacora, extra, coloresEtq, imagenes, hitos } = doc;
+  const conHitos = versionDe(doc) === VERSION_MDEXA;
   const limpia = (s: unknown) => String(s ?? '').replace(/\|/g, '/').trim().replace(/\r?\n/g, '<br>');
   let md = `# ${limpia(meta.proyecto) || 'Actividades'}\n\n`;
   md += `- Proyecto: ${limpia(meta.proyecto)}\n- Meta inicio: ${meta.inicio || ''}\n- Meta fin: ${meta.fin || ''}\n- Versión de MDexa: ${version.num} (v${version.txt})\n`;
   if (candado) md += `- En edición: ${limpia(candado.usuario)} | ${candado.desde} | ${candado.latido}\n`;
-  md += '\n| ID | Negocio | Actividad | Tamaño | Prioridad | Responsable | Inicio | Fin | Estado | Terminada | Etiquetas | Depende de | Repite |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|\n';
+  md += `\n| ID | Negocio | Actividad | Tamaño | Prioridad | Responsable | Inicio | Fin | Estado | Terminada | Etiquetas | Depende de | Repite |${conHitos ? ' Hito |' : ''}\n|---|---|---|---|---|---|---|---|---|---|---|---|---|${conHitos ? '---|' : ''}\n`;
   for (const a of [...actividades].sort((x, y) => x.id - y.id))
-    md += `| ${a.id} | ${limpia(a.negocio)} | ${limpia(a.actividad)} | ${a.tamano || ''} | ${a.prioridad || ''} | ${limpia(a.responsable)} | ${a.inicio || ''} | ${a.fin || ''} | ${EST(a)} | ${a.terminada || ''} | ${limpia(etqs(a).join(', '))} | ${txtDeps(actividades, a)} | ${(a.repite && REPITE[a.repite]) || ''} |\n`;
+    md += `| ${a.id} | ${limpia(a.negocio)} | ${limpia(a.actividad)} | ${a.tamano || ''} | ${a.prioridad || ''} | ${limpia(a.responsable)} | ${a.inicio || ''} | ${a.fin || ''} | ${EST(a)} | ${a.terminada || ''} | ${limpia(etqs(a).join(', '))} | ${txtDeps(actividades, a)} | ${(a.repite && REPITE[a.repite]) || ''} |${conHitos ? ` ${a.hito ? 'H' + a.hito : ''} |` : ''}\n`;
+  if (hitos.length) md += '\n## Hitos\n\n' + [...hitos].sort((a, b) => a.id - b.id)
+    .map(h => `- H${h.id} | ${h.fecha} | ${limpia(h.nombre)} | ${limpia(h.negocios.join('; '))}${h.cumplido || h.descripcion ? ` | ${h.cumplido}` : ''}${h.descripcion ? ` | ${limpia(h.descripcion)}` : ''}`).join('\n') + '\n';
   const todas = todasEtq(actividades), usadas = new Set(todas.map(normaliza));
   const colores = Object.entries(coloresEtq).filter(([k]) => usadas.has(k));
   if (colores.length) md += '\n## Etiquetas\n\n' + colores.map(([k, c]) => `- ${limpia(todas.find(t => normaliza(t) === k) || k)} | ${c}`).join('\n') + '\n';

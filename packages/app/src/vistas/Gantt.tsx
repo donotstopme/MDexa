@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ESTADOS, EST, PX_DIA, addDias, avanceSubs, choqueFechas, cerrada, conDependencia, descRepite, deps, dias, diaEn, metaGrupo, moverBarra, negocioDe, nomCorto, palabras,
-  problemaEnlace, programarPorClic, rangoGantt, rutaFlecha, sinDependencia, vencida, xDe, type Actividad, type Asa, type Bloque, type Documento, type Novedades, type Zoom,
+  carrilesHitos, infoHito, problemaEnlace, programarPorClic, type Hito, rangoGantt, rutaFlecha, sinDependencia, vencida, xDe, type Actividad, type Asa, type Bloque, type Documento, type Novedades, type Zoom,
 } from '@mdexa/core';
 import { Estrella, Ico } from '../original/iconos';
 import { BotonNotas, MarcaNov, PriBadge, Resaltar, TamBadge, colorEstado, fmtTxt } from '../original/piezas';
@@ -19,17 +19,22 @@ export interface PropsGantt {
   renombrar?(g: string): void;
   doc: Documento; bloques: Bloque[]; texto: string; zoom: Zoom; hoy: string; edicion?: Edicion; novIds?: Novedades['porId']; colapsados: Set<string>; onGrupo(g: string): void;
   favs: Set<number>; onFav(id: number): void; acc: Acciones; onEditar(id: number): void; aviso?(m: string): void; msgVacio: string; agrupaPorNegocio: boolean; icono(b: Bloque): React.ReactNode;
+  hitos?: Hito[]; onHito?(id: number): void; onMoverHito?(id: number, fecha: string): void;
 }
 
 export function Gantt(p: PropsGantt) {
   const { doc, edicion, zoom, hoy } = p;
   const [arr, setArr] = useState<Arr | null>(null);
   const [enl, setEnl] = useState<Enl | null>(null);
+  const [arrH, setArrH] = useState<{ id: number; x0: number; fecha: string; d: number } | null>(null);
+  const hitos = p.hitos ?? [];
   const scroll = useRef<HTMLDivElement>(null), cuerpo = useRef<HTMLDivElement>(null);
   const px = PX_DIA[zoom], ed = !!edicion, LW = typeof innerWidth === 'number' && innerWidth <= 800 ? 150 : 300;
   const pals = [...new Set(palabras(p.texto))];
   const lista = p.bloques.flatMap(b => b.items);
-  const r = useMemo(() => rangoGantt(lista, doc.meta, hoy), [lista, doc.meta, hoy]);
+  const fechasH = hitos.map(h => h.fecha).join();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const r = useMemo(() => rangoGantt(lista, doc.meta, hoy, hitos.map(h => h.fecha)), [lista, doc.meta, hoy, fechasH]);
   const W = r.nd * px, x = (f: string) => xDe(r, px, f);
 
   // filas con su posición vertical (alturas fijas: 46 px actividad, 38 px grupo)
@@ -120,6 +125,27 @@ export function Gantt(p: PropsGantt) {
     if (zoom !== 'mes' && finde) fondo.push(<div key={'f' + i} className="g-finde" style={{ left: i * px, width: px }} />);
   }
 
+  /* hitos: rombo en su fecha (arrastrable al editar), repartidos en carriles para que sus nombres no se encimen */
+  const xsH = hitos.map(h => x(h.fecha) + px / 2), carriles = carrilesHitos(xsH, 150), nCarriles = Math.max(0, ...carriles.map(c => c + 1));
+  const fechaH = (h: Hito) => (arrH && arrH.id === h.id ? addDias(arrH.fecha, arrH.d) : h.fecha);
+  const soltarH = () => {
+    if (!arrH) return;
+    const { id, fecha, d } = arrH; setArrH(null);
+    if (!d) { p.onHito?.(id); return; }
+    p.onMoverHito?.(id, addDias(fecha, d));
+  };
+  const rombos = hitos.map((h, i) => {
+    const info = infoHito(doc, h, hoy), f = fechaH(h);
+    return (
+      <button type="button" key={h.id} data-hito={h.id} className={`g-rombo h-${info.estado.replace(' ', '-')} ${ed ? 'mov' : ''}`} style={{ left: x(f) + px / 2, top: carriles[i] * 22 + 3 }}
+        title={`${h.nombre}\n${fmtTxt(f)} · ${info.estado} · ${info.hechas}/${info.total} actividades${h.descripcion ? '\n' + h.descripcion : ''}${ed ? '\n\nArrastra para cambiar la fecha · clic para editar' : ''}`}
+        onPointerDown={e => { if (!ed || e.button !== 0) return; e.preventDefault(); (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); setArrH({ id: h.id, x0: e.clientX, fecha: h.fecha, d: 0 }); }}
+        onPointerMove={e => { if (arrH) setArrH({ ...arrH, d: Math.round((e.clientX - arrH.x0) / px) }); }} onPointerUp={soltarH} onPointerCancel={() => setArrH(null)}
+        onClick={e => { if (!ed || e.detail === 0) p.onHito?.(h.id); }}>
+        <i /><span>{arrH?.id === h.id ? fmtTxt(f) : h.nombre}</span></button>
+    );
+  });
+
   /* flechas */
   const flechas: React.ReactNode[] = [];
   for (const [id, fa0] of filaDe) {
@@ -186,16 +212,18 @@ export function Gantt(p: PropsGantt) {
     <>
       <div className="gantt" ref={scroll}>
         <div className="g-tabla" style={{ width: LW + W, '--px': `${px}px`, '--lw': `${LW}px` } as React.CSSProperties}>
-          <div className="g-cab"><div className="g-lbl g-esq"><Ico n="lista" t={14} /> Actividad</div>
-            <div className="g-escala" style={{ width: W }}><div className="g-meses">{meses}</div><div className="g-subs">{subs}</div>
+          <div className="g-cab"><div className="g-lbl g-esq"><Ico n="lista" t={14} /> Actividad{!!hitos.length && <span className="g-esq-h"><Ico n="bandera" t={12} /> Hitos</span>}</div>
+            <div className={`g-escala ${hitos.length ? 'con-hitos' : ''}`} style={{ width: W }}><div className="g-meses">{meses}</div><div className="g-subs">{subs}</div>
               {doc.meta.inicio && doc.meta.fin && <>
                 <div className="g-marca meta" style={{ left: x(doc.meta.inicio) }} title={`Inicio de la meta: ${fmtTxt(doc.meta.inicio)}`}><Ico n="bandera" t={11} /> Meta</div>
                 <div className="g-marca meta fin" style={{ left: x(doc.meta.fin) + px }} title={`Fin de la meta: ${fmtTxt(doc.meta.fin)}`}>Fin meta</div></>}
-              {zoom !== 'dia' && <div className="g-marca hoy" style={{ left: x(hoy) + px / 2 }} title={`Hoy: ${fmtTxt(hoy)}`}>Hoy</div>}</div></div>
+              {zoom !== 'dia' && <div className="g-marca hoy" style={{ left: x(hoy) + px / 2 }} title={`Hoy: ${fmtTxt(hoy)}`}>Hoy</div>}
+              {!!hitos.length && <div className="g-hitos" style={{ height: nCarriles * 22 + 4 }}>{rombos}</div>}</div></div>
           <div className="g-cuerpo" ref={cuerpo}>
             <div className={`g-fondo z-${zoom}`} style={{ left: LW, width: W }}>{fondo}
               {doc.meta.inicio && doc.meta.fin && <div className="g-meta" style={{ left: x(doc.meta.inicio), width: (dias(doc.meta.inicio, doc.meta.fin) + 1) * px }} />}
-              <div className="g-hoy" style={{ left: x(hoy) + px / 2 }} /></div>
+              <div className="g-hoy" style={{ left: x(hoy) + px / 2 }} />
+              {hitos.map(h => <div key={h.id} className="g-hito-lin" style={{ left: x(fechaH(h)) + px / 2 }} />)}</div>
             {filas.map(f => {
               if (f.tipo === 'act') return filaAct(f);
               const b = f.b, cerrado = p.colapsados.has(b.g!), fav = b.g === '__fav', m = metaGrupo(b.items);
@@ -217,7 +245,7 @@ export function Gantt(p: PropsGantt) {
       <div className="g-leyenda">
         {ESTADOS.map(e => <span key={e}><i className={`g-ley b-${colorEstado(e)}`} />{e}</span>)}
         {lista.some(a => deps(doc.actividades, a).length) && <span><svg width="22" height="8" className="g-ley-fl"><path d="M0 4H16" className="pend" /><path d="M14 0L22 4L14 8z" className="pend rell" /></svg>Depende de</span>}
-        <span><i className="g-ley-hoy" />Hoy</span>{doc.meta.inicio && <span><i className="g-ley-meta" />Periodo de la meta</span>}<span><i className="g-ley-punto" />Solo una fecha</span>
+        <span><i className="g-ley-hoy" />Hoy</span>{doc.meta.inicio && <span><i className="g-ley-meta" />Periodo de la meta</span>}<span><i className="g-ley-punto" />Solo una fecha</span>{!!hitos.length && <span><i className="g-ley-hito" />Hito</span>}
         {ed ? <span className="g-ayuda"><Ico n="lapiz" t={13} /> Arrastra una barra para moverla · arrastra sus extremos para cambiar inicio o fin · clic para editar · arrastra el punto del final de una barra hasta otra actividad para crear una dependencia · clic en una flecha para quitarla</span>
           : <span className="g-ayuda"><Ico n="candado" t={13} /> Toma el archivo para mover las barras</span>}
       </div>

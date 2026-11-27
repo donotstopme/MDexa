@@ -8,9 +8,9 @@ describe('Manual de uso', () => {
   it('no deja marcadores sin resolver y trae íconos, insignias y teclas reales', () => {
     expect(h).not.toMatch(/\{\{/); expect(h).toContain('<svg class="ic"'); expect(h).toContain('class="tam tam-L"'); expect(h).toContain('class="pri pri-Alta"'); expect(h).toContain('<kbd>');
   });
-  it('tiene las 45 secciones con su índice', () => {
-    expect((h.match(/<h2 id="man-\d+"/g) || []).length).toBe(45);
-    expect((h.match(/<nav>.*?<\/nav>/s)![0].match(/<a href="#man-\d+"/g) || []).length).toBe(45);
+  it('tiene las 46 secciones con su índice', () => {
+    expect((h.match(/<h2 id="man-\d+"/g) || []).length).toBe(46);
+    expect((h.match(/<nav>.*?<\/nav>/s)![0].match(/<a href="#man-\d+"/g) || []).length).toBe(46);
     for (const s of ['Para qué sirve', 'Trabajo en equipo', 'Tamaños', 'Línea de tiempo', 'Tablero', 'Calendario', 'Notas', 'Bitácora', 'Respaldos', 'Nuevo sprint', 'Importar y exportar', 'Imágenes', 'Dependencias', 'Subtareas', 'Deshacer', 'Reporte semanal', 'Menciones', 'Actividades recurrentes', 'Modo presentación', 'Carga por persona', 'Exportar al calendario']) expect(h).toContain(s);
   });
   it('está adaptado a esta aplicación (sin referencias al HTML original ni a funciones que no existen)', () => {

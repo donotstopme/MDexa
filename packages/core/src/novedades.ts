@@ -23,7 +23,7 @@ export const sinNovedades = (): Novedades => ({ nuevas: [], cambios: [], borrada
 export function calcularNovedades(doc: Documento, visto: Foto | null, notasVistas: Set<string>, usuario: string): Novedades {
   const r = sinNovedades();
   if (!visto) return r;
-  const actual = foto(doc.actividades);
+  const actual = foto(doc.actividades, doc.hitos);
   for (const a of doc.actividades) {
     const antes = visto[a.id];
     if (!antes) { r.nuevas.push(a); r.porId[a.id] = { tipo: 'nueva', campos: [] }; continue; }
@@ -57,16 +57,18 @@ export interface Comparacion {
   pierde: Actividad[];
   cambian: { a: Actividad; campos: { k: string; ahora: string; antes: string }[] }[];
   metaDif: boolean;
+  hitosDif: boolean;
   igual: boolean;
 }
 /** Diferencias entre un respaldo y la versión actual */
 export function compararRespaldo(actual: Documento, respaldo: Documento): Comparacion {
-  const fa = foto(actual.actividades), fr = foto(respaldo.actividades);
+  const fa = foto(actual.actividades, actual.hitos), fr = foto(respaldo.actividades, respaldo.hitos);
   const recupera = respaldo.actividades.filter(a => !fa[a.id]), pierde = actual.actividades.filter(a => !fr[a.id]);
   const cambian = respaldo.actividades.filter(a => fa[a.id] && JSON.stringify(fa[a.id]) !== JSON.stringify(fr[a.id]))
     .map(a => ({ a, campos: Object.keys(CAMPOS_NOV).filter(k => fa[a.id][k] !== fr[a.id][k]).map(k => ({ k, ahora: fa[a.id][k], antes: fr[a.id][k] })) }));
   const metaDif = (['proyecto', 'inicio', 'fin'] as const).some(k => (respaldo.meta[k] || '') !== (actual.meta[k] || ''));
-  return { respaldo, recupera, pierde, cambian, metaDif, igual: !recupera.length && !pierde.length && !cambian.length && !metaDif };
+  const hitosDif = JSON.stringify(actual.hitos) !== JSON.stringify(respaldo.hitos);
+  return { respaldo, recupera, pierde, cambian, metaDif, hitosDif, igual: !recupera.length && !pierde.length && !cambian.length && !metaDif && !hitosDif };
 }
 
 /**
@@ -78,6 +80,7 @@ export function restaurarRespaldo(actual: Documento, r: Respaldo, respaldo: Docu
   return {
     ...actual,
     actividades: respaldo.actividades,
+    hitos: respaldo.hitos,
     meta: { ...actual.meta, proyecto: respaldo.meta.proyecto, inicio: respaldo.meta.inicio, fin: respaldo.meta.fin },
     notas: [...actual.notas, ...respaldo.notas.filter(n => !claves.has(claveNota(n)))],
     bitacora: [...actual.bitacora, {

@@ -52,10 +52,10 @@ export const puedeSoltar = (enDisco: Documento, usuario: string): boolean =>
 export type Foto = Record<number, Record<string, string>>;
 
 /** Resumen textual de los campos que se vigilan de cada actividad */
-export function foto(acts: Actividad[]): Foto {
+export function foto(acts: Actividad[], hitos: Documento['hitos'] = []): Foto {
   return Object.fromEntries(acts.map(a => [a.id, Object.fromEntries(Object.keys(CAMPOS_NOV).map(k => [k,
     k === 'estado' ? EST(a) : k === 'etiquetas' ? etqs(a).join(', ') : k === 'depende' ? txtDeps(acts, a)
-      : k === 'subtareas' ? txtSubsDe(a) : k === 'repite' ? ((a.repite && REPITE[a.repite]) || '')
+      : k === 'hito' ? (hitos.find(h => h.id === a.hito)?.nombre || '') : k === 'subtareas' ? txtSubsDe(a) : k === 'repite' ? ((a.repite && REPITE[a.repite]) || '')
         : String((a as unknown as Record<string, unknown>)[k] || '')]))]));
 }
 
@@ -80,7 +80,7 @@ export function absorberPropios(doc: Documento, previo: Foto, usuario: string, o
     }
   }
   const bitacora = structuredClone(doc.bitacora);
-  const actual = foto(actividades);
+  const actual = foto(actividades, doc.hitos);
   for (const id of Object.keys(actual).map(Number)) {
     if (JSON.stringify(actual[id]) === JSON.stringify(previo[id])) continue;
     if (!previo[id]) registrarBit(bitacora, usuario, opts.restaurando ? 'recuperó' : 'creó', id, [], actual[id] as never, ahora);
@@ -109,15 +109,15 @@ export function actividadNueva(doc: Pick<Documento, 'actividades' | 'bitacora' |
 
 /* ============ Deshacer / rehacer ============ */
 
-export interface Instantanea { actividades: Actividad[]; proyecto: string; inicio: string; fin: string; coloresEtq: Documento['coloresEtq'] }
+export interface Instantanea { actividades: Actividad[]; proyecto: string; inicio: string; fin: string; coloresEtq: Documento['coloresEtq']; hitos: Documento['hitos'] }
 export interface Historial { pasadas: { s: Instantanea; d: string }[]; futuras: { s: Instantanea; d: string }[]; previa: Instantanea | null }
 export const MAX_DESHACER = 50;
 export const historialVacio = (): Historial => ({ pasadas: [], futuras: [], previa: null });
 
 export const instantanea = (d: Documento): Instantanea =>
-  ({ actividades: d.actividades, proyecto: d.meta.proyecto, inicio: d.meta.inicio, fin: d.meta.fin, coloresEtq: d.coloresEtq });
+  ({ actividades: d.actividades, proyecto: d.meta.proyecto, inicio: d.meta.inicio, fin: d.meta.fin, coloresEtq: d.coloresEtq, hitos: d.hitos });
 export const aplicarInstantanea = (d: Documento, s: Instantanea): Documento =>
-  ({ ...d, actividades: s.actividades, coloresEtq: s.coloresEtq, meta: { ...d.meta, proyecto: s.proyecto, inicio: s.inicio, fin: s.fin } });
+  ({ ...d, actividades: s.actividades, coloresEtq: s.coloresEtq, hitos: s.hitos, meta: { ...d.meta, proyecto: s.proyecto, inicio: s.inicio, fin: s.fin } });
 const igual = (a: Instantanea, b: Instantanea) => JSON.stringify(a) === JSON.stringify(b);
 
 export function describirCambio(antes: Instantanea, despues: Instantanea): string {
@@ -125,7 +125,7 @@ export function describirCambio(antes: Instantanea, despues: Instantanea): strin
   const nuevas = [...D.keys()].filter(k => !A.has(k)), borradas = [...A.keys()].filter(k => !D.has(k));
   const cambiadas = [...D.keys()].filter(k => A.has(k) && JSON.stringify(A.get(k)) !== JSON.stringify(D.get(k)));
   const nom = (x: Actividad) => `«${String(x.actividad).split('\n')[0].slice(0, 40)}»`, total = nuevas.length + borradas.length + cambiadas.length;
-  if (!total) return 'el cambio en la meta o en los colores';
+  if (!total) return JSON.stringify(antes.hitos) !== JSON.stringify(despues.hitos) ? 'el cambio en los hitos' : 'el cambio en la meta o en los colores';
   if (total === 1) return nuevas.length ? `agregar ${nom(D.get(nuevas[0])!)}` : borradas.length ? `eliminar ${nom(A.get(borradas[0])!)}` : `el cambio en ${nom(D.get(cambiadas[0])!)}`;
   return [nuevas.length && pl(nuevas.length, 'agregada', 'agregadas'), borradas.length && pl(borradas.length, 'eliminada', 'eliminadas'), cambiadas.length && pl(cambiadas.length, 'cambiada', 'cambiadas')].filter(Boolean).join(', ');
 }

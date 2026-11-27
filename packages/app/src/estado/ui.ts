@@ -12,7 +12,7 @@ const guardar = (k: string, v: string | null) => { try { if (v === null) localSt
 /** Preferencias de pantalla; se recuerdan en este navegador con las mismas claves que el HTML original */
 export function useUI(archivo: string, proyecto: string) {
   const [vista, setVistaS] = useState<Vista>(() => { const v = leer('mdexa.vista') as Vista; return v in VISTAS ? v : 'lista'; });
-  const [agrupar, setAgruparS] = useState<Agrupar>(() => { const v = leer('mdexa.agrupar'); return v !== null && ['', 'negocio', 'responsable', 'prioridad', 'estado', 'etiqueta'].includes(v) ? (v as Agrupar) : 'negocio'; });
+  const [agrupar, setAgruparS] = useState<Agrupar>(() => { const v = leer('mdexa.agrupar'); return v !== null && ['', 'negocio', 'responsable', 'prioridad', 'estado', 'etiqueta', 'hito'].includes(v) ? (v as Agrupar) : 'negocio'; });
   const [filtros, setFiltros] = useState<Filtros>(() => ({ ...filtrosVacios(), verBacklog: leer('mdexa.verBacklog') !== '0' }));
   const [orden, setOrden] = useState<Orden>({ k: 'inicio', asc: true });
   const [colapsados, setColapsados] = useState<Set<string>>(new Set());

@@ -2,6 +2,8 @@ import { NOMBRE_APP } from './constantes';
 import type { Actividad, Documento } from './tipos';
 import { descRepite } from './recurrencia';
 import { etqs } from './etiquetas';
+import { hitosOrdenados, infoHito } from './hitos';
+import type { Hito } from './tipos';
 import { EST, addDias, cerrada, negocioDe, nomCorto, normaliza, subtareasDe, txtSubsDe } from './utilidades';
 
 const fmtTxt = (d: string) => (d ? new Date(d + 'T00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) : '');
@@ -14,7 +16,7 @@ export function icsLinea(l: string): string {
 }
 
 /** Archivo .ics: cada actividad con fecha fin es un evento de todo el día; con `alarma`, un recordatorio la tarde anterior */
-export function generarICS(d: Documento, acts: Actividad[], alarma: boolean, archivo: string, ahora: Date = new Date()): string {
+export function generarICS(d: Documento, acts: Actividad[], alarma: boolean, archivo: string, ahora: Date = new Date(), hitos: Hito[] = []): string {
   const sello = ahora.toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
   const proy = d.meta.proyecto || archivo.replace(/\.md$/i, ''), uidBase = normaliza(proy).replace(/[^a-z0-9]+/g, '-') || 'mdexa';
   const ev = acts.map(a => {
@@ -27,7 +29,14 @@ export function generarICS(d: Documento, acts: Actividad[], alarma: boolean, arc
       `SUMMARY:${icsEsc(`#${a.id} ${nomCorto(a)}${EST(a) === 'Terminado' ? ' ✓' : ''}`)}`, `DESCRIPTION:${icsEsc(desc)}`, `CATEGORIES:${icsEsc(negocioDe(a))}`,
       'TRANSP:TRANSPARENT', ...(alarma && !cerrada(a) ? ['BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc('Vence: ' + nomCorto(a))}`, 'TRIGGER:-PT15H', 'END:VALARM'] : []), 'END:VEVENT'].map(icsLinea).join('\r\n');
   });
-  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//MDexa//ES', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', icsLinea(`X-WR-CALNAME:${icsEsc(proy)}`), ...ev, 'END:VCALENDAR'].join('\r\n') + '\r\n';
+  const evH = hitos.filter(h => h.fecha).map(h => {
+    const info = infoHito(d, h);
+    const desc = [h.descripcion, h.negocios.length && `Negocios: ${h.negocios.join(', ')}`, `Avance: ${info.pct}% (${info.hechas} de ${info.total} actividades)`, `\n${proy} · ${NOMBRE_APP}`].filter(Boolean).join('\n');
+    return ['BEGIN:VEVENT', `UID:${uidBase}-hito-${h.id}@mdexa`, `DTSTAMP:${sello}`, `DTSTART;VALUE=DATE:${h.fecha.replace(/-/g, '')}`, `DTEND;VALUE=DATE:${addDias(h.fecha, 1).replace(/-/g, '')}`,
+      `SUMMARY:${icsEsc(`◆ ${h.nombre}${info.estado === 'Cumplido' ? ' ✓' : ''}`)}`, `DESCRIPTION:${icsEsc(desc)}`, 'CATEGORIES:Hito', 'TRANSP:TRANSPARENT',
+      ...(alarma && info.estado !== 'Cumplido' ? ['BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc('Hito: ' + h.nombre)}`, 'TRIGGER:-PT15H', 'END:VALARM'] : []), 'END:VEVENT'].map(icsLinea).join('\r\n');
+  });
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//MDexa//ES', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', icsLinea(`X-WR-CALNAME:${icsEsc(proy)}`), ...evH, ...ev, 'END:VCALENDAR'].join('\r\n') + '\r\n';
 }
 
 /** Qué actividades se exportan: sólo las mías, las visibles o todas; con o sin las cerradas. `sinFin` cuenta las que no tienen fecha fin. */
@@ -35,4 +44,11 @@ export function actividadesIcs(d: Documento, que: 'mias' | 'filtradas' | 'todas'
   const base = que === 'mias' ? d.actividades.filter(a => usuario && normaliza(a.responsable || '') === normaliza(usuario)) : que === 'filtradas' ? visibles : d.actividades;
   const conFin = base.filter(a => conCerradas || !cerrada(a));
   return { lista: conFin.filter(a => a.fin), sinFin: conFin.filter(a => !a.fin).length };
+}
+
+/** Hitos que acompañan a una exportación: todos, o los que incluyen alguna de las actividades de esa selección; los cumplidos sólo si se piden */
+export function hitosIcs(d: Documento, que: 'mias' | 'filtradas' | 'todas', visibles: Actividad[], usuario: string, conCerradas: boolean): Hito[] {
+  const base = que === 'mias' ? d.actividades.filter(a => usuario && normaliza(a.responsable || '') === normaliza(usuario)) : visibles;
+  const ids = new Set(base.map(a => a.hito));
+  return hitosOrdenados(d.hitos).filter(h => h.fecha && (que === 'todas' || ids.has(h.id)) && (conCerradas || infoHito(d, h).estado !== 'Cumplido'));
 }

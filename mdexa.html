@@ -167,6 +167,21 @@
   .ms-sep{width:1px;align-self:stretch;background:var(--line)}
   body.con-masiva .wrap{padding-bottom:120px}
   body.con-masiva #toast{bottom:84px}
+  /* ---- Ventana de hito ---- */
+  .hito-cab{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;font-size:13px}
+  .hito-cab button{padding:3px 10px;font-size:12.5px}
+  .hito-negs{display:flex;flex-wrap:wrap;gap:6px}
+  .hito-arbol{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+  .hito-arbol summary{display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer}
+  .hito-arbol summary::before{content:'▸';color:var(--muted);width:10px}
+  .hito-arbol details[open]>summary::before{content:'▾'}
+  .hito-arbol input{width:auto;margin:0;flex:none}
+  .grid label.hito-act,.hito-act{display:flex;flex-direction:row;align-items:center;gap:8px;padding:4px 0 4px 28px;font-weight:400;cursor:pointer}
+  .hito-nom{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+  .hito-act .nd{font-size:12px;white-space:nowrap}
+  .hito-desc{white-space:pre-line}
+  .hito-aviso{display:flex;align-items:center;gap:8px;margin-top:4px;font-size:12.5px;color:var(--c-amar)}
+  .hito-aviso button{padding:2px 8px;font-size:12px}
   .m-opciones{display:flex;flex-direction:column;gap:10px}
   .m-opciones .check{flex-wrap:wrap}
   #dlgMas{width:min(520px,calc(100vw - 24px))}
@@ -919,6 +934,29 @@
     input.ed{text-align:right}
     .contenido{padding:16px}
   }
+  /* ---- Hitos en la línea de tiempo, el calendario y la tarjeta de meta ---- */
+  .h-Cumplido{--hc:var(--c-verde)} .h-En-tiempo{--hc:var(--accent)} .h-En-riesgo{--hc:var(--c-amar)} .h-Vencido{--hc:var(--c-rojo)}
+  .g-escala.con-hitos{height:auto}
+  .g-esq{flex-wrap:wrap;align-content:flex-start;padding-top:14px}
+  .g-esq-h{width:100%;display:flex;align-items:center;gap:5px;margin-top:20px}
+  .g-hitos{position:relative;border-top:1px solid var(--line)}
+  .g-rombo{position:absolute;display:flex;align-items:center;gap:5px;height:18px;margin-left:-7px;padding:0 5px 0 2px;border:0;background:transparent;color:var(--text);font-size:11.5px;font-weight:600;white-space:nowrap;cursor:pointer;touch-action:none;z-index:2}
+  .g-rombo:hover{background:var(--bg);filter:none}
+  .g-rombo.mov{cursor:grab}
+  .g-rombo i,.c-hito i{width:9px;height:9px;flex:none;transform:rotate(45deg);background:var(--hc);border-radius:1px}
+  .g-rombo span{max-width:130px;overflow:hidden;text-overflow:ellipsis}
+  .g-hito-lin{position:absolute;top:0;bottom:0;border-left:2px dashed var(--accent);opacity:.4;margin-left:-1px}
+  .g-leyenda i.g-ley-hito{width:9px;height:9px;transform:rotate(45deg);background:var(--accent);border-radius:1px}
+  .c-hito{display:flex;align-items:center;gap:6px;width:100%;min-width:0;padding:2px 6px;border:1px solid var(--hc);border-radius:6px;background:color-mix(in srgb,var(--hc) 12%,var(--card));color:var(--text);font-size:11.5px;font-weight:700;text-align:left}
+  .c-hito span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .m-hitos{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:4px}
+  .m-hitos-cab{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .m-hitos-cab button{padding:3px 10px;font-size:12.5px}
+  .m-hito{display:grid;grid-template-columns:minmax(0,2fr) auto minmax(60px,1fr) auto 78px;gap:10px;align-items:center;width:100%;padding:5px 6px;border:0;border-radius:6px;background:transparent;color:var(--text);font-weight:400;font-size:13px;text-align:left}
+  .m-hito:hover{background:var(--bg);filter:none}
+  .m-hito-nom{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .m-hito .bar{display:block;height:6px}.m-hito .bar span{display:block;height:100%}
+  @media (max-width:700px){.m-hito{grid-template-columns:minmax(0,1fr) auto auto}.m-hito .bar,.m-hito .bar+.nd{display:none}}
 </style>
 <style id="repEstilo"></style>
 </head>
@@ -951,6 +989,7 @@
       <button id="btnRefrescar" title="Volver a leer el archivo">Refrescar</button>
       <button id="btnNovedades" title="Cambios desde tu última visita">Novedades<span class="nov-badge" id="novBadge" hidden></span></button>
       <button id="btnBitacora" title="Quién cambió qué y cuándo">Bitácora</button>
+      <button id="btnHitos" title="Hitos y fases: fechas, avance y estado">Hitos</button>
       <button id="btnReporte">Reporte</button>
       <button id="btnManual" title="Manual de uso">Manual</button>
       <button id="btnTema" class="btn-tema" aria-label="Tema"></button>
@@ -1001,12 +1040,14 @@
       <div id="qTam"></div>
       <div id="qPri"></div>
       <div id="qEtq"></div>
+      <div id="qHito"></div>
       <label class="check" id="lblBacklog" title="Mostrar u ocultar las actividades en Backlog"><input type="checkbox" id="qBacklog" checked> <span>Mostrar backlog</span></label>
       <div class="msel cols" id="colsWrap"><button type="button" class="msel-btn" id="btnCols" aria-haspopup="true"></button><div class="msel-pop" id="colsPop" hidden></div></div>
       <button id="btnPresentar" title="Modo presentación para juntas (tecla P)">Presentar</button>
       <label class="check" id="lblAgrupar">Agrupar por <select id="qAgrupar" class="sel-agrupar">
         <option value="negocio">Negocio</option><option value="responsable">Responsable</option><option value="prioridad">Prioridad</option>
-        <option value="estado">Estado</option><option value="etiqueta">Etiqueta</option><option value="">Sin agrupar</option></select></label>
+        <option value="estado">Estado</option><option value="etiqueta">Etiqueta</option><option value="hito">Hito</option><option value="">Sin agrupar</option></select></label>
+      <button id="btnNuevoHito" hidden title="Crear un hito y elegir sus actividades">Nuevo hito</button>
       <button class="prim" id="btnNuevaAct" hidden title="Nueva actividad (tecla N)">Nueva actividad</button>
     </div>
     <div id="vistaLista">
@@ -1260,6 +1301,41 @@
   </form>
 </dialog>
 
+<!-- Ventana: hitos -->
+<dialog id="dlgHitos" class="grande">
+  <div class="rep-barra">
+    <strong id="hitosTitulo">Hitos</strong>
+    <div class="barra">
+      <button id="hitoNuevo">Nuevo hito</button>
+      <button class="prim" id="hitosCerrar">Cerrar</button>
+    </div>
+  </div>
+  <div class="contenido">
+    <p class="nd" id="hitosAyuda">Toma el archivo para crear o cambiar hitos.</p>
+    <div id="hitosLista"></div>
+  </div>
+</dialog>
+
+<!-- Ventana: crear o editar un hito -->
+<dialog id="dlgHito">
+  <form id="formHito" novalidate>
+    <h2 id="hitoFormTit">Nuevo hito</h2>
+    <div class="grid">
+      <label><span>Nombre <b>*</b></span><input id="hNom" placeholder="Ej. Diseño aprobado"></label>
+      <label><span>Fecha <b>*</b></span><input type="date" id="hFecha"></label>
+      <label class="todo">Descripción<textarea id="hDesc" rows="2" placeholder="Qué se entrega y cómo se sabe que está cumplido"></textarea></label>
+      <div class="todo"><span class="hito-cab"><span>Negocios <b>*</b></span></span><div class="hito-negs" id="hNegs"></div></div>
+      <div class="todo">
+        <span class="hito-cab"><span>Actividades incluidas <span class="nd" id="hCuenta"></span></span>
+          <span id="hTodasNinguna"><button type="button" data-hmarcar="1">Todas</button> <button type="button" data-hmarcar="">Ninguna</button></span></span>
+        <div id="hArbol"></div>
+      </div>
+      <label>Cumplido el<input type="date" id="hCumplido"><span class="nota-dep">Opcional: se cumple solo cuando terminan sus actividades.</span></label>
+    </div>
+    <div class="pie"><span class="ayuda">* Obligatorio</span><div class="barra"><button type="button" id="hitoCancelar">Cancelar</button><button type="submit" class="prim" id="hitoGuardar">Guardar hito</button></div></div>
+  </form>
+</dialog>
+
 <!-- Ventana: bitácora -->
 <dialog id="dlgBit" class="grande">
   <div class="rep-barra">
@@ -1356,6 +1432,7 @@
       <label class="check"><input type="radio" name="icsQue" value="filtradas"> Las que se ven con los filtros actuales</label>
       <label class="check"><input type="radio" name="icsQue" value="todas"> Todas</label>
       <label class="check"><input type="checkbox" id="icsTerm"> Incluir terminadas y canceladas</label>
+      <label class="check" id="lblIcsHitos"><input type="checkbox" id="icsHitos" checked> Incluir hitos</label>
       <label class="check"><input type="checkbox" id="icsAlarma" checked> Recordatorio la tarde anterior (9:00 p.m.)</label>
     </div>
     <p class="nd" id="icsRes"></p>
@@ -1461,7 +1538,8 @@ const colorEstado = v => (ESTADOS.find(e => e.v === (ALIAS_ESTADO[normaliza(v ||
    aquí solo se puede ver: no se escribe nada, para no borrar datos que esta versión no conoce. */
 // VERSION_MDEXA es el número de compatibilidad del formato del archivo (las versiones 14 en adelante lo comparan):
 // sólo sube cuando cambia lo que se guarda en el .md. VERSION_TXT es la versión que se muestra.
-const NOMBRE_APP = 'MDexa', VERSION_MDEXA = 18, VERSION_TXT = '1.34.1', VERSION_FECHA = '3 nov 2026';
+const NOMBRE_APP = 'MDexa', VERSION_MDEXA = 19, VERSION_TXT = '1.35.0', VERSION_FECHA = '27 nov 2026';
+const VERSION_SIN_HITOS = 18, SIN_HITO = 'Sin hito';   // sin hitos el archivo se guarda como 18, para que las versiones anteriores lo sigan editando
 const verTxt = n => n >= 14 ? `v1.${n}.0` : `v${n}`;
 let versionArchivo = 0, versionArchivoTxt = '';
 const archivoMasNuevo = () => versionArchivo > VERSION_MDEXA;
@@ -1591,7 +1669,7 @@ function iconizar(root = document) {
 const ICO_DOC = '<svg class="ico-doc" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>';
 
 let fileHandle = null, nombreArchivo = '', textoCargado = '', copiaLocal = false, ultimoPendiente = null, recientes = [];
-let actividades = [], meta = { proyecto: '', inicio: '', fin: '' }, candado = null, notas = [], bitacora = [], imagenes = [];
+let actividades = [], meta = { proyecto: '', inicio: '', fin: '' }, candado = null, notas = [], bitacora = [], imagenes = [], hitos = [];
 let modo = 'lectura', editId = null, sucio = false, ultimoGuardado = null;
 let orden = { k: 'inicio', asc: true };
 const colapsados = new Set();
@@ -1658,9 +1736,9 @@ function textoConMenciones(texto, max = 0) {
 let mencionesAvisadas = new Set();
 
 /* ---- Novedades desde tu última visita (se guarda en este navegador, por archivo) ---- */
-const CAMPOS_NOV = { estado: 'Estado', responsable: 'Responsable', fin: 'Fin', inicio: 'Inicio', tamano: 'Tamaño', prioridad: 'Prioridad', etiquetas: 'Etiquetas', depende: 'Depende de', subtareas: 'Subtareas', repite: 'Se repite', negocio: 'Negocio', actividad: 'Actividad' };
+const CAMPOS_NOV = { estado: 'Estado', responsable: 'Responsable', fin: 'Fin', inicio: 'Inicio', tamano: 'Tamaño', prioridad: 'Prioridad', etiquetas: 'Etiquetas', depende: 'Depende de', subtareas: 'Subtareas', repite: 'Se repite', negocio: 'Negocio', actividad: 'Actividad', hito: 'Hito' };
 const VISITA_MIN = 60e3;   // si estuviste al menos 1 minuto en el archivo, al salir las novedades se dan por vistas
-const foto = acts => Object.fromEntries(acts.map(a => [a.id, Object.fromEntries(Object.keys(CAMPOS_NOV).map(k => [k, k === 'estado' ? EST(a) : k === 'etiquetas' ? etqs(a).join(', ') : k === 'depende' ? txtDeps(a) : k === 'subtareas' ? txtSubs(a) : k === 'repite' ? (REPITE[a.repite] || '') : (a[k] || '')]))]));
+const foto = (acts, hs = hitos) => Object.fromEntries(acts.map(a => [a.id, Object.fromEntries(Object.keys(CAMPOS_NOV).map(k => [k, k === 'estado' ? EST(a) : k === 'etiquetas' ? etqs(a).join(', ') : k === 'depende' ? txtDeps(a) : k === 'subtareas' ? txtSubs(a) : k === 'repite' ? (REPITE[a.repite] || '') : k === 'hito' ? (hs.find(h => h.id === a.hito)?.nombre || '') : (a[k] || '')]))]));
 let visto = null, vistoFecha = '', previoLocal = {}, inicioVisita = 0, notasVistas = new Set();
 let novedades = { nuevas: [], cambios: [], borradas: [], notas: [], total: 0 }, novIds = new Map(), notasNuevasPorAct = new Map();
 const claveVisto = () => `mdexa.visto|${nombreArchivo}`;
@@ -1681,6 +1759,7 @@ function cargarVisto(reiniciar = false) {
 // …y quedan anotados en la bitácora con tu nombre
 function absorberPropios() {
   if (!nombreArchivo) return;
+  ajustarHitos();
   // Recurrentes: si acabas de terminar una actividad que se repite, se crea la siguiente
   if (!restaurando && modo === 'edicion' || (!restaurando && escribiendoSinTomar)) {
     const creadas = [];
@@ -1711,7 +1790,7 @@ const JUNTAR_BIT = 3 * 60e3;        // cambios seguidos a la misma actividad en 
 const ETQ_BIT = { ...CAMPOS_NOV, proyecto: 'Proyecto', metaInicio: 'Meta inicio', metaFin: 'Meta fin' };
 const ACCIONES_BIT = { 'creó': { ic: 'mas', c: 'verde', t: 'Creó' }, 'cambió': { ic: 'lapiz', c: 'amar', t: 'Cambió' }, 'eliminó': { ic: 'basura', c: 'rojo', t: 'Eliminó' }, 'meta': { ic: 'bandera', c: 'azul', t: 'Cambió la meta' },
   'restauró': { ic: 'reloj', c: 'azul', t: 'Restauró un respaldo' }, 'sprint': { ic: 'nuevo', c: 'azul', t: 'Creó el sprint' },
-  'recuperó': { ic: 'reloj', c: 'verde', t: 'Recuperó' }, 'imagen': { ic: 'imagen', c: 'azul', t: 'Imagen' } };
+  'recuperó': { ic: 'reloj', c: 'verde', t: 'Recuperó' }, 'imagen': { ic: 'imagen', c: 'azul', t: 'Imagen' }, 'hito': { ic: 'bandera', c: 'azul', t: 'Hito' } };
 const valBit = v => (v === '' || v == null) ? '—' : String(v).replace(/[|;\r\n]+/g, ' ').replace(/→/g, '->').trim().slice(0, 140);
 const nombreDe = d => d ? `${d.negocio || SIN_NEGOCIO} · ${String(d.actividad || '').split('\n')[0]}` : '';
 function detalleBit(e) {
@@ -1981,26 +2060,47 @@ function setEstado(a, v, terminada) {
 }
 
 /* ============ Markdown <-> datos ============ */
+const LINEA_HITO = /^[-*]\s*H(\d+)\s*\|\s*(\d{4}-\d{2}-\d{2})?\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*(?:\|\s*(\d{4}-\d{2}-\d{2})?\s*(?:\|(.*))?)?$/;
+// Una sección "## Hitos" sólo se interpreta si todas sus líneas tienen el formato; una escrita a mano se conserva tal cual
+function esSeccionHitos(lineas, desde) {
+  for (let i = desde; i < lineas.length; i++) {
+    const l = lineas[i].trim();
+    if (/^#{1,6}\s/.test(l)) break;
+    if (l && !LINEA_HITO.test(l)) return false;
+  }
+  return true;
+}
+// Número de compatibilidad con que se guarda: sólo sube si se usan hitos
+const versionDe = (hs, acts) => hs.length || acts.some(a => a.hito) ? VERSION_MDEXA : VERSION_SIN_HITOS;
 // Formato del archivo:
 //   - Proyecto: ...    - Meta inicio: AAAA-MM-DD    - Meta fin: AAAA-MM-DD
 //   - En edición: Nombre | desde | último latido     (sólo mientras alguien edita)
 //   | ID | Negocio | Actividad | Tamaño | Prioridad | Responsable | Inicio | Fin | Estado | Terminada | Etiquetas | Depende de | Repite |
+//   ## Hitos: - H1 | fecha | nombre | negocio; negocio | cumplido | descripción   (y columna "Hito" en la tabla, sólo si hay hitos)
 //   ## Etiquetas   (solo los colores elegidos a mano)
 //   - nombre | color
 //   ## Notas
 //   - #ID | fecha ISO | Autor | texto (los saltos de línea como <br>)
 function parseMD(txt) {
-  const acts = [], m = { proyecto: '', inicio: '', fin: '', version: 0 }, nts = [], bit = [], extra = [], colEtq = {}, imgs = [], subsPorAct = {}; let c = null, cols = null, enNotas = false, enBit = false, enEtq = false, enImg = false, enSub = false, enOtra = false;
-  for (const linea of txt.split(/\r?\n/)) {
-    const l = linea.trim();
+  const acts = [], m = { proyecto: '', inicio: '', fin: '', version: 0 }, nts = [], bit = [], extra = [], colEtq = {}, imgs = [], subsPorAct = {}; let c = null, cols = null, enNotas = false, enBit = false, enEtq = false, enImg = false, enSub = false, enOtra = false, enHitos = false;
+  const hs = [], lineas = txt.split(/\r?\n/);
+  for (let num = 0; num < lineas.length; num++) {
+    const linea = lineas[num], l = linea.trim();
     if (/^#{1,6}\s/.test(l)) {
       const t = normaliza(l); enNotas = /^##\s+notas\b/.test(t); enBit = /^##\s+bitacora\b/.test(t); enEtq = /^##\s+etiquetas\s*$/.test(t); enImg = /^##\s+imagenes\s*$/.test(t); enSub = /^##\s+subtareas\s*$/.test(t);
       // Una sección ## que MDexa no conoce se conserva tal cual (por ejemplo, una agregada a mano)
-      enOtra = /^##\s/.test(l) && !enNotas && !enBit && !enEtq && !enImg && !enSub;
+      enHitos = /^##\s+hitos\s*$/.test(t) && esSeccionHitos(lineas, num + 1);
+      enOtra = /^##\s/.test(l) && !enNotas && !enBit && !enEtq && !enImg && !enSub && !enHitos;
       if (enOtra) extra.push(linea.replace(/\s+$/, ''));
       continue;
     }
     if (enOtra) { extra.push(linea.replace(/\s+$/, '')); continue; }
+    if (enHitos) {
+      const mh = l.match(LINEA_HITO);
+      if (mh) hs.push({ id: +mh[1], fecha: mh[2] || '', nombre: mh[3], negocios: mh[4].split(';').map(s => s.trim()).filter(Boolean), cumplido: mh[5] || '',
+        descripcion: (mh[6] || '').trim().replace(/<br\s*\/?>/gi, '\n') });
+      continue;
+    }
     if (enSub) {
       const ms = l.match(/^[-*]\s*#(\d+)\s*\[([ xX])\]\s?(.*)$/);
       if (ms && ms[3].trim()) { const k = +ms[1]; (subsPorAct[k] = subsPorAct[k] || []).push({ t: ms[3].trim(), ok: ms[2] !== ' ' }); }
@@ -2053,23 +2153,26 @@ function parseMD(txt) {
     acts.push({ id: parseInt(g('id')) || 0, negocio: g('negocio'), actividad: g('actividad'),
                 tamano: TAMANOS[tam] ? tam : '', prioridad: ALIAS_PRI[normaliza(g('prioridad'))] || '', etiquetas: leerEtqs(g('etiquetas')), depende: leerDeps(g('depende de')), repite: leerRepite(g('repite')),
                 responsable: g('responsable'), inicio: g('inicio'), fin: g('fin'),
-                estado, terminada: estado === 'Terminado' ? g('terminada') : '' });
+                estado, terminada: estado === 'Terminado' ? g('terminada') : '', ...(/^H\d+$/i.test(g('hito')) ? { hito: +g('hito').slice(1) } : {}) });
   }
   acts.forEach(a => { if (subsPorAct[a.id]) a.subtareas = subsPorAct[a.id]; });
   let max = Math.max(0, ...acts.map(a => a.id));
   acts.forEach(a => { if (!a.id) a.id = ++max; });
   while (extra.length && !extra[extra.length - 1].trim()) extra.pop();
-  return { actividades: acts, meta: m, candado: c, notas: nts, bitacora: bit, extra, coloresEtq: colEtq, imagenes: imgs };
+  return { actividades: acts, meta: m, candado: c, notas: nts, bitacora: bit, extra, coloresEtq: colEtq, imagenes: imgs, hitos: hs };
 }
 
 function toMD() {
   const limpia = s => String(s ?? '').replace(/\|/g, '/').trim().replace(/\r?\n/g, '<br>');
   let md = `# ${limpia(meta.proyecto) || 'Actividades'}\n\n`;
-  md += `- Proyecto: ${limpia(meta.proyecto)}\n- Meta inicio: ${meta.inicio || ''}\n- Meta fin: ${meta.fin || ''}\n- Versión de MDexa: ${VERSION_MDEXA} (v${VERSION_TXT})\n`;
+  md += `- Proyecto: ${limpia(meta.proyecto)}\n- Meta inicio: ${meta.inicio || ''}\n- Meta fin: ${meta.fin || ''}\n- Versión de MDexa: ${versionDe(hitos, actividades)} (v${VERSION_TXT})\n`;
+  const conHitos = versionDe(hitos, actividades) === VERSION_MDEXA;
   if (candado) md += `- En edición: ${limpia(candado.usuario)} | ${candado.desde} | ${candado.latido}\n`;
-  md += '\n| ID | Negocio | Actividad | Tamaño | Prioridad | Responsable | Inicio | Fin | Estado | Terminada | Etiquetas | Depende de | Repite |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|\n';
+  md += `\n| ID | Negocio | Actividad | Tamaño | Prioridad | Responsable | Inicio | Fin | Estado | Terminada | Etiquetas | Depende de | Repite |${conHitos ? ' Hito |' : ''}\n|---|---|---|---|---|---|---|---|---|---|---|---|---|${conHitos ? '---|' : ''}\n`;
   for (const a of [...actividades].sort((x, y) => x.id - y.id))
-    md += `| ${a.id} | ${limpia(a.negocio)} | ${limpia(a.actividad)} | ${a.tamano || ''} | ${a.prioridad || ''} | ${limpia(a.responsable)} | ${a.inicio || ''} | ${a.fin || ''} | ${EST(a)} | ${a.terminada || ''} | ${limpia(etqs(a).join(', '))} | ${txtDeps(a)} | ${REPITE[a.repite] || ''} |\n`;
+    md += `| ${a.id} | ${limpia(a.negocio)} | ${limpia(a.actividad)} | ${a.tamano || ''} | ${a.prioridad || ''} | ${limpia(a.responsable)} | ${a.inicio || ''} | ${a.fin || ''} | ${EST(a)} | ${a.terminada || ''} | ${limpia(etqs(a).join(', '))} | ${txtDeps(a)} | ${REPITE[a.repite] || ''} |${conHitos ? ` ${a.hito ? 'H' + a.hito : ''} |` : ''}\n`;
+  if (hitos.length) md += '\n## Hitos\n\n' + [...hitos].sort((a, b) => a.id - b.id)
+    .map(h => `- H${h.id} | ${h.fecha} | ${limpia(h.nombre)} | ${limpia(h.negocios.join('; '))}${h.cumplido || h.descripcion ? ` | ${h.cumplido}` : ''}${h.descripcion ? ` | ${limpia(h.descripcion)}` : ''}`).join('\n') + '\n';
   const usadas = new Set(todasEtq().map(normaliza)), colores = Object.entries(coloresEtq).filter(([k]) => usadas.has(k));
   if (colores.length) md += '\n## Etiquetas\n\n' + colores.map(([k, c]) => `- ${limpia(todasEtq().find(t => normaliza(t) === k) || k)} | ${c}`).join('\n') + '\n';
   if (seccionesExtra.length) md += '\n' + seccionesExtra.join('\n') + '\n';
@@ -2098,7 +2201,7 @@ function toMD() {
 }
 
 let seccionesExtra = [];
-function aplicar(d) { actividades = d.actividades; meta = d.meta; candado = d.candado; notas = d.notas || []; bitacora = d.bitacora || []; seccionesExtra = d.extra || []; coloresEtq = d.coloresEtq || {}; imagenes = d.imagenes || []; versionArchivo = d.meta.version || 0; versionArchivoTxt = d.meta.versionTxt || ''; previoLocal = foto(actividades); limpiarDeshacer(); }
+function aplicar(d) { actividades = d.actividades; meta = d.meta; candado = d.candado; notas = d.notas || []; bitacora = d.bitacora || []; seccionesExtra = d.extra || []; coloresEtq = d.coloresEtq || {}; imagenes = d.imagenes || []; hitos = d.hitos || []; versionArchivo = d.meta.version || 0; versionArchivoTxt = d.meta.versionTxt || ''; previoLocal = foto(actividades); limpiarDeshacer(); }
 
 /* ============ Archivos recientes (se guardan en este navegador) ============ */
 const idb = (() => {
@@ -2328,14 +2431,14 @@ function perderCandado(d) {
 /* ---- Deshacer / rehacer: solo mientras editas; se pierde al soltar el archivo o recargar ---- */
 let pilaDeshacer = [], pilaRehacer = [], estadoPrevio = null;
 const MAX_DESHACER = 50;
-const instantanea = () => JSON.stringify({ a: actividades, m: { proyecto: meta.proyecto, inicio: meta.inicio, fin: meta.fin }, c: coloresEtq });
+const instantanea = () => JSON.stringify({ a: actividades, m: { proyecto: meta.proyecto, inicio: meta.inicio, fin: meta.fin }, c: coloresEtq, h: hitos });
 function limpiarDeshacer() { pilaDeshacer = []; pilaRehacer = []; estadoPrevio = null; }
 function describirCambio(antes, despues) {
   const A = new Map(JSON.parse(antes).a.map(x => [x.id, x])), D = new Map(JSON.parse(despues).a.map(x => [x.id, x]));
   const nuevas = [...D.keys()].filter(k => !A.has(k)), borradas = [...A.keys()].filter(k => !D.has(k));
   const cambiadas = [...D.keys()].filter(k => A.has(k) && JSON.stringify(A.get(k)) !== JSON.stringify(D.get(k)));
   const nom = x => `«${String(x.actividad).split('\n')[0].slice(0, 40)}»`, total = nuevas.length + borradas.length + cambiadas.length;
-  if (!total) return 'el cambio en la meta o en los colores';
+  if (!total) return JSON.stringify(JSON.parse(antes).h) !== JSON.stringify(JSON.parse(despues).h) ? 'el cambio en los hitos' : 'el cambio en la meta o en los colores';
   if (total === 1) return nuevas.length ? `agregar ${nom(D.get(nuevas[0]))}` : borradas.length ? `eliminar ${nom(A.get(borradas[0]))}` : `el cambio en ${nom(D.get(cambiadas[0]))}`;
   return [nuevas.length && pl(nuevas.length, 'agregada', 'agregadas'), borradas.length && pl(borradas.length, 'eliminada', 'eliminadas'), cambiadas.length && pl(cambiadas.length, 'cambiada', 'cambiadas')].filter(Boolean).join(', ');
 }
@@ -2349,7 +2452,7 @@ function registrarDeshacer() {
   }
   estadoPrevio = ahora;
 }
-function aplicarInstantanea(s) { const o = JSON.parse(s); actividades = o.a; meta = { ...meta, ...o.m }; coloresEtq = o.c || {}; }
+function aplicarInstantanea(s) { const o = JSON.parse(s); actividades = o.a; meta = { ...meta, ...o.m }; coloresEtq = o.c || {}; hitos = o.h || []; }
 function deshacer() {
   if (modo !== 'edicion') { aviso('Toma el archivo para deshacer cambios'); return; }
   if (!pilaDeshacer.length) { aviso('No hay nada que deshacer'); return; }
@@ -2372,6 +2475,7 @@ document.addEventListener('keydown', e => {
   (k === 'y' || e.shiftKey) ? rehacer() : deshacer();
 });
 function guardar() {
+  ajustarHitos();
   registrarDeshacer();
   absorberPropios();   // registra en la bitácora lo que acabas de cambiar antes de escribir
   if (!soportaFS || !fileHandle) { sucio = true; guardarCopiaLocal(toMD()); renderEstado(); return Promise.resolve(); }
@@ -2400,7 +2504,7 @@ async function nuevo() {
     catch (e) { if (e.name !== 'AbortError') alert(e.message); return; }
     nombreArchivo = fileHandle.name;
   } else nombreArchivo = 'actividades.md';
-  actividades = []; notas = []; bitacora = []; seccionesExtra = []; versionArchivo = VERSION_MDEXA; meta = m; colapsados.clear(); limpiarDeshacer(); modo = 'edicion'; copiaLocal = false; ultimoPendiente = null;
+  actividades = []; notas = []; bitacora = []; seccionesExtra = []; imagenes = []; hitos = []; versionArchivo = VERSION_MDEXA; meta = m; colapsados.clear(); limpiarDeshacer(); modo = 'edicion'; copiaLocal = false; ultimoPendiente = null;
   cargarVisto(true);
   if (soportaFS) {
     const ahora = new Date().toISOString();
@@ -2507,6 +2611,7 @@ crearMsel('qEst', 'Todos los estados', 'estados');
 crearMsel('qTam', 'Todos los tamaños', 'tamaños');
 crearMsel('qPri', 'Todas las prioridades', 'prioridades');
 crearMsel('qEtq', 'Todas las etiquetas', 'etiquetas');
+crearMsel('qHito', 'Todos los hitos', 'hitos');
 opcionesMsel('qPri', [...ORDEN_PRI.map(p => ({ v: p, cls: 'pri-punto pri-' + p })), SIN_PRI]);
 opcionesMsel('qEst', [...ESTADOS.map(e => ({ v: e.v, c: e.c })), { v: 'Otros', sep: true }, 'Vencida', 'Bloqueada', 'Recurrente', 'Con novedades']);
 opcionesMsel('qTam', [...ORDEN_TAM, SIN_TAM]);
@@ -2783,7 +2888,8 @@ function renderEstado() {
   const icoAcc = { tomar: 'lapiz', soltar: 'abierto', liberar: 'abierto', reabrir: 'carpeta', recientes: 'reloj' };
   b.querySelectorAll('button[data-acc]').forEach(x => { if (icoAcc[x.dataset.acc]) x.dataset.ico = icoAcc[x.dataset.acc]; });
   iconizar(b);
-  $('btnNuevaAct').hidden = modo !== 'edicion';
+  $('btnNuevaAct').hidden = $('btnNuevoHito').hidden = modo !== 'edicion';
+  $('btnHitos').disabled = !nombreArchivo;
 }
 $('banner').addEventListener('click', e => {
   const b = e.target.closest('[data-acc]'); if (!b) return;
@@ -2791,6 +2897,14 @@ $('banner').addEventListener('click', e => {
   ({ tomar, soltar, liberar: liberarPropio, reabrir: reabrirUltimo, recientes: abrir, manual: abrirManual, deshacer, rehacer })[b.dataset.acc]?.();
 });
 
+function bloqueHitos() {
+  if (!hitos.length) return '';
+  const prox = proximosHitos(), color = { Cumplido: 'es-verde', 'En tiempo': 'es-gris', 'En riesgo': 'es-amar', Vencido: 'es-rojo' };
+  return `<div class="m-hitos"><div class="m-hitos-cab"><span class="etq">${ico('bandera', 13)} Próximos hitos</span><button type="button" data-acc="hitos">Ver todos (${hitos.length})</button></div>
+    ${prox.length ? prox.slice(0, 4).map(({ h, info }) => `<button type="button" class="m-hito" data-hito="${h.id}" title="${esc(`${h.negocios.join(', ')}${h.descripcion ? '\n' + h.descripcion : ''}`)}"><span class="m-hito-nom">${esc(h.nombre)}</span><span class="nd">${fmtTxt(h.fecha)}</span>
+      <span class="bar"><span class="f-verde" style="width:${info.pct}%"></span></span><span class="nd">${info.hechas}/${info.total}</span><b class="${color[info.estado]}" title="${esc(info.detalle)}">${info.estado}</b></button>`).join('') : '<div class="nd">Todos los hitos están cumplidos.</div>'}
+    ${prox.length > 4 ? `<div class="nd">y ${prox.length - 4} más</div>` : ''}</div>`;
+}
 function renderMeta(x) {
   $('titulo').textContent = meta.proyecto || (nombreArchivo ? nombreArchivo.replace(/\.md$/i, '') : 'Sin proyecto abierto');
   document.title = (meta.proyecto ? meta.proyecto + ' · ' : '') + NOMBRE_APP;
@@ -2799,7 +2913,7 @@ function renderMeta(x) {
   card.hidden = false;
   const btn = modo === 'edicion' ? `<button data-acc="meta" data-ico="calendario">${meta.inicio ? 'Editar meta' : 'Definir meta'}</button>` : '';
   if (!x.t) {
-    card.innerHTML = `<div class="meta-top"><div><div class="etq">${ico('bandera', 13)} Meta del proyecto</div><div class="rango nd">Sin meta definida</div></div><div class="barra">${btn}</div></div>`;
+    card.innerHTML = `<div class="meta-top"><div><div class="etq">${ico('bandera', 13)} Meta del proyecto</div><div class="rango nd">Sin meta definida</div></div><div class="barra">${btn}</div></div>${bloqueHitos()}`;
   } else {
     const t = x.t;
     card.innerHTML = `
@@ -2816,10 +2930,13 @@ function renderMeta(x) {
       </div>
       <div class="meta-pie">${x.ritmo ? `<div class="ritmo ${x.ritmo.cls}" title="${esc(x.ritmo.det)}">${x.ritmo.txt}</div>` : '<span></span>'}
         <button class="av-toggle" data-acc="avance" aria-expanded="${verAvance}">${ico('grafica', 14)} ${verAvance ? 'Ocultar gráfica de avance' : 'Ver gráfica de avance'}</button></div>
+      ${bloqueHitos()}
       ${verAvance ? bloqueAvance() : ''}`;
   }
   iconizar(card);
   const bm = card.querySelector('[data-acc="meta"]'); if (bm) bm.onclick = () => editarMeta();
+  const bh = card.querySelector('[data-acc="hitos"]'); if (bh) bh.onclick = () => abrirHitos();
+  card.querySelectorAll('.m-hito').forEach(b => b.onclick = () => abrirHito(+b.dataset.hito));
   const ba = card.querySelector('[data-acc="avance"]');
   if (ba) ba.onclick = () => { verAvance = !verAvance; try { localStorage.setItem('mdexa.verAvance', verAvance ? '1' : '0'); } catch {} render(); };
   card.querySelectorAll('[data-av-u]').forEach(b => b.onclick = () => { unidadAvance = b.dataset.avU; try { localStorage.setItem('mdexa.avanceUnidad', unidadAvance); } catch {} render(); });
@@ -2885,6 +3002,8 @@ function render() {
   opcionesMsel('qEtq', [...etiquetas.map(t => ({ v: t, cls: 'etq-punto etq-' + colorEtq(t) })), ...(actividades.some(a => !etqs(a).length) ? [SIN_ETQ] : [])]);
   opcionesMsel('qNeg', actividades.some(a => !a.negocio) ? [...negocios, SIN_NEGOCIO] : negocios);
   opcionesMsel('qResp', actividades.some(a => !a.responsable) ? [...resp, SIN_RESP] : resp);
+  opcionesMsel('qHito', hitos.length ? [...hitosOrdenados().map(h => h.nombre), SIN_HITO] : []);
+  $('qHito').hidden = !hitos.length;
 
   const cols = [...(conNegCol ? [['negocio', 'Negocio']] : []), ['actividad', 'Actividad'], ['prioridad', 'Prioridad'], ['tamano', 'Tamaño'], ['responsable', 'Responsable'],
                 ['inicio', 'Inicio'], ['fin', 'Fin'], ['estado', 'Estado']];
@@ -2903,7 +3022,7 @@ function render() {
   palsBusq = [...new Set(normaliza($('qTexto').value).split(/\s+/).filter(Boolean))]; pistasBusq = new Map();
   const notasPorAct = new Map(); if (palsBusq.length) notas.forEach(x => { if (!notasPorAct.has(x.act)) notasPorAct.set(x.act, []); notasPorAct.get(x.act).push(x); });
   const pasaBusq = a => { if (!palsBusq.length) return true; const c = coincideBusqueda(a, palsBusq, notasPorAct.get(a.id)); if (c?.pista) pistasBusq.set(a.id, c.pista); return !!c; };
-  const n = fsel('qNeg'), r = enM ? new Set() : fsel('qResp'), s = fsel('qEst'), tm = fsel('qTam'), pr = fsel('qPri'), et = fsel('qEtq');
+  const n = fsel('qNeg'), r = enM ? new Set() : fsel('qResp'), s = fsel('qEst'), tm = fsel('qTam'), pr = fsel('qPri'), et = fsel('qEtq'), fh = fsel('qHito');
   const pasaEtq = a => !et.size || [...et].some(v => v === SIN_ETQ ? !etqs(a).length : tieneEtq(a, v));
   const ocultaBk = backlogOculto(), nBk = actividades.filter(a => EST(a) === 'Backlog').length;
   $('lblBacklog').querySelector('span').textContent = `Mostrar backlog${nBk ? ` (${nBk})` : ''}`;
@@ -2914,7 +3033,7 @@ function render() {
                         : k === 'negocio' ? negocioDe(a) : (a[k] || '');
   const lista = actividades
     .filter(a => pasaBusq(a) && (!n.size || n.has(negocioDe(a))) && (!r.size || r.has(a.responsable || SIN_RESP)) &&
-                 pasaEst(a) && (!tm.size || tm.has(a.tamano || SIN_TAM)) && (!pr.size || pr.has(a.prioridad || SIN_PRI)) && pasaEtq(a) && !(ocultaBk && EST(a) === 'Backlog'))
+                 pasaEst(a) && (!tm.size || tm.has(a.tamano || SIN_TAM)) && (!pr.size || pr.has(a.prioridad || SIN_PRI)) && pasaEtq(a) && (!fh.size || fh.has(nombreHitoDe(a))) && !(ocultaBk && EST(a) === 'Backlog'))
     .sort((a, b) => {
       const va = valor(a, orden.k), vb = valor(b, orden.k);
       if (!va !== !vb) return va ? -1 : 1;
@@ -3117,7 +3236,8 @@ function renderGantt(bloques, lista, msgVacio) {
   if (!lista.length) { cont.innerHTML = `<div class="vacio">${msgVacio}</div>`; $('ganttLeyenda').innerHTML = ''; return; }
 
   // Rango visible: desde el lunes anterior a la primera fecha hasta unos días después de la última
-  const fechas = [h, meta.inicio, meta.fin, ...lista.flatMap(a => [a.inicio, a.fin])].filter(Boolean).sort();
+  const hs = hitosVisibles();
+  const fechas = [h, meta.inicio, meta.fin, ...hs.map(x => x.fecha), ...lista.flatMap(a => [a.inicio, a.fin])].filter(Boolean).sort();
   let ini = addDias(fechas[0], -3);
   ini = addDias(ini, -((new Date(ini + 'T00:00').getDay() + 6) % 7));
   const fin = addDias(fechas[fechas.length - 1], 10);
@@ -3149,6 +3269,16 @@ function renderGantt(bloques, lista, msgVacio) {
   }
   fondo += `<div class="g-hoy" style="left:${x(h) + px / 2}px"></div>`;
   if (zoom !== 'dia') marcas += `<div class="g-marca hoy" style="left:${x(h) + px / 2}px" title="Hoy: ${fmtTxt(h)}">Hoy</div>`;
+
+  // Hitos: rombo en su fecha, repartidos en carriles para que sus nombres no se encimen
+  const carriles = carrilesHitos(hs.map(m => x(m.fecha) + px / 2), 150), nCarriles = Math.max(0, ...carriles.map(c => c + 1));
+  let rombos = '';
+  hs.forEach((m, i) => {
+    const info = infoHito(m);
+    fondo += `<div class="g-hito-lin" data-hito="${m.id}" style="left:${x(m.fecha) + px / 2}px"></div>`;
+    rombos += `<button type="button" class="g-rombo ${claseHito(info.estado)} ${ed ? 'mov' : ''}" data-hito="${m.id}" style="left:${x(m.fecha) + px / 2}px;top:${carriles[i] * 22 + 3}px"
+      title="${esc(`${m.nombre}\n${fmtTxt(m.fecha)} · ${info.estado} · ${info.hechas}/${info.total} actividades${m.descripcion ? '\n' + m.descripcion : ''}${ed ? '\n\nArrastra para cambiar la fecha · clic para editar' : ''}`)}"><i></i><span>${esc(m.nombre)}</span></button>`;
+  });
 
   const filaAct = (a, tagNeg) => {
     const est = EST(a), c = colorEstado(est), v = vencida(a), fav = esFav(a);
@@ -3184,8 +3314,8 @@ function renderGantt(bloques, lista, msgVacio) {
   }).join('');
 
   cont.innerHTML = `<div class="g-tabla" style="width:${LW + W}px;--px:${px}px;--lw:${LW}px">
-    <div class="g-cab"><div class="g-lbl g-esq">${ico('lista', 14)} Actividad</div>
-      <div class="g-escala" style="width:${W}px"><div class="g-meses">${meses}</div><div class="g-subs">${subs}</div>${marcas}</div></div>
+    <div class="g-cab"><div class="g-lbl g-esq">${ico('lista', 14)} Actividad${hs.length ? `<span class="g-esq-h">${ico('bandera', 12)} Hitos</span>` : ''}</div>
+      <div class="g-escala ${hs.length ? 'con-hitos' : ''}" style="width:${W}px"><div class="g-meses">${meses}</div><div class="g-subs">${subs}</div>${marcas}${hs.length ? `<div class="g-hitos" style="height:${nCarriles * 22 + 4}px">${rombos}</div>` : ''}</div></div>
     <div class="g-cuerpo"><div class="g-fondo z-${zoom}" style="left:${LW}px;width:${W}px">${fondo}</div>${filas}</div></div>`;
 
   dibujarFlechas(cont);
@@ -3194,10 +3324,32 @@ function renderGantt(bloques, lista, msgVacio) {
 
   $('ganttLeyenda').innerHTML = ESTADOS.map(e => `<span><i class="g-ley b-${e.c}"></i>${e.v}</span>`).join('') +
     (lista.some(a => deps(a).length) ? `<span><svg width="22" height="8" class="g-ley-fl"><path d="M0 4H16" class="pend"/><path d="M14 0L22 4L14 8z" class="pend rell"/></svg>Depende de</span><span><svg width="22" height="8" class="g-ley-fl"><path d="M0 4H16" class="choque"/><path d="M14 0L22 4L14 8z" class="choque rell"/></svg>Empieza antes de que termine la otra</span>` : '') +
-    `<span><i class="g-ley-hoy"></i>Hoy</span>${meta.inicio ? '<span><i class="g-ley-meta"></i>Periodo de la meta</span>' : ''}<span><i class="g-ley-punto"></i>Solo una fecha</span>` +
+    `<span><i class="g-ley-hoy"></i>Hoy</span>${meta.inicio ? '<span><i class="g-ley-meta"></i>Periodo de la meta</span>' : ''}<span><i class="g-ley-punto"></i>Solo una fecha</span>${hs.length ? '<span><i class="g-ley-hito"></i>Hito</span>' : ''}` +
     (ed ? `<span class="g-ayuda">${ico('lapiz', 13)} Arrastra una barra para moverla · arrastra sus extremos para cambiar inicio o fin · clic para editar · arrastra el punto ${'<i class="g-ley-enlace"></i>'} del final de una barra hasta otra para que esa dependa de ella · clic en una flecha para quitarla</span>`
         : `<span class="g-ayuda">${ico('candado', 13)} Toma el archivo para mover las barras</span>`);
 }
+
+// Hitos de la línea de tiempo: arrastrar cambia la fecha; clic abre el hito
+let arrHito = null;
+$('gantt').addEventListener('pointerdown', e => {
+  const b = e.target.closest('.g-rombo'); if (!b || modo !== 'edicion' || e.button !== 0) return;
+  const h = hitos.find(x => x.id === +b.dataset.hito); if (!h) return;
+  e.preventDefault(); b.setPointerCapture(e.pointerId); arrHito = { h, b, x0: e.clientX, izq: parseFloat(b.style.left), d: 0 };
+});
+$('gantt').addEventListener('pointermove', e => {
+  if (!arrHito) return;
+  const { px } = ganttRango, d = Math.round((e.clientX - arrHito.x0) / px); arrHito.d = d;
+  arrHito.b.style.left = arrHito.izq + d * px + 'px';
+  const lin = $('gantt').querySelector(`.g-hito-lin[data-hito="${arrHito.h.id}"]`); if (lin) lin.style.left = arrHito.izq + d * px + 'px';
+  arrHito.b.querySelector('span').textContent = d ? fmtTxt(addDias(arrHito.h.fecha, d)) : arrHito.h.nombre;
+});
+$('gantt').addEventListener('pointerup', () => {
+  if (!arrHito) return;
+  const { h, d } = arrHito; arrHito = null;
+  if (d) moverHito(h.id, addDias(h.fecha, d)); else abrirHito(h.id);
+});
+$('gantt').addEventListener('pointercancel', () => { if (arrHito) { arrHito = null; render(); } });
+$('gantt').addEventListener('click', e => { const b = e.target.closest('.g-rombo'); if (b && (modo !== 'edicion' || e.detail === 0)) abrirHito(+b.dataset.hito); });
 
 // Arrastrar barras: mover (centro) o cambiar inicio/fin (extremos)
 let arrastre = null;
@@ -3423,6 +3575,7 @@ function renderCal(lista, msgVacio) {
       ${novIds.has(a.id) ? `<span class="c-novdot ${novIds.get(a.id).tipo}" title="${novIds.get(a.id).tipo === 'nueva' ? 'Nueva' : 'Cambió'} desde tu última visita"></span>` : ''}${esFav(a) ? '<span class="c-fav">★</span>' : ''}<span class="c-neg">${esc(abrevNeg(negocioDe(a)))}</span>${badgePri(a.prioridad, true)}${REPITE[a.repite] ? `<span class="c-rep" title="${esc(descRepite(a))}">${ico('repetir', 10)}</span>` : ''}<span class="c-txt">${esc(a.actividad.split('\n')[0])}</span>${a.tamano ? `<span class="c-tam">${a.tamano}</span>` : ''}${(() => { const n = notas.filter(x => x.act === a.id).length; return n ? `<span class="c-notas ${notasNuevasPorAct.get(a.id) ? 'nueva' : ''}" title="${pl(n, 'nota', 'notas')}">${ico('nota', 11)}${n}</span>` : ''; })()}</div>`;
   };
 
+  const hitosCal = hitosVisibles();
   let html = `<div class="c-cab">
       <div class="c-nav">
         <button data-cal="-1" title="Mes anterior" aria-label="Mes anterior">${ico('ant')}</button>
@@ -3444,6 +3597,8 @@ function renderCal(lista, msgVacio) {
     html += `<div class="c-dia ${d < primero || d > ultimo ? 'fuera' : ''} ${wd === 0 || wd === 6 ? 'finde' : ''} ${d === h ? 'hoy' : ''} ${enMeta ? 'en-meta' : ''}" data-dia="${d}"
         ${ed ? `title="Clic en un espacio vacío para crear una actividad con fecha fin ${fmtTxt(d)}"` : ''}>
       <div class="c-num"><b>${+d.slice(8)}</b>${marcas}${items.length ? `<span class="c-cuenta">${items.length}</span>` : ''}</div>
+      ${hitosCal.filter(m => m.fecha === d).map(m => { const info = infoHito(m); return `<button type="button" class="c-hito ${claseHito(info.estado)}" data-hito="${m.id}" ${ed ? 'draggable="true"' : ''}
+        title="${esc(`Hito: ${m.nombre}\n${info.estado} · ${info.hechas}/${info.total} actividades${m.descripcion ? '\n' + m.descripcion : ''}${ed ? '\n\nArrastra a otro día para cambiar la fecha · clic para editar' : ''}`)}"><i></i><span>${esc(m.nombre)}</span></button>`; }).join('')}
       <div class="c-items">${vis.map(chip).join('')}
         ${items.length > MAX_POR_DIA ? `<button class="c-mas" data-mas="${d}">${abierta ? 'Ver menos' : `+${items.length - MAX_POR_DIA} más`}</button>` : ''}</div>
     </div>`;
@@ -3466,6 +3621,13 @@ function renderCal(lista, msgVacio) {
 }
 
 const cLimpiar = () => $('cal').querySelectorAll('.sobre').forEach(x => x.classList.remove('sobre'));
+// Hitos del calendario: clic abre; arrastrar a otro día cambia la fecha. Se atienden antes que los clics del día
+let cArrH = null;
+$('cal').addEventListener('click', e => { const b = e.target.closest('.c-hito'); if (b) { e.stopImmediatePropagation(); abrirHito(+b.dataset.hito); } });
+$('cal').addEventListener('dragstart', e => { const b = e.target.closest?.('.c-hito'); if (!b || modo !== 'edicion') return; e.stopImmediatePropagation(); cArrH = +b.dataset.hito; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', 'H' + cArrH); });
+$('cal').addEventListener('dragover', e => { const d = e.target.closest('.c-dia'); if (cArrH == null || !d) return; e.preventDefault(); e.stopImmediatePropagation(); if (!d.classList.contains('sobre')) { cLimpiar(); d.classList.add('sobre'); } });
+$('cal').addEventListener('drop', e => { if (cArrH == null) return; e.preventDefault(); e.stopImmediatePropagation(); const d = e.target.closest('.c-dia'), id = cArrH; cArrH = null; cLimpiar(); if (d) moverHito(id, d.dataset.dia); });
+$('cal').addEventListener('dragend', () => { cArrH = null; cLimpiar(); });
 $('cal').addEventListener('click', e => {
   const nav = e.target.closest('[data-cal]');
   if (nav) {
@@ -3561,6 +3723,11 @@ $('kanban').addEventListener('drop', e => {
   if (vg?.campo === 'negocio' && vg.valor && vg.valor !== negocioDe(a)) { a.negocio = vg.valor; cambios.push(`negocio ${vg.valor}`); }
   else if (vg?.campo === 'responsable' && vg.valor !== (a.responsable || '')) { a.responsable = vg.valor; cambios.push(vg.valor ? `responsable ${vg.valor}` : 'sin responsable'); }
   else if (vg?.campo === 'prioridad' && vg.valor !== (a.prioridad || '')) { a.prioridad = vg.valor; cambios.push(vg.valor ? `prioridad ${vg.valor}` : 'sin prioridad'); }
+  else if (vg?.campo === 'hito' && (+vg.valor || 0) !== (a.hito || 0)) {
+    const h = hitos.find(x => x.id === +vg.valor);
+    if (asignarHito(a, +vg.valor || 0)) cambios.push(h ? `hito ${h.nombre}` : 'sin hito');
+    else aviso(`El hito «${h?.nombre}» es de ${h?.negocios.join(', ')}`);
+  }
   if (!cambios.length) return;
   render(); guardar();
   aviso(`${a.actividad.split('\n')[0]} → ${cambios.join(' · ')}`);
@@ -3882,6 +4049,10 @@ function reporteHTML(x) {
   if (dav && dav.total) h += `<h2>Avance acumulado contra la meta</h2><p style="margin:0 0 8px">${resumenAvance(dav)}</p>${leyendaAvance(dav)}<div class="av-graf">${svgAvance(dav)}</div>
       <h3>Por semana</h3><div class="scroll">${tablaAvance(dav)}</div>`;
 
+  const colorR = { Cumplido: 't-ok', 'En tiempo': 't-mut', 'En riesgo': 't-warn', Vencido: 't-dan' };
+  if (hitos.length) h += `<h2>Hitos</h2><div class="scroll"><table><thead><tr><th>Fecha</th><th>Hito</th><th>Negocios</th><th class="num">Actividades terminadas</th><th class="num">Avance</th><th>Estado</th><th>Detalle</th></tr></thead><tbody>${hitosOrdenados().map(m => { const i = infoHito(m);
+    return `<tr><td>${fmtTxt(m.fecha) || '—'}</td><td class="txt">${esc(m.nombre)}${m.descripcion ? `<div class="sub">${esc(m.descripcion)}</div>` : ''}</td><td>${esc(m.negocios.join(', ') || '—')}</td><td class="num">${i.hechas} de ${i.total}</td><td class="num">${i.pct}%</td><td class="${colorR[i.estado]}">${i.estado}</td><td>${i.detalle}</td></tr>`; }).join('')}</tbody></table></div>`;
+
   h += `<h2>Alertas</h2>` + (x.alertas.length ? `<ul>${x.alertas.map(a => `<li>${esc(a)}</li>`).join('')}</ul>` : '<p class="vacio">Sin alertas.</p>');
 
   if (x.total) {
@@ -3959,6 +4130,8 @@ function reporteMD(x) {
       .map(tr => '| ' + [...tr.children].map(td => td.textContent.trim()).join(' | ') + ' |');
     m += `\n## Avance acumulado contra la meta\n\n${plano(resumenAvance(dav))}\n\n| Fecha | Terminadas | Ideal | Diferencia |\n|---|---|---|---|\n` + filas.join('\n') + '\n';
   }
+  if (hitos.length) m += `\n## Hitos\n\n| Fecha | Hito | Negocios | Actividades terminadas | Avance | Estado | Detalle |\n|---|---|---|---|---|---|---|\n` +
+    hitosOrdenados().map(h => { const i = infoHito(h); return `| ${fmtTxt(h.fecha) || '—'} | ${c(h.nombre)}${h.descripcion ? `<br>${c(h.descripcion)}` : ''} | ${c(h.negocios.join(', ') || '—')} | ${i.hechas} de ${i.total} | ${i.pct}% | ${i.estado} | ${i.detalle} |`; }).join('\n') + '\n';
   m += `\n## Alertas\n\n` + (x.alertas.length ? x.alertas.map(a => `- ${a}`).join('\n') : '- Sin alertas.') + '\n';
   const tabla = (titulo, lista, col) => `\n## ${titulo}\n\n| ${col} | Asignadas | Terminadas | A tiempo | Con retraso | En progreso | Planeadas | Backlog | Canceladas | Vencidas | Cumplimiento |\n|---|---|---|---|---|---|---|---|---|---|---|\n` +
     lista.map(r => `| ${c(r.k)} | ${r.total} | ${r.comp} | ${r.aTiempo} | ${r.retraso} | ${r.prog} | ${r.plan} | ${r.porIni} | ${r.canc} | ${r.venc} | ${r.pct}% |`).join('\n') + '\n';
@@ -4419,6 +4592,7 @@ try { const v = localStorage.getItem('mdexa.agrupar'); if (v !== null && [...$('
 // Clave de grupo: el negocio tal cual (lo usa el panel lateral); los demás llevan prefijo, p. ej. "responsable:Ana López"
 function gruposDe(a) {
   const c = agrupPor();
+  if (c === 'hito') return ['hito:' + (hitoDe(a) ? a.hito : '')];
   if (c === 'negocio') return [negocioDe(a)];
   if (c === 'responsable') return ['responsable:' + (a.responsable || '')];
   if (c === 'prioridad') return ['prioridad:' + (a.prioridad || '')];
@@ -4434,6 +4608,7 @@ function valorDeGrupo(g) {
 function infoGrupo(g) {
   const v = valorDeGrupo(g); if (!v) return { titulo: g, icono: ico('tienda', 15), orden: g };
   const { campo, valor } = v;
+  if (campo === 'hito') { const l = hitosOrdenados(), n = l.findIndex(h => String(h.id) === valor); return { titulo: n < 0 ? SIN_HITO : l[n].nombre, icono: ico('bandera', 15), orden: n < 0 ? '9' : '0' + String(n).padStart(5, '0') }; }
   if (campo === 'negocio') return { titulo: valor || SIN_NEGOCIO, icono: ico('tienda', 15), orden: valor ? '0' + valor : '9' };
   if (campo === 'responsable') return { titulo: valor || SIN_RESP, icono: ico('usuario', 15), orden: valor ? '0' + valor : '9' };
   if (campo === 'prioridad') return { titulo: valor || SIN_PRI, icono: valor ? badgePri(valor, true) : `<span class="g-ico-vacio">${ico('prioridad', 14)}</span>`, orden: String(valor ? ORDEN_PRI.indexOf(valor) : 9) };
@@ -4470,6 +4645,208 @@ $('colsPop').addEventListener('click', e => {
 });
 aplicarCols();
 
+/* ============ Hitos (también funcionan como fases) ============ */
+const hitosOrdenados = () => [...hitos].sort((a, b) => (a.fecha || '9999').localeCompare(b.fecha || '9999') || a.id - b.id);
+const hitoDe = a => a.hito ? hitos.find(h => h.id === a.hito) : undefined;
+const nombreHitoDe = a => hitoDe(a)?.nombre || SIN_HITO;
+const hitoCompatible = (h, negocio) => !h.negocios.length || h.negocios.includes(negocio);
+// Asigna (o quita, con 0) el hito. false = el hito no es de su negocio
+function asignarHito(a, id) {
+  if (!id) { delete a.hito; return true; }
+  const h = hitos.find(x => x.id === id);
+  if (!h || !hitoCompatible(h, a.negocio)) return false;
+  a.hito = id; return true;
+}
+// Actividades que se muestran al elegir: las de esos negocios, sin las canceladas (salvo las que ya están)
+const actividadesParaHito = (negocios, id) => actividades.filter(a => negocios.includes(a.negocio) && (EST(a) !== 'Cancelado' || (!!id && a.hito === id)))
+  .sort((a, b) => (a.fin || '9999').localeCompare(b.fin || '9999') || a.id - b.id);
+// Entra sola: sigue abierta, termina en la fecha del hito o antes y no está en otro hito
+const encajaEnHito = (a, fecha, id) => !cerrada(a) && !!a.fin && !!fecha && a.fin <= fecha && (!hitoDe(a) || a.hito === id);
+// Casillas marcadas: en un hito nuevo (o un negocio recién agregado), las que encajan; si no, lo guardado. `manual` = lo que cambió la persona
+function seleccionHito(f, manual) {
+  const previo = hitos.find(h => h.id === f.id);
+  return new Set(actividadesParaHito(f.negocios, f.id).filter(a => manual.get(a.id)
+    ?? (previo?.negocios.includes(a.negocio) ? a.hito === previo.id : a.hito === f.id && !!f.id ? true : encajaEnHito(a, f.fecha, f.id))).map(a => a.id));
+}
+// Actividades que encajan en un hito pendiente y todavía no están en él
+// Hitos que se ven según los filtros: de los negocios elegidos (sin elegir, todos) y de los hitos elegidos
+function hitosVisibles() {
+  const negs = [...fsel('qNeg')], el = [...fsel('qHito')].filter(v => hitos.some(h => h.nombre === v));
+  return hitosOrdenados().filter(h => h.fecha && (!negs.length || !h.negocios.length || h.negocios.some(n => negs.includes(n))) && (!el.length || el.includes(h.nombre)));
+}
+const proximosHitos = () => hitosOrdenados().map(h => ({ h, info: infoHito(h) })).filter(x => x.info.estado !== 'Cumplido');
+function carrilesHitos(xs, ancho) { const fin = []; return xs.map(x => { let i = fin.findIndex(f => f <= x); if (i < 0) i = fin.length; fin[i] = x + ancho; return i; }); }
+const claseHito = estado => 'h-' + estado.replace(' ', '-');
+// Cambia la fecha (al arrastrar el rombo) conservando las actividades
+function moverHito(id, fecha) {
+  const h = hitos.find(x => x.id === id); if (!h || !fecha || h.fecha === fecha || modo !== 'edicion') return;
+  if (h.negocios.length) guardarHito({ ...h, fecha }); else { anotarHito(`Cambió «${h.nombre}»: fecha ${h.fecha || '—'} → ${fecha}`); h.fecha = fecha; }
+  render(); guardar(); aviso(`Hito «${h.nombre}»: ${fmtTxt(fecha)}`);
+}
+const abrirHito = id => modo === 'edicion' ? abrirFormHito(id) : abrirHitos();
+// Para el reporte semanal: los pendientes hasta el fin de la semana siguiente y los que tocaban o se cumplieron en esta
+function hitosSemana(lunes, domingo, pFin) {
+  const dentro = f => !!f && f >= lunes && f <= domingo;
+  return hitosOrdenados().map(h => ({ h, info: infoHito(h) })).filter(({ h, info }) => (info.estado !== 'Cumplido' && !!h.fecha && h.fecha <= pFin) || dentro(h.fecha) || dentro(h.cumplido));
+}
+const porIncluir = h => h.cumplido ? [] : actividadesParaHito(h.negocios, h.id).filter(a => a.hito !== h.id && encajaEnHito(a, h.fecha, h.id));
+// Una actividad que cambia de negocio deja el hito que ya no le corresponde
+function ajustarHitos() {
+  if (restaurando) return;
+  let n = 0;
+  actividades.forEach(a => {
+    const h = hitoDe(a), p = previoLocal[a.id];
+    if (h && p && p.negocio !== (a.negocio || '') && !hitoCompatible(h, a.negocio)) { delete a.hito; n++; }
+  });
+  if (n) setTimeout(() => aviso(`${n === 1 ? 'Una actividad dejó' : `${n} actividades dejaron`} su hito porque es de otro negocio (se puede deshacer)`), 80);
+}
+const siguienteIdHito = () => Math.max(0, ...hitos.map(h => h.id), ...actividades.map(a => a.hito || 0)) + 1;
+const limpiaNombreHito = s => s.replace(/\|/g, '/').replace(/\s+/g, ' ').trim().slice(0, 120);
+function validarHito(d) {
+  const nombre = limpiaNombreHito(d.nombre);
+  if (!nombre) return 'Escribe el nombre del hito.';
+  if (!d.fecha) return 'Elige la fecha objetivo del hito.';
+  if (!d.negocios.length) return 'Elige al menos un negocio.';
+  if (hitos.some(h => h.id !== d.id && normaliza(h.nombre) === normaliza(nombre))) return `Ya existe un hito llamado «${nombre}».`;
+  return '';
+}
+const anotarHito = detalle => bitacora.push({ fecha: new Date().toISOString(), autor: usuario || 'Sin nombre', act: null, accion: 'hito', campos: [], detalle });
+// Crea o modifica un hito (ya validado). `ids` son sus actividades; sin ellas conserva las que tenía. No guarda ni dibuja
+function guardarHito(d, ids) {
+  const previo = hitos.find(h => h.id === d.id);
+  const h = { id: previo?.id ?? siguienteIdHito(), nombre: limpiaNombreHito(d.nombre), fecha: d.fecha, negocios: [...new Set(d.negocios)].sort((a, b) => a.localeCompare(b, 'es')),
+    cumplido: d.cumplido, descripcion: String(d.descripcion || '').replace(/\|/g, '/').replace(/\r/g, '').trim().slice(0, 600) };
+  let entran = 0, salen = 0;
+  actividades.forEach(a => {
+    const estaba = !!previo && a.hito === h.id, queda = (ids ? ids.has(a.id) : estaba) && hitoCompatible(h, a.negocio);
+    if (queda === estaba) return;
+    if (queda) { a.hito = h.id; entran++; } else { delete a.hito; salen++; }
+  });
+  if (previo && !entran && !salen && JSON.stringify(previo) === JSON.stringify(h)) return h;
+  const movs = [entran && `entran ${pl(entran, 'actividad', 'actividades')}`, salen && `salen ${pl(salen, 'actividad', 'actividades')}`];
+  const cambios = previo ? [previo.nombre !== h.nombre && `nombre «${previo.nombre}» → «${h.nombre}»`, previo.fecha !== h.fecha && `fecha ${previo.fecha || '—'} → ${h.fecha}`,
+    previo.negocios.join(', ') !== h.negocios.join(', ') && `negocios: ${h.negocios.join(', ')}`, previo.descripcion !== h.descripcion && 'descripción',
+    previo.cumplido !== h.cumplido && (h.cumplido ? `cumplido el ${h.cumplido}` : 'ya no está cumplido'), ...movs] : movs;
+  const resumen = cambios.filter(Boolean).join(', ');
+  hitos = previo ? hitos.map(x => x.id === h.id ? h : x) : [...hitos, h];
+  anotarHito(previo ? `Cambió «${h.nombre}»: ${resumen}` : `Creó «${h.nombre}» para el ${h.fecha}${resumen ? `: ${resumen}` : ''}`);
+  return h;
+}
+function borrarHito(id) {
+  const h = hitos.find(x => x.id === id); if (!h) return;
+  hitos = hitos.filter(x => x.id !== id); actividades.forEach(a => { if (a.hito === id) delete a.hito; });
+  anotarHito(`Eliminó «${h.nombre}»`);
+}
+// Al renombrar un negocio, los hitos que lo incluyen lo siguen
+function renombrarNegocioHitos(viejo, nuevo) {
+  if (!viejo) return;
+  hitos = hitos.map(h => h.negocios.includes(viejo) ? { ...h, negocios: [...new Set(h.negocios.map(n => n === viejo ? nuevo : n))].sort((a, b) => a.localeCompare(b, 'es')) } : h);
+}
+// Estado y avance (por horas según el tamaño; si ninguna lo tiene, por número de actividades)
+function infoHito(h, hoyStr = hoy()) {
+  const l = actividades.filter(a => a.hito === h.id && EST(a) !== 'Cancelado'), hechas = l.filter(a => EST(a) === 'Terminado');
+  const horas = x => x.reduce((s, a) => s + (TAMANOS[a.tamano]?.h || 0), 0), th = horas(l);
+  const cumplido = !!h.cumplido || (l.length > 0 && hechas.length === l.length);
+  const pct = cumplido ? 100 : th ? Math.round(horas(hechas) * 100 / th) : l.length ? Math.round(hechas.length * 100 / l.length) : 0;
+  const tarde = l.filter(a => EST(a) !== 'Terminado' && h.fecha && a.fin > h.fecha).length;
+  const estado = cumplido ? 'Cumplido' : h.fecha && h.fecha < hoyStr ? 'Vencido' : tarde ? 'En riesgo' : 'En tiempo';
+  const detalle = estado === 'Cumplido' ? (h.cumplido ? `Marcado como cumplido el ${fmtTxt(h.cumplido)}` : 'Todas sus actividades terminaron')
+    : estado === 'Vencido' ? `Hace ${pl(dias(h.fecha, hoyStr), 'día', 'días')} que debía cumplirse`
+    : estado === 'En riesgo' ? `${pl(tarde, 'actividad termina', 'actividades terminan')} después de la fecha`
+    : h.fecha ? (h.fecha === hoyStr ? 'Es hoy' : `Faltan ${pl(dias(hoyStr, h.fecha), 'día', 'días')}`) : 'Sin fecha';
+  return { estado, total: l.length, hechas: hechas.length, pct, inicio: l.map(a => a.inicio).filter(Boolean).sort()[0] || '', detalle };
+}
+
+/* ---- Lista de hitos ---- */
+function pintarHitos() {
+  const ed = modo === 'edicion', l = hitosOrdenados();
+  const color = { Cumplido: 'es-verde', 'En tiempo': 'es-gris', 'En riesgo': 'es-amar', Vencido: 'es-rojo' };
+  $('hitosTitulo').innerHTML = `${ico('bandera', 18)} Hitos <span class="nd" style="font-weight:400">· ${pl(l.length, 'hito', 'hitos')}</span>`;
+  $('hitosAyuda').hidden = ed; $('hitoNuevo').hidden = !ed;
+  $('hitosLista').innerHTML = !l.length ? '<p class="nd">Todavía no hay hitos. Un hito es un entregable con fecha; las actividades que incluye forman su fase.</p>'
+    : `<table><thead><tr><th>Fecha</th><th>Hito</th><th>Negocios</th><th>Actividades</th><th>Avance</th><th>Estado</th>${ed ? '<th></th>' : ''}</tr></thead><tbody>${l.map(h => {
+      const i = infoHito(h), faltan = porIncluir(h);
+      return `<tr data-hito="${h.id}"><td>${fmt(h.fecha)}</td><td class="txt">${esc(h.nombre)}${h.descripcion ? `<div class="nd hito-desc">${esc(h.descripcion)}</div>` : ''}${i.inicio ? `<div class="nd">Fase desde el ${fmtTxt(i.inicio)}</div>` : ''}
+        ${ed && faltan.length ? `<div class="hito-aviso">${pl(faltan.length, 'actividad más encaja', 'actividades más encajan')}<button data-h="incluir" title="${esc(faltan.map(a => `#${a.id} ${nomCorto(a)}`).join('\n'))}">${ico('mas', 13)} Incluir</button></div>` : ''}</td>
+        <td>${h.negocios.map(n => `<span class="tag">${esc(n)}</span>`).join('')}</td><td>${i.hechas}/${i.total}</td><td>${i.pct}%</td>
+        <td><b class="${color[i.estado]}">${i.estado}</b><div class="nd">${i.detalle}</div></td>
+        ${ed ? `<td class="acc">${!h.cumplido && !i.total ? `<button class="ico-btn" data-h="cumplir" title="Marcar como cumplido hoy" aria-label="Marcar como cumplido">${ico('check')}</button>` : ''}
+          <button class="ico-btn" data-h="editar" title="Editar hito" aria-label="Editar hito">${ico('lapiz')}</button><button class="ico-btn peligro" data-h="borrar" title="Eliminar hito" aria-label="Eliminar hito">${ico('basura')}</button></td>` : ''}</tr>`;
+    }).join('')}</tbody></table>`;
+}
+function abrirHitos() {
+  if (!nombreArchivo) { alert('Abre primero un archivo .md.'); return; }
+  pintarHitos(); $('dlgHitos').showModal();
+}
+
+/* ---- Ventana para crear o editar un hito ---- */
+let hf = null, hManual = new Map();   // lo que se está editando y las casillas que cambió la persona
+const leerFormHito = () => Object.assign(hf, { nombre: $('hNom').value, fecha: $('hFecha').value, descripcion: $('hDesc').value, cumplido: $('hCumplido').value });
+function abrirFormHito(id = null) {
+  if (modo !== 'edicion') { aviso('Toma el archivo para cambiar hitos'); return; }
+  const h = hitos.find(x => x.id === id);
+  hf = h ? { ...h, negocios: [...h.negocios] } : { id: undefined, nombre: '', fecha: '', descripcion: '', negocios: [], cumplido: '' }; hManual = new Map();
+  $('hitoFormTit').innerHTML = `${ico('bandera', 20)} ${h ? 'Editar hito' : 'Nuevo hito'}`;
+  $('hNom').value = hf.nombre; $('hFecha').value = hf.fecha; $('hDesc').value = hf.descripcion; $('hCumplido').value = hf.cumplido;
+  const negs = unicos([...actividades.map(a => a.negocio), ...hf.negocios]);
+  $('hNegs').innerHTML = negs.length ? negs.map(n => `<label class="check s-ck"><input type="checkbox" value="${esc(n)}" ${hf.negocios.includes(n) ? 'checked' : ''}> ${esc(n)}</label>`).join('') : '<span class="nd">Todavía no hay actividades con negocio.</span>';
+  pintarArbolHito(); $('dlgHito').showModal(); $('hNom').focus();
+}
+function pintarArbolHito() {
+  leerFormHito();
+  const acts = actividadesParaHito(hf.negocios, hf.id), sel = seleccionHito(hf, hManual);
+  $('hCuenta').textContent = `(${sel.size} de ${acts.length})`; $('hTodasNinguna').hidden = !acts.length;
+  const nota = a => { const otro = hitoDe(a); if (otro && otro.id !== hf.id) return `en «${otro.nombre}»`;
+    return EST(a) === 'Terminado' ? 'terminada' : EST(a) === 'Cancelado' ? 'cancelada' : !a.fin ? 'sin fecha fin' : hf.fecha && a.fin > hf.fecha ? 'después de la fecha' : ''; };
+  const cerrados = new Set([...$('hArbol').querySelectorAll('details:not([open])')].map(d => d.dataset.neg));
+  $('hArbol').innerHTML = !hf.negocios.length ? '<p class="nd">Elige uno o varios negocios: se incluyen solas sus actividades abiertas que terminan en la fecha del hito o antes.</p>'
+    : `<div class="hito-arbol">${[...hf.negocios].sort((a, b) => a.localeCompare(b, 'es')).map(n => {
+      const l = acts.filter(a => a.negocio === n), k = l.filter(a => sel.has(a.id)).length;
+      return `<details data-neg="${esc(n)}" ${cerrados.has(n) ? '' : 'open'}><summary><input type="checkbox" data-neg="${esc(n)}" aria-label="Todas las de ${esc(n)}" ${l.length ? '' : 'disabled'} ${l.length && k === l.length ? 'checked' : ''} data-parcial="${k > 0 && k < l.length ? 1 : ''}"> <b>${esc(n)}</b> <span class="nd">${k} de ${l.length}</span></summary>
+        ${l.map(a => `<label class="hito-act" data-act="${a.id}"><input type="checkbox" data-id="${a.id}" ${sel.has(a.id) ? 'checked' : ''}><span class="hito-nom">#${a.id} ${esc(nomCorto(a))}</span><span class="nd">${esc(nota(a))}</span><span class="nd">${a.fin ? fmtTxt(a.fin) : '—'}</span></label>`).join('')}</details>`;
+    }).join('')}</div>${hf.fecha ? '' : '<p class="nd">Pon la fecha para que se marquen las que encajan.</p>'}`;
+  $('hArbol').querySelectorAll('input[data-parcial="1"]').forEach(i => { i.indeterminate = true; });
+}
+const marcarHito = (l, v) => { l.forEach(a => hManual.set(a.id, v)); const y = $('hArbol').querySelector('.hito-arbol')?.scrollTop || 0; pintarArbolHito(); const c = $('hArbol').querySelector('.hito-arbol'); if (c) c.scrollTop = y; };
+$('hNegs').addEventListener('change', () => { hf.negocios = [...$('hNegs').querySelectorAll('input:checked')].map(i => i.value); pintarArbolHito(); });
+$('hFecha').addEventListener('input', pintarArbolHito);
+$('hArbol').addEventListener('change', e => {
+  const c = e.target.closest('input[type=checkbox]'); if (!c) return;
+  const acts = actividadesParaHito(hf.negocios, hf.id);
+  marcarHito(c.dataset.id ? acts.filter(a => a.id === +c.dataset.id) : acts.filter(a => a.negocio === c.dataset.neg), c.checked);
+});
+$('hTodasNinguna').addEventListener('click', e => { const b = e.target.closest('[data-hmarcar]'); if (b) marcarHito(actividadesParaHito(hf.negocios, hf.id), !!b.dataset.hmarcar); });
+$('btnHitos').onclick = abrirHitos;
+$('btnNuevoHito').onclick = () => abrirFormHito();
+$('hitosCerrar').onclick = () => $('dlgHitos').close();
+$('hitoNuevo').onclick = () => abrirFormHito();
+$('hitoCancelar').onclick = () => $('dlgHito').close();
+$('formHito').onsubmit = e => {
+  e.preventDefault(); if (modo !== 'edicion' || !hf) return;
+  leerFormHito();
+  const err = validarHito(hf); if (err) { alert(err); return; }
+  const previo = hitos.some(h => h.id === hf.id), ids = seleccionHito(hf, hManual);
+  guardarHito(hf, ids); render(); guardar(); $('dlgHito').close();
+  if ($('dlgHitos').open) pintarHitos();
+  aviso(`${previo ? 'Hito guardado' : 'Hito creado'} · ${pl(ids.size, 'actividad', 'actividades')}`);
+};
+$('hitosLista').addEventListener('click', e => {
+  const b = e.target.closest('[data-h]'); if (!b || modo !== 'edicion') return;
+  const h = hitos.find(x => x.id === +b.closest('tr').dataset.hito); if (!h) return;
+  if (b.dataset.h === 'editar') { abrirFormHito(h.id); return; }
+  if (b.dataset.h === 'cumplir') { guardarHito({ ...h, cumplido: hoy() }); aviso('Hito cumplido'); }
+  else if (b.dataset.h === 'incluir') {
+    const faltan = porIncluir(h);
+    guardarHito(h, new Set([...actividades.filter(a => a.hito === h.id), ...faltan].map(a => a.id)));
+    aviso(`${pl(faltan.length, 'actividad agregada', 'actividades agregadas')} a «${h.nombre}»`);
+  } else {
+    const n = actividades.filter(a => a.hito === h.id).length;
+    if (!confirm(`¿Eliminar el hito «${h.nombre}»?${n ? `\n\n${pl(n, 'actividad se conserva', 'actividades se conservan')}, sin hito.` : ''}\n\nSe puede deshacer con Ctrl+Z.`)) return;
+    borrarHito(h.id); aviso('Hito eliminado');
+  }
+  render(); guardar(); pintarHitos();
+});
+
 /* ============ Renombrar negocio ============ */
 function abrirRenombrar(viejo) {
   if (!nombreArchivo) { alert('Abre primero un archivo .md.'); return; }
@@ -4498,6 +4875,7 @@ $('formNeg').onsubmit = e => {
   const v = $('negViejo').value, nu0 = $('negNuevo').value.replace(/[|]/g, '/').trim(); if (!nu0 || nu0 === v) return;
   const nu = unicos(actividades.map(a => a.negocio)).find(x => x && x !== v && normaliza(x) === normaliza(nu0)) || nu0;
   let n = 0; actividades.forEach(a => { if ((a.negocio || '') === v) { a.negocio = nu; n++; } });
+  renombrarNegocioHitos(v, nu);
   const viejoG = v || SIN_NEGOCIO;
   if (colapsados.has(viejoG)) { colapsados.delete(viejoG); colapsados.add(nu); }
   const sel = fsel('qNeg'); if (sel.has(viejoG)) { sel.delete(viejoG); sel.add(nu); }
@@ -4590,7 +4968,13 @@ function textoSemanal(d, html) {
   const diasAtraso = a => dias(a.fin, d.corte > h ? h : d.corte);
   const titulo = `Avance semanal · ${meta.proyecto || nombreArchivo.replace(/\.md$/i, '')} · ${rango(d.lunes, d.domingo)}`;
   const resumen = `Avance del proyecto: ${d.x.pctAv}% (${d.x.comp.length} de ${d.x.medibles.length} actividades terminadas)${meta.fin ? ` · meta al ${fmtTxt(meta.fin)}` : ''}${d.x.ritmo ? ` · ${d.x.ritmo.txt}` : ''}.`;
+  const hs = hitosSemana(d.lunes, d.domingo, d.pFin);
+  const detH = x => `${fmtCorta(x.h.fecha) || 'sin fecha'} · ${x.info.estado}${x.info.total ? ` · ${x.info.hechas} de ${x.info.total} actividades` : ''}`;
+  const secHitos = !hs.length ? [] : [html
+    ? `<h3 style="font-size:15px;margin:18px 0 6px">Hitos (${hs.length})</h3><ul style="margin:0;padding-left:20px">${hs.map(x => `<li><b>${esc(x.h.nombre)}</b> <span style="color:#667085">— ${esc(detH(x))}</span></li>`).join('')}</ul>`
+    : `HITOS (${hs.length})\n${hs.map(x => `  • ${x.h.nombre} — ${detH(x)}`).join('\n')}\n`];
   const partes = [
+    ...secHitos,
     sec('Terminadas esta semana', d.terminadas, a => item(a, a.fin && a.terminada > a.fin ? `terminó ${fmtCorta(a.terminada)}, ${pl(dias(a.fin, a.terminada), 'día', 'días')} tarde` : `terminó ${fmtCorta(a.terminada)}`), 'Ninguna.'),
     sec('Atrasadas', d.atrasadas, a => item(a, `vencía ${fmtCorta(a.fin)} · ${pl(diasAtraso(a), 'día', 'días')} de atraso · ${EST(a)}`), 'Ninguna. ¡Todo al día!'),
     ...(d.bloq.length ? [sec('Bloqueadas por otra actividad', d.bloq, a => item(a, `espera a ${pendientesDe(a).map(x => '#' + x.id + ' ' + nomCorto(x)).join(', ')}`), '')] : []),
@@ -4714,12 +5098,13 @@ async function respaldar(motivo, texto) {
 }
 // Diferencias entre un respaldo y la versión actual
 function compararRespaldo(texto) {
-  const r = parseMD(texto), fa = foto(actividades), fr = foto(r.actividades);
+  const r = parseMD(texto), fa = foto(actividades), fr = foto(r.actividades, r.hitos);
   const recupera = r.actividades.filter(a => !fa[a.id]), pierde = actividades.filter(a => !fr[a.id]);
   const cambian = r.actividades.filter(a => fa[a.id] && JSON.stringify(fa[a.id]) !== JSON.stringify(fr[a.id]))
     .map(a => ({ a, campos: Object.keys(CAMPOS_NOV).filter(k => fa[a.id][k] !== fr[a.id][k]).map(k => ({ k, ahora: fa[a.id][k], antes: fr[a.id][k] })) }));
   const metaDif = ['proyecto', 'inicio', 'fin'].some(k => (r.meta[k] || '') !== (meta[k] || ''));
-  return { r, recupera, pierde, cambian, metaDif, igual: !recupera.length && !pierde.length && !cambian.length && !metaDif };
+  const hitosDif = JSON.stringify(hitos) !== JSON.stringify(r.hitos);
+  return { r, recupera, pierde, cambian, metaDif, hitosDif, igual: !recupera.length && !pierde.length && !cambian.length && !metaDif && !hitosDif };
 }
 let respaldosCache = [], respAbierto = -1;
 async function abrirRespaldos() {
@@ -4736,7 +5121,7 @@ function pintarRespaldos() {
     const c = compararRespaldo(r.texto);
     const dif = c.igual ? '<span class="t-ok">Igual a la versión actual</span>'
       : [c.recupera.length ? `<span class="t-ok">+${c.recupera.length} recuperaría</span>` : '', c.pierde.length ? `<span class="t-dan">−${c.pierde.length} se quitaría</span>` : '',
-         c.cambian.length ? `<span class="t-warn">${pl(c.cambian.length, 'cambiaría', 'cambiarían')}</span>` : '', c.metaDif ? '<span class="t-warn">meta distinta</span>' : ''].filter(Boolean).join(' · ');
+         c.cambian.length ? `<span class="t-warn">${pl(c.cambian.length, 'cambiaría', 'cambiarían')}</span>` : '', c.metaDif ? '<span class="t-warn">meta distinta</span>' : '', c.hitosDif ? '<span class="t-warn">hitos distintos</span>' : ''].filter(Boolean).join(' · ');
     const abierto = i === respAbierto;
     const lista = (t, items, fn) => items.length ? `<div class="resp-g"><b>${t}</b><ul>${items.slice(0, 30).map(fn).join('')}${items.length > 30 ? `<li class="nd">… y ${items.length - 30} más</li>` : ''}</ul></div>` : '';
     const detalle = abierto ? `<div class="resp-det">
@@ -4744,6 +5129,7 @@ function pintarRespaldos() {
         ${lista('Se recuperarían (existen en el respaldo, ya no ahora)', c.recupera, a => `<li>${esc(a.actividad.split('\n')[0])} <span class="nd">${esc(negocioDe(a))} · ${EST(a)}</span></li>`)}
         ${lista('Se quitarían (existen ahora, no en el respaldo)', c.pierde, a => `<li>${esc(a.actividad.split('\n')[0])} <span class="nd">${esc(negocioDe(a))} · ${EST(a)}</span></li>`)}
         ${lista('Regresarían a como estaban', c.cambian, x => `<li>${esc(x.a.actividad.split('\n')[0])} <span class="nd">${x.campos.map(k => `${CAMPOS_NOV[k.k]}: ${esc(valorNov(k.k, k.ahora))} → ${esc(valorNov(k.k, k.antes))}`).join(' · ')}</span></li>`)}
+        ${c.hitosDif ? `<div class="resp-g"><b>Hitos</b><ul><li>En el respaldo: ${esc(c.r.hitos.map(h => h.nombre).join(', ') || 'ninguno')}</li></ul></div>` : ''}
         ${c.metaDif ? `<div class="resp-g"><b>Meta</b><ul><li>${esc(c.r.meta.proyecto || '—')} · ${fmtTxt(c.r.meta.inicio) || '—'} → ${fmtTxt(c.r.meta.fin) || '—'}</li></ul></div>` : ''}
       </div>` : '';
     return `<div class="resp-it ${abierto ? 'abierto' : ''}">
@@ -4774,7 +5160,7 @@ async function restaurarRespaldo(x) {
   await respaldar('Antes de restaurar');
   const d = parseMD(x.texto), claves = new Set(notas.map(claveNota));
   // previoLocal se queda con la versión anterior: así la bitácora anota cada actividad que cambia
-  actividades = d.actividades; meta = d.meta;
+  actividades = d.actividades; meta = d.meta; hitos = d.hitos;
   notas = [...notas, ...d.notas.filter(n => !claves.has(claveNota(n)))];
   bitacora.push({ fecha: new Date().toISOString(), autor: usuario || 'Sin nombre', act: null, accion: 'restauró', campos: [], detalle: `Respaldo del ${fmtHora(x.fecha)} (${x.motivo}) · ${pl(d.actividades.length, 'actividad', 'actividades')}` });
   restaurando = true; try { absorberPropios(); } finally { restaurando = false; }
@@ -4840,11 +5226,12 @@ $('formSprint').onsubmit = async e => {
     try { h = await showSaveFilePicker({ suggestedName: nombre, types: tiposMD }); }
     catch (err) { if (err.name !== 'AbortError') alert(err.message); return; }
   }
+  const hitosN = hitos.filter(h => nuevas.some(a => a.hito === h.id)).map(h => ({ ...h }));
   $('dlgSprint').close();
   await respaldar('Antes de crear el sprint');
   if (!(await soltar())) return;
   cerrarVisita();
-  actividades = nuevas; notas = notasN; bitacora = bitN; seccionesExtra = []; imagenes = []; versionArchivo = VERSION_MDEXA; meta = { proyecto: nom, inicio: ini, fin: fin };
+  actividades = nuevas; notas = notasN; bitacora = bitN; seccionesExtra = []; imagenes = []; hitos = hitosN; versionArchivo = VERSION_MDEXA; meta = { proyecto: nom, inicio: ini, fin: fin };
   colapsados.clear(); copiaLocal = false; ultimoPendiente = null; limpiarDeshacer(); modo = 'edicion';
   if (h) {
     fileHandle = h; nombreArchivo = h.name; cargarVisto(true);
@@ -5016,6 +5403,7 @@ const CAMPOS_CSV = [
   { k: 'inicio', t: 'Fecha inicio', alias: ['inicio', 'fecha inicio', 'fecha de inicio', 'start', 'desde'] },
   { k: 'fin', t: 'Fecha fin', alias: ['fin', 'fecha fin', 'fecha de fin', 'fecha limite', 'vencimiento', 'entrega', 'end', 'hasta'] },
   { k: 'estado', t: 'Estado', alias: ['estado', 'estatus', 'status', 'situacion'] },
+  { k: 'hito', t: 'Hito', alias: ['hito', 'fase', 'milestone'], ayuda: 'Nombre de un hito que ya exista' },
   { k: 'terminada', t: 'Fecha terminada', alias: ['terminada', 'fecha terminada', 'fecha de termino', 'completada', 'cerrada'] },
 ];
 const ALIAS_CSV_ESTADO = { ...ALIAS_ESTADO, 'todo': 'Backlog', 'to do': 'Backlog', 'nuevo': 'Backlog', 'abierto': 'Planeado', 'planned': 'Planeado',
@@ -5092,6 +5480,13 @@ function filasImportar() {
     const est = g('estado'), ne = normaliza(est); r.a.estado = ALIAS_CSV_ESTADO[ne] || (est ? 'Backlog' : '');
     if (est && !ALIAS_CSV_ESTADO[ne]) r.avisos.push(`estado "${est}" no reconocido: quedará en Backlog`);
     if (!r.a.estado) r.a.estado = 'Backlog';
+    const hz = g('hito');
+    if (hz) {
+      const m = hitos.find(x => normaliza(x.nombre) === normaliza(hz));
+      if (!m) r.avisos.push(`no existe el hito "${hz}"`);
+      else if (!hitoCompatible(m, r.a.negocio)) r.avisos.push(`el hito "${hz}" no incluye el negocio ${r.a.negocio}`);
+      else r.hito = m.id;
+    }
     const id = parseInt(g('id'), 10);
     r.accion = r.errores.length ? 'omitir' : actualizar && id && ids.has(id) ? 'actualizar' : 'agregar';
     if (r.accion === 'actualizar') r.id = id;
@@ -5150,10 +5545,11 @@ $('impHacer').onclick = async () => {
       if (impMapa.repite != null) a.repite = r.a.repite;
       if (impMapa.depende != null) conDeps.push([a, r.a.depende]);
       if (impMapa.estado != null) setEstado(a, r.a.estado, r.a.terminada);
+      if (r.hito) asignarHito(a, r.hito);   // una celda vacía no quita el hito
       act++;
     } else {
       const a = { id: sig++, negocio: r.a.negocio, actividad: r.a.actividad, tamano: r.a.tamano, prioridad: r.a.prioridad, etiquetas: r.a.etiquetas, repite: r.a.repite, responsable: r.a.responsable, inicio: r.a.inicio, fin: r.a.fin };
-      setEstado(a, r.a.estado, r.a.terminada); actividades.push(a); nuevas++;
+      setEstado(a, r.a.estado, r.a.terminada); if (r.hito) asignarHito(a, r.hito); actividades.push(a); nuevas++;
       if (r.csvId) mapaIds.set(r.csvId, a.id);
       if (impMapa.depende != null) conDeps.push([a, r.a.depende]);
     }
@@ -5178,10 +5574,10 @@ $('formExp').onsubmit = e => {
   const que = document.querySelector('input[name=expQue]:checked').value, conNotas = $('expNotas').checked;
   const l = (que === 'filtradas' ? listaVisible : actividades).slice().sort((a, b) => negocioDe(a).localeCompare(negocioDe(b), 'es') || a.id - b.id);
   const q = v => { v = String(v ?? ''); return /[",\r\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
-  const cab = ['ID', 'Negocio', 'Actividad', 'Tamaño', 'Prioridad', 'Responsable', 'Inicio', 'Fin', 'Estado', 'Terminada', 'Etiquetas', 'Depende de', 'Subtareas', 'Se repite', 'Vencida', 'Notas', 'Imágenes'].concat(conNotas ? ['Texto de las notas'] : []);
+  const cab = ['ID', 'Negocio', 'Actividad', 'Tamaño', 'Prioridad', 'Responsable', 'Inicio', 'Fin', 'Estado', 'Terminada', 'Etiquetas', 'Depende de', 'Subtareas', 'Se repite', 'Vencida', 'Notas', 'Imágenes', 'Hito'].concat(conNotas ? ['Texto de las notas'] : []);
   const filas = l.map(a => {
     const ns = notasDe(a.id);
-    return [a.id, a.negocio, a.actividad.replace(/\n/g, ' / '), a.tamano, a.prioridad, a.responsable, a.inicio, a.fin, EST(a), a.terminada, etqs(a).join(', '), txtDeps(a), txtSubs(a), REPITE[a.repite] || '', vencida(a) ? 'Sí' : 'No', ns.length, imagenes.filter(x => x.act === a.id).length]
+    return [a.id, a.negocio, a.actividad.replace(/\n/g, ' / '), a.tamano, a.prioridad, a.responsable, a.inicio, a.fin, EST(a), a.terminada, etqs(a).join(', '), txtDeps(a), txtSubs(a), REPITE[a.repite] || '', vencida(a) ? 'Sí' : 'No', ns.length, imagenes.filter(x => x.act === a.id).length, hitoDe(a)?.nombre || '']
       .concat(conNotas ? [ns.map(n => `${fmtHora(n.fecha)} ${n.autor}: ${n.texto.replace(/\n/g, ' ')}`).join(' | ')] : []).map(q).join(',');
   });
   descargar(`${(meta.proyecto || nombreArchivo.replace(/\.md$/i, '')).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'actividades'}-${hoy()}.csv`,
@@ -5248,6 +5644,7 @@ function pintarBitacora() {
       <div class="bit-cuerpo">
         <div class="bit-l1"><b>${esc(e.autor)}</b> <span class="bit-acc es-${acc.c}">${ico(acc.ic, 13)} ${acc.t}</span>
           ${act ? `${act.existe ? `<a href="#" data-ir-bit="${e.act}">${esc(act.nombre)}</a>` : `<span class="tachado" title="Esta actividad ya no existe">${esc(act.nombre)}</span>`} <span class="nd">${esc(act.negocio)}</span>` : ''}</div>
+        ${e.accion === 'hito' ? `<div class="nd">${esc(e.detalle)}</div>` : ''}
         ${e.campos.length ? `<ul class="nov-cambios">${e.campos.map(c => `<li>${esc(c.etq)}: <s>${fmtV(c.k, c.antes)}</s> → <b>${fmtV(c.k, c.despues)}</b></li>`).join('')}</ul>` : ''}
       </div></div>`;
   }
@@ -5340,7 +5737,7 @@ function irAActividad(id) {
   const a = actividades.find(x => x.id === id); if (!a) return;
   if (vista === 'mias' && normaliza(a.responsable || '') !== normaliza($('qPersona').value)) { vista = 'lista'; try { localStorage.setItem('mdexa.vista', vista); } catch {} }
   if (vista === 'cal' && a.fin) calMes = a.fin.slice(0, 7);
-  colapsados.delete(negocioDe(a)); colapsados.delete('__fav');
+  colapsados.delete(negocioDe(a)); colapsados.delete('__fav'); gruposDe(a).forEach(g => colapsados.delete(g));
   const sel = () => vista === 'gantt' ? $('gantt').querySelector(`.g-area[data-id="${id}"]`)?.closest('.g-fila')
     : vista === 'kanban' || vista === 'mias' ? $(vista).querySelector(`.k-tarjeta[data-id="${id}"]`)
     : vista === 'cal' ? $('cal').querySelector(`.c-chip[data-id="${id}"]`)
@@ -5376,7 +5773,7 @@ function manualHTML() {
   <h1>Manual de uso</h1>
   <p class="sub" style="color:var(--muted);margin:0">${NOMBRE_APP} · versión ${VERSION_TXT} · ${VERSION_FECHA}</p>
   <p class="sub" style="color:var(--muted)">MDexa: actividades de equipo en un archivo <code>.md</code> compartido.</p>
-  <nav>${['Para qué sirve', 'Primeros pasos', 'Trabajo en equipo', 'Actividades', 'Tamaños', 'Estados y colores', 'Editar en la tabla', 'Meta del proyecto', 'Filtros', 'Reporte', 'Archivos recientes', 'Formato del archivo', 'Atajos', 'Preguntas frecuentes', 'Favoritas', 'Panel de negocios', 'Íconos', 'Línea de tiempo', 'Tablero', 'Mis actividades', 'Calendario', 'Novedades', 'Notas', 'Bitácora', 'Respaldos', 'Nuevo sprint', 'Métricas', 'Selección múltiple', 'Versiones de MDexa', 'Gráfica de avance', 'Importar y exportar', 'Prioridad y etiquetas', 'Imágenes', 'Modo claro y oscuro', 'Dependencias', 'Subtareas', 'Deshacer', 'Columnas y negocios', 'Reporte semanal', 'Administrar etiquetas', 'Menciones', 'Actividades recurrentes', 'Modo presentación', 'Carga por persona', 'Exportar al calendario']
+  <nav>${['Para qué sirve', 'Primeros pasos', 'Trabajo en equipo', 'Actividades', 'Tamaños', 'Estados y colores', 'Editar en la tabla', 'Meta del proyecto', 'Filtros', 'Reporte', 'Archivos recientes', 'Formato del archivo', 'Atajos', 'Preguntas frecuentes', 'Favoritas', 'Panel de negocios', 'Íconos', 'Línea de tiempo', 'Tablero', 'Mis actividades', 'Calendario', 'Novedades', 'Notas', 'Bitácora', 'Respaldos', 'Nuevo sprint', 'Métricas', 'Selección múltiple', 'Versiones de MDexa', 'Gráfica de avance', 'Importar y exportar', 'Prioridad y etiquetas', 'Imágenes', 'Modo claro y oscuro', 'Dependencias', 'Subtareas', 'Deshacer', 'Columnas y negocios', 'Reporte semanal', 'Administrar etiquetas', 'Menciones', 'Actividades recurrentes', 'Modo presentación', 'Carga por persona', 'Exportar al calendario', 'Hitos y fases']
     .map((s, i) => `<a href="#man-${i}">${s}</a>`).join('')}</nav>
 
   <h2 id="man-0">Para qué sirve</h2>
@@ -5872,6 +6269,22 @@ function manualHTML() {
     <li>Cada evento lleva el número y nombre de la actividad y, en la descripción, negocio, estado, responsable, prioridad, etiquetas y subtareas.</li>
     <li>Si lo vuelves a importar, Outlook actualiza los eventos que ya tenía. Las actividades sin fecha fin no se incluyen. Las recurrentes van con su próxima fecha.</li>
   </ul>
+  <h2 id="man-45">Hitos y fases</h2>
+  <p>Un <b>hito</b> es un entregable con nombre, fecha y descripción, de uno o varios negocios; por ejemplo «Diseño aprobado». Las actividades que incluye forman su <b>fase</b>. Cada actividad pertenece a lo sumo a un hito.</p>
+  <ul>
+    <li>Con el archivo tomado pulsa <b>Nuevo hito</b>: escribe el nombre, la fecha y, si quieres, la descripción; luego marca los <b>negocios</b>.</li>
+    <li>Las actividades se incluyen <b>solas</b>: las de esos negocios que siguen abiertas, terminan en la fecha del hito o antes y no están en otro. Desmarca las excepciones, usa la casilla de un negocio o <b>Todas · Ninguna</b>. Una actividad que ya está en otro hito se mueve si la marcas.</li>
+    <li>La selección queda guardada: si una actividad se atrasa sigue en el hito, y éste aparece <b>En riesgo</b>.</li>
+    <li>El botón <b>Hitos</b> (arriba) muestra todos con su avance y estado, para editarlos o borrarlos (sus actividades se conservan). Si hay actividades que encajan y no están, aparece <b>Incluir</b>.</li>
+    <li>Cuando hay hitos puedes <b>filtrar</b> por hito y <b>agrupar por hito</b>; en el Tablero, soltar una tarjeta en otro carril cambia su hito.</li>
+    <li>Si una actividad cambia a un negocio que el hito no incluye, lo deja y se avisa. Al renombrar un negocio, los hitos cambian con él.</li>
+    <li>Los hitos se ven como <b>rombos</b> en la <b>Línea de tiempo</b> (arriba, con una línea punteada) y en el <b>Calendario</b>. Con el archivo tomado, <b>arrástralos</b> para cambiar su fecha (sus actividades se conservan) o haz clic para editarlos. El color indica el estado.</li>
+    <li>Debajo de la meta del proyecto aparecen los <b>Próximos hitos</b> con su avance. Los filtros de negocio y de hito también aplican a los rombos.</li>
+    <li>El <b>reporte</b> y el <b>reporte semanal</b> incluyen los hitos y avisan de los vencidos o en riesgo. <b>Exportar a CSV</b> agrega la columna Hito; al <b>importar</b>, esa columna asigna un hito que ya exista (una celda vacía no lo quita). En el <b>calendario .ics</b> se exportan como eventos (opción <b>Incluir hitos</b>).</li>
+    <li>Estados: <b>Cumplido</b> (todas sus actividades terminaron, o pusiste la fecha de cumplido), <b>Vencido</b> (pasó la fecha), <b>En riesgo</b> (alguna actividad termina después de la fecha) y <b>En tiempo</b>. El avance se calcula con las horas según el tamaño; las canceladas no cuentan.</li>
+    <li>Un archivo con hitos se guarda con el formato 19: las versiones anteriores a la 1.35.0 lo abren sólo en lectura.</li>
+    <li>La siguiente repetición de una actividad recurrente no se incluye sola.</li>
+  </ul>
   </div>`;
 }
 function abrirManual() {
@@ -5975,7 +6388,7 @@ Object.entries({ btnAbrir: 'carpeta', btnNuevo: 'nuevo', btnRefrescar: 'refresca
   btnNovedades: 'campana', novTodo: 'check', novFiltrar: 'buscar', novCerrar: 'x',
   btnNotasForm: 'nota', btnImgsForm: 'imagen', imgElegir: 'subir', imgCerrar: 'x', imgDarAcceso: 'carpeta', visorAbrir: 'archivo', notaAgregar: 'mas', notasCerrar: 'x',
   btnBitacora: 'reloj', btnHistForm: 'reloj', novBit: 'reloj', bitCsv: 'descargar', bitCerrar: 'x',
-  btnMas: 'puntos', btnSprint: 'sprint', btnIcs: 'calendario', icsHacer: 'descargar', icsCancelar: 'x', btnPresentar: 'presentar', presSalir: 'salir', btnAtajos: 'teclado', atjCerrar: 'x', btnSemanal: 'correo', btnRenNeg: 'lapiz', btnEtqAdmin: 'etiqueta', repSemanal: 'correo', semCopiar: 'copiar', semCorreo: 'correo', semCerrar: 'x', negCancelar: 'x', negHacer: 'check', etqAdmCerrar: 'x', masEtq: 'etiqueta', btnRespaldos: 'capas', btnImportar: 'subir', btnExportar: 'descargar', impElegir: 'archivo', impPlantilla: 'descargar', impCerrar: 'x', impCancelar: 'x', impHacer: 'check', expHacer: 'descargar', expCancelar: 'x', respCerrar: 'x', sCrear: 'check', sCancelar: 'x',
+  btnMas: 'puntos', btnSprint: 'sprint', btnIcs: 'calendario', icsHacer: 'descargar', icsCancelar: 'x', btnPresentar: 'presentar', btnHitos: 'bandera', btnNuevoHito: 'bandera', hitoGuardar: 'check', hitoNuevo: 'mas', hitosCerrar: 'x', presSalir: 'salir', btnAtajos: 'teclado', atjCerrar: 'x', btnSemanal: 'correo', btnRenNeg: 'lapiz', btnEtqAdmin: 'etiqueta', repSemanal: 'correo', semCopiar: 'copiar', semCorreo: 'correo', semCerrar: 'x', negCancelar: 'x', negHacer: 'check', etqAdmCerrar: 'x', masEtq: 'etiqueta', btnRespaldos: 'capas', btnImportar: 'subir', btnExportar: 'descargar', impElegir: 'archivo', impPlantilla: 'descargar', impCerrar: 'x', impCancelar: 'x', impHacer: 'check', expHacer: 'descargar', expCancelar: 'x', respCerrar: 'x', sCrear: 'check', sCancelar: 'x',
   masTodas: 'check', masFav: 'estrella', masElim: 'basura', masCerrar: 'x', masAplicar: 'check', masCancelar: 'x' }).forEach(([id, n]) => { const el = $(id); if (el) el.dataset.ico = n; });
 document.querySelector('#formMeta button[type=submit]').dataset.ico = 'check';
 document.querySelector('#dlgVar button[data-r="una"]').dataset.ico = 'archivo';
@@ -6074,7 +6487,7 @@ function icsLinea(l) {                               // las líneas largas se do
   for (const ch of l) { const n = enc.encode(ch).length; if (bytes + n > 74) { out.push(cur); cur = ' '; bytes = 1; } cur += ch; bytes += n; }
   out.push(cur); return out.join('\r\n');
 }
-function generarICS(acts, alarma) {
+function generarICS(acts, alarma, hs = []) {
   const sello = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
   const proy = meta.proyecto || nombreArchivo.replace(/\.md$/i, ''), uidBase = normaliza(proy).replace(/[^a-z0-9]+/g, '-') || 'mdexa';
   const ev = acts.map(a => {
@@ -6087,7 +6500,22 @@ function generarICS(acts, alarma) {
       `SUMMARY:${icsEsc(`#${a.id} ${nomCorto(a)}${EST(a) === 'Terminado' ? ' ✓' : ''}`)}`, `DESCRIPTION:${icsEsc(desc)}`, `CATEGORIES:${icsEsc(negocioDe(a))}`,
       'TRANSP:TRANSPARENT', ...(alarma && !cerrada(a) ? ['BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc('Vence: ' + nomCorto(a))}`, 'TRIGGER:-PT15H', 'END:VALARM'] : []), 'END:VEVENT'].map(icsLinea).join('\r\n');
   });
-  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//MDexa//ES', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', icsLinea(`X-WR-CALNAME:${icsEsc(proy)}`), ...ev, 'END:VCALENDAR'].join('\r\n') + '\r\n';
+  const evH = hs.filter(h => h.fecha).map(h => {
+    const info = infoHito(h);
+    const desc = [h.descripcion, h.negocios.length && `Negocios: ${h.negocios.join(', ')}`, `Avance: ${info.pct}% (${info.hechas} de ${info.total} actividades)`, `\n${proy} · ${NOMBRE_APP}`].filter(Boolean).join('\n');
+    return ['BEGIN:VEVENT', `UID:${uidBase}-hito-${h.id}@mdexa`, `DTSTAMP:${sello}`, `DTSTART;VALUE=DATE:${h.fecha.replace(/-/g, '')}`, `DTEND;VALUE=DATE:${addDias(h.fecha, 1).replace(/-/g, '')}`,
+      `SUMMARY:${icsEsc(`◆ ${h.nombre}${info.estado === 'Cumplido' ? ' ✓' : ''}`)}`, `DESCRIPTION:${icsEsc(desc)}`, 'CATEGORIES:Hito', 'TRANSP:TRANSPARENT',
+      ...(alarma && info.estado !== 'Cumplido' ? ['BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc('Hito: ' + h.nombre)}`, 'TRIGGER:-PT15H', 'END:VALARM'] : []), 'END:VEVENT'].map(icsLinea).join('\r\n');
+  });
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//MDexa//ES', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', icsLinea(`X-WR-CALNAME:${icsEsc(proy)}`), ...evH, ...ev, 'END:VCALENDAR'].join('\r\n') + '\r\n';
+}
+// Hitos que acompañan la exportación: todos, o los que incluyen alguna actividad de la selección
+function hitosICS() {
+  if (!hitos.length || !$('icsHitos').checked) return [];
+  const que = document.querySelector('input[name=icsQue]:checked').value, term = $('icsTerm').checked;
+  const base = que === 'mias' ? actividades.filter(a => usuario && normaliza(a.responsable || '') === normaliza(usuario)) : listaVisible;
+  const ids = new Set(base.map(a => a.hito));
+  return hitosOrdenados().filter(h => h.fecha && (que === 'todas' || ids.has(h.id)) && (term || infoHito(h).estado !== 'Cumplido'));
 }
 function actsICS() {
   const que = document.querySelector('input[name=icsQue]:checked').value, term = $('icsTerm').checked;
@@ -6095,7 +6523,7 @@ function actsICS() {
   const conFin = base.filter(a => term || !cerrada(a));
   return { lista: conFin.filter(a => a.fin), sinFin: conFin.filter(a => !a.fin).length };
 }
-function resumenICS() { const { lista, sinFin } = actsICS(); $('icsRes').innerHTML = `${ico('calendario', 14)} Se exportarán <b>${pl(lista.length, 'actividad', 'actividades')}</b> como eventos de todo el día en su fecha fin.${sinFin ? ` ${pl(sinFin, 'no tiene', 'no tienen')} fecha fin y no se incluyen.` : ''}`; $('icsHacer').disabled = !lista.length; }
+function resumenICS() { const { lista, sinFin } = actsICS(), nh = hitosICS().length; $('lblIcsHitos').hidden = !hitos.length; $('icsRes').innerHTML = `${ico('calendario', 14)} Se exportarán <b>${pl(lista.length, 'actividad', 'actividades')}</b> como eventos de todo el día en su fecha fin${nh ? ` y <b>${pl(nh, 'hito', 'hitos')}</b>` : ''}.${sinFin ? ` ${pl(sinFin, 'no tiene', 'no tienen')} fecha fin y no se incluyen.` : ''}`; $('icsHacer').disabled = !lista.length && !nh; }
 function abrirICS() {
   if (!nombreArchivo) { alert('Abre primero un archivo .md.'); return; }
   $('icsMiasN').textContent = usuario ? `(${esc(usuario)})` : '(indica tu nombre primero)';
@@ -6107,11 +6535,11 @@ $('formIcs').addEventListener('change', resumenICS);
 $('icsCancelar').onclick = () => $('dlgIcs').close();
 $('formIcs').onsubmit = e => {
   e.preventDefault();
-  const { lista } = actsICS(); if (!lista.length) return;
+  const { lista } = actsICS(), hs = hitosICS(), n = lista.length + hs.length; if (!n) return;
   const que = document.querySelector('input[name=icsQue]:checked').value;
   const nombre = `${normaliza(meta.proyecto || nombreArchivo.replace(/\.md$/i, '')).replace(/[^a-z0-9]+/g, '-') || 'actividades'}${que === 'mias' ? '-' + normaliza(usuario).replace(/[^a-z0-9]+/g, '-') : ''}.ics`;
-  descargar(nombre, generarICS(lista, $('icsAlarma').checked), 'text/calendar');
-  $('dlgIcs').close(); aviso(`${pl(lista.length, 'evento', 'eventos')} en ${nombre}. Ábrelo para agregarlo a Outlook`);
+  descargar(nombre, generarICS(lista, $('icsAlarma').checked, hs), 'text/calendar');
+  $('dlgIcs').close(); aviso(`${pl(n, 'evento', 'eventos')} en ${nombre}. Ábrelo para agregarlo a Outlook`);
 };
 $('btnIcs').onclick = abrirICS;
 

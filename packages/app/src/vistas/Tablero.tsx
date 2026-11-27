@@ -37,7 +37,8 @@ export function Tablero(p: PropsTablero) {
     setArr(null); setSobre('');
     if (!a || !edicion) return;
     if (EST(a) !== estado && !confirmarDeps(a, estado)) return;
-    const r = aplicarSoltar(a, estado, g || null, p.agrupar);
+    const r = aplicarSoltar(a, estado, g || null, p.agrupar, new Date(), p.doc.hitos);
+    if (r.rechazo) p.aviso?.(r.rechazo);
     if (!r.cambios.length) return;
     edicion.editar(d => ({ ...d, actividades: d.actividades.map(x => (x.id === a.id ? r.a : x)) }));
     p.aviso?.(`${nomCorto(a)} → ${r.cambios.join(' · ')}`);
