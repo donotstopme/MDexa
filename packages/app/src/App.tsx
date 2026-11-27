@@ -11,6 +11,7 @@ import { localWeb } from './almacenamiento/local';
 import { Sesion } from './estado/sesion';
 import { useUI } from './estado/ui';
 import { Banner } from './componentes/Banner';
+import { Flotante } from './componentes/Flotante';
 import { BarraFiltros } from './componentes/BarraFiltros';
 import { Cabecera } from './componentes/Cabecera';
 import { FormActividad, type Preset } from './componentes/FormActividad';
@@ -410,21 +411,25 @@ export function App() {
     : editando ? 'Aún no hay actividades. Usa "Nueva actividad".' : 'Aún no hay actividades. Toma el archivo para agregar.';
   const novIds = e.novedades.porId;
   
+  const banner = <Banner hayArchivo={!!doc} modo={modo} masNuevo={e.masNuevo} versionArchivo={doc?.meta.versionTxt || String(doc?.meta.version ?? '')} puedeEscribir={e.puedeEscribir}
+        candado={doc?.candado ?? null} usuario={e.usuario} guardado={e.guardado} puedeDeshacer={e.puedeDeshacer} puedeRehacer={e.puedeRehacer}
+        onTomar={() => sesion.tomar()} onSoltar={() => sesion.soltar()} onLiberar={() => sesion.liberar()} onDeshacer={() => sesion.deshacer()} onRehacer={() => sesion.rehacer()} onAbrir={() => sesion.abrir()} onManual={() => setDlg('manual')} pendiente={e.pendiente} onAbrirPendiente={() => void sesion.abrirPendiente()} />;
+  const cabecera = <Cabecera estado={banner}
+        logo={marca.logo} titulo={doc?.meta.proyecto || (e.nombre ? e.nombre.replace(/\.md$/i, '') : 'Sin proyecto abierto')} archivo={e.nombre} hayArchivo={!!doc} usuario={e.usuario}
+        novedades={e.novedades.total} menciones={e.novedades.menciones.length} tema={ui.tema}
+        onAbrir={() => sesion.abrir()} onRefrescar={() => sesion.refrescar()} onNovedades={() => setDlg(dlg === 'novedades' ? null : 'novedades')} onBitacora={() => { setBitAct(null); setDlg('bitacora'); }} onHitos={() => setDlg('hitos')} onManual={() => setDlg('manual')}
+        onReporte={async () => { if (modo === 'lectura') await sesion.refrescar({ silencioso: true }); setDlg('reporte'); }}
+        onTema={ui.setTema} onUsuario={() => sesion.cambiarUsuario()}
+        extras={[{ titulo: 'Nuevo .md', desc: 'Archivo vacío para un proyecto nuevo', onClick: () => setFormMeta('nuevo') }, ...(doc ? [{ titulo: 'Nuevo sprint', desc: 'Copia actividades elegidas a un archivo nuevo', onClick: () => setDlg('sprint') }, { titulo: 'Importar desde Excel o CSV', desc: 'Carga actividades de un archivo o pegadas de Excel', onClick: () => setDlg('importar') }, { titulo: 'Exportar a CSV', desc: 'Las actividades en un archivo para Excel', onClick: () => setDlg('exportar') }, { titulo: 'Reporte semanal', desc: 'Resumen de la semana listo para un correo', onClick: () => setDlg('semanal') }, { titulo: 'Exportar al calendario (.ics)', desc: 'Fechas fin para Outlook, Google o Apple', onClick: () => setDlg('ics') }, { titulo: 'Renombrar negocio', desc: 'Cambia el nombre en todas sus actividades', onClick: () => abrirRenombrar() }, { titulo: 'Administrar etiquetas', desc: 'Renombrar, recolorear o borrar etiquetas', onClick: () => setDlg('etqadmin') }, { titulo: 'Respaldos', desc: 'Ver o restaurar versiones anteriores', onClick: () => setDlg('respaldos') }, { titulo: 'Descargar copia .md', desc: 'Guarda la versión actual en tu computadora', onClick: () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([toMD(doc)], { type: 'text/markdown' })); a.download = e.nombre || 'actividades.md'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); } }] : []), { titulo: 'Atajos de teclado', desc: 'Tecla ? en cualquier momento', onClick: () => setDlg('atajos') }]} />;
+
   return (
     <div className="wrap">
       {pres && doc && analisis && <BarraPresentacion proyecto={doc.meta.proyecto || e.nombre.replace(/\.md$/i, '')} pct={analisis.pctAv} ritmo={analisis.ritmo?.txt} vencidas={analisis.vencidas} vista={ui.vista} onVista={ui.setVista}
         fecha={(() => { const f = new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }); return f.charAt(0).toUpperCase() + f.slice(1) + ' · ' + new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }); })()}
         negocio={ui.filtros.neg.length > 1 ? `${ui.filtros.neg.length} negocios` : ui.filtros.neg.length === 1 ? `${ui.filtros.neg[0]} · ${negociosPres.indexOf(ui.filtros.neg[0])} de ${negociosPres.length - 1}` : 'Todos los negocios'}
         onNegocio={pasarNegocio} onZoom={zoomPres} onSalir={salirPres} />}
-      <Cabecera estado={<Banner hayArchivo={!!doc} modo={modo} masNuevo={e.masNuevo} versionArchivo={doc?.meta.versionTxt || String(doc?.meta.version ?? '')} puedeEscribir={e.puedeEscribir}
-        candado={doc?.candado ?? null} usuario={e.usuario} guardado={e.guardado} puedeDeshacer={e.puedeDeshacer} puedeRehacer={e.puedeRehacer}
-        onTomar={() => sesion.tomar()} onSoltar={() => sesion.soltar()} onLiberar={() => sesion.liberar()} onDeshacer={() => sesion.deshacer()} onRehacer={() => sesion.rehacer()} onAbrir={() => sesion.abrir()} onManual={() => setDlg('manual')} pendiente={e.pendiente} onAbrirPendiente={() => void sesion.abrirPendiente()} />}
-        logo={marca.logo} titulo={doc?.meta.proyecto || (e.nombre ? e.nombre.replace(/\.md$/i, '') : 'Sin proyecto abierto')} archivo={e.nombre} hayArchivo={!!doc} usuario={e.usuario}
-        novedades={e.novedades.total} menciones={e.novedades.menciones.length} tema={ui.tema}
-        onAbrir={() => sesion.abrir()} onRefrescar={() => sesion.refrescar()} onNovedades={() => setDlg(dlg === 'novedades' ? null : 'novedades')} onBitacora={() => { setBitAct(null); setDlg('bitacora'); }} onHitos={() => setDlg('hitos')} onManual={() => setDlg('manual')}
-        onReporte={async () => { if (modo === 'lectura') await sesion.refrescar({ silencioso: true }); setDlg('reporte'); }}
-        onTema={ui.setTema} onUsuario={() => sesion.cambiarUsuario()}
-        extras={[{ titulo: 'Nuevo .md', desc: 'Archivo vacío para un proyecto nuevo', onClick: () => setFormMeta('nuevo') }, ...(doc ? [{ titulo: 'Nuevo sprint', desc: 'Copia actividades elegidas a un archivo nuevo', onClick: () => setDlg('sprint') }, { titulo: 'Importar desde Excel o CSV', desc: 'Carga actividades de un archivo o pegadas de Excel', onClick: () => setDlg('importar') }, { titulo: 'Exportar a CSV', desc: 'Las actividades en un archivo para Excel', onClick: () => setDlg('exportar') }, { titulo: 'Reporte semanal', desc: 'Resumen de la semana listo para un correo', onClick: () => setDlg('semanal') }, { titulo: 'Exportar al calendario (.ics)', desc: 'Fechas fin para Outlook, Google o Apple', onClick: () => setDlg('ics') }, { titulo: 'Renombrar negocio', desc: 'Cambia el nombre en todas sus actividades', onClick: () => abrirRenombrar() }, { titulo: 'Administrar etiquetas', desc: 'Renombrar, recolorear o borrar etiquetas', onClick: () => setDlg('etqadmin') }, { titulo: 'Respaldos', desc: 'Ver o restaurar versiones anteriores', onClick: () => setDlg('respaldos') }, { titulo: 'Descargar copia .md', desc: 'Guarda la versión actual en tu computadora', onClick: () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([toMD(doc)], { type: 'text/markdown' })); a.download = e.nombre || 'actividades.md'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); } }] : []), { titulo: 'Atajos de teclado', desc: 'Tecla ? en cualquier momento', onClick: () => setDlg('atajos') }]} />
+      {cabecera}
+      <Flotante estado={banner.props} cab={cabecera.props} onNueva={editando ? () => abrirForm(null) : undefined} />
       {e.error && <div className="banner otro" role="alert"><span className="b-ico" /><div>{e.error}</div></div>}
 
       <div className={`layout ${doc ? (ui.compacto ? 'compacto' : '') : 'sin-lateral'}`}>

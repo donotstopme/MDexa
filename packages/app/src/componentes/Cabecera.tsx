@@ -4,10 +4,10 @@ import { Ico } from '../original/iconos';
 import { ICONO_APP } from '../original/iconoApp';
 import type { Tema } from '../estado/ui';
 
-const TEMAS: Record<Tema, { ic: string; t: string; d: string }> = {
+export const TEMAS: Record<Tema, { ic: string; t: string; d: string }> = {
   auto: { ic: 'auto', t: 'Automático', d: 'Sigue el tema de tu sistema' }, claro: { ic: 'sol', t: 'Claro', d: 'Siempre claro' }, oscuro: { ic: 'luna', t: 'Oscuro', d: 'Siempre oscuro' },
 };
-const SIG: Record<Tema, Tema> = { auto: 'claro', claro: 'oscuro', oscuro: 'auto' };
+export const SIG: Record<Tema, Tema> = { auto: 'claro', claro: 'oscuro', oscuro: 'auto' };
 
 export interface Props {
   /** Estado del archivo compartido (<Banner/>), al centro de la barra */
@@ -18,6 +18,14 @@ export interface Props {
   extras: { titulo: string; desc: string; onClick(): void }[];
   version?: string;
 }
+
+/** Recuadro que aparece bajo un botón de la cabecera y explica qué hace */
+const Pista = ({ t, d }: { t: string; d: string }) => <span className="pista" role="tooltip"><b>{t}</b><small>{d}</small></span>;
+
+export const alternarPantalla = () => {
+  if (!document.fullscreenEnabled) return;
+  if (document.fullscreenElement) void document.exitFullscreen().catch(() => {}); else void document.documentElement.requestFullscreen().catch(() => {});
+};
 
 export function Cabecera(p: Props) {
   const [menu, setMenu] = useState(false);
@@ -32,10 +40,6 @@ export function Cabecera(p: Props) {
     const f = (e: PointerEvent) => { if (!raiz.current?.contains(e.target as Node)) setMenu(false); };
     document.addEventListener('pointerdown', f); return () => document.removeEventListener('pointerdown', f);
   }, [menu]);
-  const alternarPantalla = () => {
-    if (!document.fullscreenEnabled) return;
-    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {}); else void document.documentElement.requestFullscreen().catch(() => {});
-  };
   return (
     <header>
       <div className="cabeza">
@@ -54,21 +58,22 @@ export function Cabecera(p: Props) {
       </div>
       {p.estado}
       <div className="barra">
-        <button className="cede" onClick={p.onAbrir} title="Abrir .md" aria-label="Abrir .md"><Ico n="carpeta" /><span className="t">Abrir .md</span></button>
-        <button className="solo-ico" onClick={p.onRefrescar} title="Refrescar: volver a leer el archivo" aria-label="Refrescar"><Ico n="refrescar" /><span className="t">Refrescar</span></button>
-        <button className={`solo-ico ${p.novedades ? 'hay' : ''}`} aria-label="Novedades" onClick={p.onNovedades} title={p.novedades ? `${p.novedades} ${p.novedades === 1 ? 'novedad' : 'novedades'} desde tu última visita` : 'Novedades: sin cambios desde tu última visita'}>
-          <Ico n="campana" /><span className="t">Novedades</span>{p.novedades > 0 && <span className={`nov-badge ${p.menciones ? 'con-men' : ''}`}>{(p.menciones ? '@ ' : '') + (p.novedades > 99 ? '99+' : p.novedades)}</span>}
+        <button onClick={p.onAbrir} aria-label="Abrir .md"><Ico n="carpeta" /><Pista t="Abrir .md" d="Elegir otro archivo de proyecto" /></button>
+        <button onClick={p.onRefrescar} aria-label="Refrescar"><Ico n="refrescar" /><Pista t="Refrescar" d="Volver a leer el archivo para ver los cambios de otras personas" /></button>
+        <button className={p.novedades ? 'hay' : ''} aria-label="Novedades" onClick={p.onNovedades}>
+          <Ico n="campana" />{p.novedades > 0 && <span className={`nov-badge ${p.menciones ? 'con-men' : ''}`}>{(p.menciones ? '@ ' : '') + (p.novedades > 99 ? '99+' : p.novedades)}</span>}
+          <Pista t="Novedades" d={p.novedades ? `${p.novedades} ${p.novedades === 1 ? 'novedad' : 'novedades'} desde tu última visita${p.menciones ? ` · te mencionaron ${p.menciones === 1 ? 'una vez' : `${p.menciones} veces`}` : ''}` : 'Sin cambios desde tu última visita'} />
         </button>
-        <button className="solo-ico" onClick={p.onBitacora} title="Bitácora: quién cambió qué y cuándo" aria-label="Bitácora" disabled={!p.hayArchivo}><Ico n="reloj" /><span className="t">Bitácora</span></button>
-        <button className="cede" onClick={p.onHitos} title="Hitos y fases: fechas, avance y estado" aria-label="Hitos" disabled={!p.hayArchivo}><Ico n="bandera" /><span className="t">Hitos</span></button>
-        <button className="cede" onClick={p.onReporte} title="Reporte" aria-label="Reporte" disabled={!p.hayArchivo}><Ico n="grafica" /><span className="t">Reporte</span></button>
-        <button className="solo-ico" onClick={p.onManual} title="Manual de uso" aria-label="Manual"><Ico n="libro" /><span className="t">Manual</span></button>
-        <button className="btn-tema" aria-label="Tema" onClick={() => p.onTema(SIG[p.tema])}
-          title={`Tema: ${TEMAS[p.tema].t} (${TEMAS[p.tema].d.toLowerCase()}) · clic para cambiar a ${TEMAS[SIG[p.tema]].t}`}><Ico n={TEMAS[p.tema].ic} t={17} /></button>
-        <button className="btn-tema" aria-label="Pantalla completa" aria-pressed={pantalla} onClick={alternarPantalla}
-          title={pantalla ? 'Salir de pantalla completa' : 'Pantalla completa'}><Ico n={pantalla ? 'contraer' : 'expandir'} t={17} /></button>
+        <button onClick={p.onBitacora} aria-label="Bitácora" disabled={!p.hayArchivo}><Ico n="reloj" /><Pista t="Bitácora" d="Quién cambió qué y cuándo" /></button>
+        <button onClick={p.onHitos} aria-label="Hitos" disabled={!p.hayArchivo}><Ico n="bandera" /><Pista t="Hitos" d="Fechas, avance y estado de los hitos y fases" /></button>
+        <button onClick={p.onReporte} aria-label="Reporte" disabled={!p.hayArchivo}><Ico n="grafica" /><Pista t="Reporte" d="Avance del proyecto para ver, imprimir o descargar" /></button>
+        <button onClick={p.onManual} aria-label="Manual"><Ico n="libro" /><Pista t="Manual" d="Guía de uso con buscador" /></button>
+        <button className="btn-tema" aria-label="Tema" onClick={() => p.onTema(SIG[p.tema])}>
+          <Ico n={TEMAS[p.tema].ic} t={17} /><Pista t={`Tema: ${TEMAS[p.tema].t}`} d={`${TEMAS[p.tema].d}. Clic para cambiar a ${TEMAS[SIG[p.tema]].t}`} /></button>
+        <button className="btn-tema" aria-label="Pantalla completa" aria-pressed={pantalla} onClick={alternarPantalla}>
+          <Ico n={pantalla ? 'contraer' : 'expandir'} t={17} /><Pista t={pantalla ? 'Salir de pantalla completa' : 'Pantalla completa'} d={pantalla ? 'Tecla F o Esc' : 'Ocupa todo el monitor · tecla F'} /></button>
         <div className="menu-wrap" ref={raiz}>
-          <button className="cede" title="Más opciones" aria-label="Más" aria-haspopup="true" aria-expanded={menu} onClick={() => setMenu(m => !m)}><Ico n="puntos" /><span className="t">Más</span></button>
+          <button aria-label="Más" aria-haspopup="true" aria-expanded={menu} onClick={() => setMenu(m => !m)}><Ico n="puntos" /><Pista t="Más opciones" d="Archivo nuevo, sprint, importar, exportar, respaldos y atajos" /></button>
           {menu && (
             <div className="menu">
               {p.extras.map(x => <button key={x.titulo} onClick={() => { setMenu(false); x.onClick(); }}><span><b>{x.titulo}</b><span className="menu-desc">{x.desc}</span></span></button>)}

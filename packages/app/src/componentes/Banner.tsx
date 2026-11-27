@@ -13,7 +13,8 @@ export interface Props {
  * Estado del archivo, dentro de la barra superior: quién lo edita, desde cuándo y qué puedes hacer.
  * La clase (libre, mio, otro, solo) da el color a toda la cabecera; la explicación larga sale al pasar el cursor.
  */
-export function Banner(p: Props) {
+/** Lo que se dice del archivo: lo usan la cabecera y el botón flotante */
+export function describirEstado(p: Props) {
   let cls = 'libre', icono = 'ojo', titulo: React.ReactNode, detalle: React.ReactNode = null, ayuda = '', acciones: React.ReactNode = null;
   const c = p.candado, mio = !!c && c.usuario === p.usuario;
   if (!p.hayArchivo && p.pendiente) {
@@ -61,6 +62,13 @@ export function Banner(p: Props) {
     ayuda = 'Solo lectura. La vista se actualiza sola cada 15 segundos.';
     acciones = <button className="prim" onClick={p.onTomar}><Ico n="lapiz" /> Tomar para editar</button>;
   }
+  // Texto corto del botón flotante: lo tuyo, o quién lo tiene
+  const corto = cls === 'mio' ? (p.modo === 'edicion' ? 'Editando' : 'Tomado') : cls === 'otro' ? c?.usuario ?? '' : '';
+  return { cls, icono, titulo, detalle, ayuda, acciones, corto };
+}
+
+export function Banner(p: Props) {
+  const { cls, icono, titulo, detalle, ayuda, acciones } = describirEstado(p);
   return (
     <div id="banner" className={`estado ${cls}`} role="status">
       <span className="b-ico"><Ico n={icono} t={20} /></span>

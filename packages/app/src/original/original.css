@@ -533,15 +533,15 @@
   header .menu{color:var(--text)}
 
   /* ---- Estado del archivo dentro de la cabecera: azul libre, verde tú, naranja otra persona, gris sin permiso ---- */
-  header:has(.estado.mio){background:linear-gradient(90deg,#08382a,#116347)}
+  header:has(.estado.mio){background:#90d1b3}
   header:has(.estado.otro){background:linear-gradient(90deg,#6a3104,#a4520c)}
   header:has(.estado.solo){background:linear-gradient(90deg,#2b333f,#475365)}
   @media (prefers-color-scheme: dark){
-    :root:not([data-tema=claro]) header:has(.estado.mio){background:linear-gradient(90deg,#06291f,#0d4f39)}
+    :root:not([data-tema=claro]) header:has(.estado.mio){background:#6bb893}
     :root:not([data-tema=claro]) header:has(.estado.otro){background:linear-gradient(90deg,#522603,#83410a)}
     :root:not([data-tema=claro]) header:has(.estado.solo){background:linear-gradient(90deg,#20262f,#37404e)}
   }
-  :root[data-tema=oscuro] header:has(.estado.mio){background:linear-gradient(90deg,#06291f,#0d4f39)}
+  :root[data-tema=oscuro] header:has(.estado.mio){background:#6bb893}
   :root[data-tema=oscuro] header:has(.estado.otro){background:linear-gradient(90deg,#522603,#83410a)}
   :root[data-tema=oscuro] header:has(.estado.solo){background:linear-gradient(90deg,#20262f,#37404e)}
   header{transition:background-color .2s}
@@ -558,10 +558,61 @@
   .est-acc button.prim{background:#fff;border-color:#fff;color:#0f1d33;font-weight:600}
   .est-acc button.prim:hover:not(:disabled){background:#e8eefb}
   header .barra>button,header .menu-wrap>button,.est-acc button{min-height:38px;min-width:38px}
-  header .barra>button.solo-ico .t{display:none}
-  /* Si no hay espacio, el resto de los botones también queda sólo con su ícono */
-  @media (max-width:1620px){ header .barra>button.cede .t,header .menu-wrap>button.cede .t{display:none} }
-  @media (min-width:1420px){ header .barra>button.cede[aria-label=Hitos] .t,header .barra>button.cede[aria-label=Reporte] .t{display:inline} }
+  /* mientras editas: menta clara con texto oscuro y franja verde; es la única barra clara */
+  header:has(.estado.mio){box-shadow:inset 0 -5px 0 #1f8f5f,0 2px 10px rgba(0,0,0,.15)}
+  header:has(.estado.mio) :is(h1,.archivo,.archivo a,.archivo svg,.marca-txt b,.marca-ver,.est-txt,.est-txt .det,.est-txt a,.b-ico){color:#0b2e22}
+  header:has(.estado.mio) :is(.marca,.estado){border-color:rgba(11,46,34,.28)}
+  header:has(.estado.mio) .barra>button,header:has(.estado.mio) .menu-wrap>button,header:has(.estado.mio) .est-acc button:not(.prim){background:rgba(255,255,255,.5);border-color:rgba(11,46,34,.22);color:#0b2e22}
+  header:has(.estado.mio) .barra>button:hover:not(:disabled),header:has(.estado.mio) .menu-wrap>button:hover,header:has(.estado.mio) .est-acc button:not(.prim):hover:not(:disabled){background:rgba(255,255,255,.82);border-color:rgba(11,46,34,.5)}
+  header:has(.estado.mio) .barra>button>svg,header:has(.estado.mio) .menu-wrap>button>svg{color:#0b2e22}
+  header:has(.estado.mio) .est-acc button.prim{background:#0b2e22;border-color:#0b2e22;color:#fff}
+  header:has(.estado.mio) .est-acc button.prim:hover:not(:disabled){background:#14503b}
+  /* ---- Botón flotante: aparece cuando la cabecera deja de verse, con el color del estado ---- */
+  .flot{position:fixed;right:16px;bottom:16px;z-index:30;display:flex;flex-direction:column;align-items:flex-end;gap:10px;--fc:#1a3150}
+  .flot.mio{--fc:#90d1b3;--ft:#0b2e22} .flot.otro{--fc:#a4520c} .flot.solo{--fc:#475365}
+  body.con-masiva .flot{bottom:80px}
+  .flot .flot-btn{position:relative;min-width:52px;height:52px;max-width:min(260px,calc(100vw - 32px));border-radius:99px;padding:0 14px;background:var(--fc);color:var(--ft,#fff);border:2px solid rgba(255,255,255,.6);box-shadow:0 8px 24px rgba(0,0,0,.34);font-weight:600}
+  .flot.mio .flot-btn{border-color:#1f8f5f}
+  .flot.mio .flot-btn:hover:not(:disabled){border-color:#0b2e22}
+  .flot .flot-btn:hover:not(:disabled){filter:brightness(1.12);border-color:#fff}
+  .flot-btn svg{flex-shrink:0}
+  .flot-txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .flot-btn .nov-badge{position:absolute;top:-6px;left:-4px}
+  .flot-panel{width:min(330px,calc(100vw - 32px));max-height:calc(100vh - 100px);overflow:auto;display:flex;flex-direction:column;gap:8px;padding:0 10px 10px;background:var(--card);color:var(--text);border:1px solid var(--line2);border-radius:14px;box-shadow:0 14px 38px rgba(0,0,0,.34)}
+  body.con-masiva .flot-panel{max-height:calc(100vh - 164px)}
+  .flot-panel>*{flex-shrink:0}
+  .flot-cab{display:flex;gap:10px;align-items:center;margin:0 -10px;padding:11px 14px;background:var(--fc);color:var(--ft,#fff);font-size:14px;line-height:1.3}
+  .flot-cab svg{flex-shrink:0}
+  .flot-cab>div{display:flex;flex-direction:column;min-width:0;overflow-wrap:anywhere}
+  .flot-cab .det{font-size:12px;opacity:.92}
+  .flot-cab a{color:inherit}
+  .flot-acc{display:flex;flex-wrap:wrap;gap:6px}
+  .flot-acc button{font-size:13.5px}
+  .flot-acc button.prim{margin-left:auto}
+  .flot-rej{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+  .flot-rej button{position:relative;flex-direction:column;gap:4px;padding:8px 2px;font-size:11.5px;background:transparent;border-color:transparent}
+  .flot-rej button:hover:not(:disabled),.flot-rej button[aria-expanded=true]{background:var(--bg)}
+  .flot-rej .nov-badge{position:absolute;top:1px;right:10px}
+  .flot-mas{display:flex;flex-direction:column;border-top:1px solid var(--line);padding-top:6px}
+  .flot-mas button{justify-content:flex-start;text-align:left;border:0;background:transparent;font-size:13.5px;padding:6px 8px}
+  .flot-mas button:hover:not(:disabled){background:var(--bg)}
+  .flot-panel .flot-arriba{border:0;background:transparent;color:var(--accent);font-size:13px;padding:4px}
+  .wrap{padding-bottom:86px}
+  @media print{.flot{display:none}}
+  /* Botones de la cabecera: sólo el ícono, con un recuadro que explica qué hacen */
+  header .barra>button,header .menu-wrap>button{position:relative}
+  header .barra>button:disabled{opacity:1}
+  header .barra>button:disabled>svg{opacity:.4}
+  .pista{position:absolute;top:calc(100% + 9px);right:0;z-index:70;display:none;flex-direction:column;gap:2px;width:max-content;max-width:240px;padding:8px 11px;border-radius:9px;background:var(--card);color:var(--text);border:1px solid var(--line2);box-shadow:0 10px 26px rgba(0,0,0,.28);text-align:left;font-weight:400;line-height:1.35;white-space:normal;pointer-events:none}
+  .pista::before{content:'';position:absolute;top:-6px;right:13px;width:10px;height:10px;transform:rotate(45deg);background:var(--card);border-left:1px solid var(--line2);border-top:1px solid var(--line2)}
+  .pista b{font-size:13px}
+  .pista small{font-size:12px;color:var(--muted)}
+  button:hover>.pista,button:focus-visible>.pista{display:flex;animation:pistaEntra .12s .25s both}
+  button[aria-expanded=true]>.pista{display:none}
+  @keyframes pistaEntra{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+  @media (hover:none){button:hover>.pista{display:none}}
+  /* en una ventana angosta el recuadro ocupa el ancho, para no cortarse por un lado */
+  @media (max-width:700px){.pista{position:fixed;left:12px;right:12px;top:auto;width:auto;max-width:none;margin-top:46px}.pista::before{display:none}}
   @media (max-width:1080px){ .estado{flex-basis:100%;border-left:0;padding-left:0;order:3} }
   @media (max-width:700px){ .estado{flex-wrap:wrap} .est-txt{flex:1 1 180px} }
   .archivo{color:var(--muted);font-size:13px}
@@ -683,7 +734,7 @@
   .pres-zoom{display:flex;gap:4px}
   .pres-salir{font-weight:600}
   body.presentando header,body.presentando #banner,body.presentando #lateral,body.presentando #metaCard,body.presentando .filtros,body.presentando #masiva,
-  body.presentando .g-ayuda,body.presentando .ms-pop,body.presentando #toastHueco{display:none !important}
+  body.presentando .g-ayuda,body.presentando .ms-pop,body.presentando .flot,body.presentando #toastHueco{display:none !important}
   body.presentando .wrap{padding:16px 20px 30px}
   body.presentando .layout{grid-template-columns:minmax(0,1fr) !important}
   body.presentando main{zoom:var(--pres-zoom,1.3)}

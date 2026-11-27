@@ -544,15 +544,15 @@
   header .menu{color:var(--text)}
 
   /* ---- Estado del archivo dentro de la cabecera: azul libre, verde tú, naranja otra persona, gris sin permiso ---- */
-  header:has(.estado.mio){background:linear-gradient(90deg,#08382a,#116347)}
+  header:has(.estado.mio){background:#90d1b3}
   header:has(.estado.otro){background:linear-gradient(90deg,#6a3104,#a4520c)}
   header:has(.estado.solo){background:linear-gradient(90deg,#2b333f,#475365)}
   @media (prefers-color-scheme: dark){
-    :root:not([data-tema=claro]) header:has(.estado.mio){background:linear-gradient(90deg,#06291f,#0d4f39)}
+    :root:not([data-tema=claro]) header:has(.estado.mio){background:#6bb893}
     :root:not([data-tema=claro]) header:has(.estado.otro){background:linear-gradient(90deg,#522603,#83410a)}
     :root:not([data-tema=claro]) header:has(.estado.solo){background:linear-gradient(90deg,#20262f,#37404e)}
   }
-  :root[data-tema=oscuro] header:has(.estado.mio){background:linear-gradient(90deg,#06291f,#0d4f39)}
+  :root[data-tema=oscuro] header:has(.estado.mio){background:#6bb893}
   :root[data-tema=oscuro] header:has(.estado.otro){background:linear-gradient(90deg,#522603,#83410a)}
   :root[data-tema=oscuro] header:has(.estado.solo){background:linear-gradient(90deg,#20262f,#37404e)}
   header{transition:background-color .2s}
@@ -569,10 +569,61 @@
   .est-acc button.prim{background:#fff;border-color:#fff;color:#0f1d33;font-weight:600}
   .est-acc button.prim:hover:not(:disabled){background:#e8eefb}
   header .barra>button,header .menu-wrap>button,.est-acc button{min-height:38px;min-width:38px}
-  header .barra>button.solo-ico .t{display:none}
-  /* Si no hay espacio, el resto de los botones también queda sólo con su ícono */
-  @media (max-width:1620px){ header .barra>button.cede .t,header .menu-wrap>button.cede .t{display:none} }
-  @media (min-width:1420px){ header .barra>button.cede[aria-label=Hitos] .t,header .barra>button.cede[aria-label=Reporte] .t{display:inline} }
+  /* mientras editas: menta clara con texto oscuro y franja verde; es la única barra clara */
+  header:has(.estado.mio){box-shadow:inset 0 -5px 0 #1f8f5f,0 2px 10px rgba(0,0,0,.15)}
+  header:has(.estado.mio) :is(h1,.archivo,.archivo a,.archivo svg,.marca-txt b,.marca-ver,.est-txt,.est-txt .det,.est-txt a,.b-ico){color:#0b2e22}
+  header:has(.estado.mio) :is(.marca,.estado){border-color:rgba(11,46,34,.28)}
+  header:has(.estado.mio) .barra>button,header:has(.estado.mio) .menu-wrap>button,header:has(.estado.mio) .est-acc button:not(.prim){background:rgba(255,255,255,.5);border-color:rgba(11,46,34,.22);color:#0b2e22}
+  header:has(.estado.mio) .barra>button:hover:not(:disabled),header:has(.estado.mio) .menu-wrap>button:hover,header:has(.estado.mio) .est-acc button:not(.prim):hover:not(:disabled){background:rgba(255,255,255,.82);border-color:rgba(11,46,34,.5)}
+  header:has(.estado.mio) .barra>button>svg,header:has(.estado.mio) .menu-wrap>button>svg{color:#0b2e22}
+  header:has(.estado.mio) .est-acc button.prim{background:#0b2e22;border-color:#0b2e22;color:#fff}
+  header:has(.estado.mio) .est-acc button.prim:hover:not(:disabled){background:#14503b}
+  /* ---- Botón flotante: aparece cuando la cabecera deja de verse, con el color del estado ---- */
+  .flot{position:fixed;right:16px;bottom:16px;z-index:30;display:flex;flex-direction:column;align-items:flex-end;gap:10px;--fc:#1a3150}
+  .flot.mio{--fc:#90d1b3;--ft:#0b2e22} .flot.otro{--fc:#a4520c} .flot.solo{--fc:#475365}
+  body.con-masiva .flot{bottom:80px}
+  .flot .flot-btn{position:relative;min-width:52px;height:52px;max-width:min(260px,calc(100vw - 32px));border-radius:99px;padding:0 14px;background:var(--fc);color:var(--ft,#fff);border:2px solid rgba(255,255,255,.6);box-shadow:0 8px 24px rgba(0,0,0,.34);font-weight:600}
+  .flot.mio .flot-btn{border-color:#1f8f5f}
+  .flot.mio .flot-btn:hover:not(:disabled){border-color:#0b2e22}
+  .flot .flot-btn:hover:not(:disabled){filter:brightness(1.12);border-color:#fff}
+  .flot-btn svg{flex-shrink:0}
+  .flot-txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .flot-btn .nov-badge{position:absolute;top:-6px;left:-4px}
+  .flot-panel{width:min(330px,calc(100vw - 32px));max-height:calc(100vh - 100px);overflow:auto;display:flex;flex-direction:column;gap:8px;padding:0 10px 10px;background:var(--card);color:var(--text);border:1px solid var(--line2);border-radius:14px;box-shadow:0 14px 38px rgba(0,0,0,.34)}
+  body.con-masiva .flot-panel{max-height:calc(100vh - 164px)}
+  .flot-panel>*{flex-shrink:0}
+  .flot-cab{display:flex;gap:10px;align-items:center;margin:0 -10px;padding:11px 14px;background:var(--fc);color:var(--ft,#fff);font-size:14px;line-height:1.3}
+  .flot-cab svg{flex-shrink:0}
+  .flot-cab>div{display:flex;flex-direction:column;min-width:0;overflow-wrap:anywhere}
+  .flot-cab .det{font-size:12px;opacity:.92}
+  .flot-cab a{color:inherit}
+  .flot-acc{display:flex;flex-wrap:wrap;gap:6px}
+  .flot-acc button{font-size:13.5px}
+  .flot-acc button.prim{margin-left:auto}
+  .flot-rej{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+  .flot-rej button{position:relative;flex-direction:column;gap:4px;padding:8px 2px;font-size:11.5px;background:transparent;border-color:transparent}
+  .flot-rej button:hover:not(:disabled),.flot-rej button[aria-expanded=true]{background:var(--bg)}
+  .flot-rej .nov-badge{position:absolute;top:1px;right:10px}
+  .flot-mas{display:flex;flex-direction:column;border-top:1px solid var(--line);padding-top:6px}
+  .flot-mas button{justify-content:flex-start;text-align:left;border:0;background:transparent;font-size:13.5px;padding:6px 8px}
+  .flot-mas button:hover:not(:disabled){background:var(--bg)}
+  .flot-panel .flot-arriba{border:0;background:transparent;color:var(--accent);font-size:13px;padding:4px}
+  .wrap{padding-bottom:86px}
+  @media print{.flot{display:none}}
+  /* Botones de la cabecera: sólo el ícono, con un recuadro que explica qué hacen */
+  header .barra>button,header .menu-wrap>button{position:relative}
+  header .barra>button:disabled{opacity:1}
+  header .barra>button:disabled>svg{opacity:.4}
+  .pista{position:absolute;top:calc(100% + 9px);right:0;z-index:70;display:none;flex-direction:column;gap:2px;width:max-content;max-width:240px;padding:8px 11px;border-radius:9px;background:var(--card);color:var(--text);border:1px solid var(--line2);box-shadow:0 10px 26px rgba(0,0,0,.28);text-align:left;font-weight:400;line-height:1.35;white-space:normal;pointer-events:none}
+  .pista::before{content:'';position:absolute;top:-6px;right:13px;width:10px;height:10px;transform:rotate(45deg);background:var(--card);border-left:1px solid var(--line2);border-top:1px solid var(--line2)}
+  .pista b{font-size:13px}
+  .pista small{font-size:12px;color:var(--muted)}
+  button:hover>.pista,button:focus-visible>.pista{display:flex;animation:pistaEntra .12s .25s both}
+  button[aria-expanded=true]>.pista{display:none}
+  @keyframes pistaEntra{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+  @media (hover:none){button:hover>.pista{display:none}}
+  /* en una ventana angosta el recuadro ocupa el ancho, para no cortarse por un lado */
+  @media (max-width:700px){.pista{position:fixed;left:12px;right:12px;top:auto;width:auto;max-width:none;margin-top:46px}.pista::before{display:none}}
   @media (max-width:1080px){ .estado{flex-basis:100%;border-left:0;padding-left:0;order:3} }
   @media (max-width:700px){ .estado{flex-wrap:wrap} .est-txt{flex:1 1 180px} }
   .archivo{color:var(--muted);font-size:13px}
@@ -694,7 +745,7 @@
   .pres-zoom{display:flex;gap:4px}
   .pres-salir{font-weight:600}
   body.presentando header,body.presentando #banner,body.presentando #lateral,body.presentando #metaCard,body.presentando .filtros,body.presentando #masiva,
-  body.presentando .g-ayuda,body.presentando .ms-pop,body.presentando #toastHueco{display:none !important}
+  body.presentando .g-ayuda,body.presentando .ms-pop,body.presentando .flot,body.presentando #toastHueco{display:none !important}
   body.presentando .wrap{padding:16px 20px 30px}
   body.presentando .layout{grid-template-columns:minmax(0,1fr) !important}
   body.presentando main{zoom:var(--pres-zoom,1.3)}
@@ -1176,17 +1227,17 @@
     </div>
     <div class="estado libre" id="banner" role="status"></div>
     <div class="barra">
-      <button id="btnAbrir" class="cede" title="Abrir .md" aria-label="Abrir .md"><span class="t">Abrir .md</span></button>
-      <button id="btnRefrescar" class="solo-ico" title="Refrescar: volver a leer el archivo" aria-label="Refrescar"><span class="t">Refrescar</span></button>
-      <button id="btnNovedades" class="solo-ico" title="Novedades: cambios desde tu última visita" aria-label="Novedades"><span class="t">Novedades</span><span class="nov-badge" id="novBadge" hidden></span></button>
-      <button id="btnBitacora" class="solo-ico" title="Bitácora: quién cambió qué y cuándo" aria-label="Bitácora"><span class="t">Bitácora</span></button>
-      <button id="btnHitos" class="cede" title="Hitos y fases: fechas, avance y estado" aria-label="Hitos"><span class="t">Hitos</span></button>
-      <button id="btnReporte" class="cede" title="Reporte" aria-label="Reporte"><span class="t">Reporte</span></button>
-      <button id="btnManual" class="solo-ico" title="Manual de uso" aria-label="Manual"><span class="t">Manual</span></button>
+      <button id="btnAbrir" aria-label="Abrir .md"><span class="pista" role="tooltip"><b>Abrir .md</b><small>Elegir otro archivo de proyecto</small></span></button>
+      <button id="btnRefrescar" aria-label="Refrescar"><span class="pista" role="tooltip"><b>Refrescar</b><small>Volver a leer el archivo para ver los cambios de otras personas</small></span></button>
+      <button id="btnNovedades" aria-label="Novedades"><span class="nov-badge" id="novBadge" hidden></span><span class="pista" role="tooltip"><b>Novedades</b><small id="novPista">Sin cambios desde tu última visita</small></span></button>
+      <button id="btnBitacora" aria-label="Bitácora"><span class="pista" role="tooltip"><b>Bitácora</b><small>Quién cambió qué y cuándo</small></span></button>
+      <button id="btnHitos" aria-label="Hitos"><span class="pista" role="tooltip"><b>Hitos</b><small>Fechas, avance y estado de los hitos y fases</small></span></button>
+      <button id="btnReporte" aria-label="Reporte"><span class="pista" role="tooltip"><b>Reporte</b><small>Avance del proyecto para ver, imprimir o descargar</small></span></button>
+      <button id="btnManual" aria-label="Manual"><span class="pista" role="tooltip"><b>Manual</b><small>Guía de uso con buscador</small></span></button>
       <button id="btnTema" class="btn-tema" aria-label="Tema"></button>
-      <button id="btnPantalla" class="btn-tema" aria-label="Pantalla completa" title="Pantalla completa (tecla F)"></button>
+      <button id="btnPantalla" class="btn-tema" aria-label="Pantalla completa"></button>
       <div class="menu-wrap">
-        <button id="btnMas" class="cede" title="Más opciones" aria-label="Más" aria-haspopup="true" aria-expanded="false"><span class="t">Más</span></button>
+        <button id="btnMas" aria-label="Más" aria-haspopup="true" aria-expanded="false"><span class="pista" role="tooltip"><b>Más opciones</b><small>Archivo nuevo, sprint, importar, exportar, respaldos y atajos</small></span></button>
         <div class="menu" id="menuMas" hidden>
           <button id="btnNuevo"><span><b>Nuevo .md</b><span class="menu-desc">Archivo vacío para un proyecto nuevo</span></span></button>
           <button id="btnSprint"><span><b>Nuevo sprint</b><span class="menu-desc">Copia actividades elegidas a un archivo nuevo</span></span></button>
@@ -1204,6 +1255,7 @@
       </div>
     </div>
   </header>
+  <div class="flot libre" id="flotante" hidden></div>
 
   <div class="layout sin-lateral" id="layout">
   <aside class="card lateral" id="lateral" hidden></aside>
@@ -1728,7 +1780,7 @@ const colorEstado = v => (ESTADOS.find(e => e.v === (ALIAS_ESTADO[normaliza(v ||
 // sólo sube cuando cambia lo que se guarda en el .md. VERSION_TXT es la versión que se muestra.
 // Nombre que se muestra (mdexa-config.js): sin caracteres de HTML ni de control y no demasiado largo
 const limpiaMarca = v => (typeof v === 'string' ? v.replace(/[<>"`\u0000-\u001f]/g, '').trim().slice(0, 40).trim() : '') || 'MDexa';
-const NOMBRE_APP = limpiaMarca(window.MDEXA_CONFIG?.nombre), VERSION_MDEXA = 19, VERSION_TXT = '1.37.0', VERSION_FECHA = '27 nov 2026';
+const NOMBRE_APP = limpiaMarca(window.MDEXA_CONFIG?.nombre), VERSION_MDEXA = 19, VERSION_TXT = '1.37.1', VERSION_FECHA = '27 nov 2026';
 const VERSION_SIN_HITOS = 18, SIN_HITO = 'Sin hito';   // sin hitos el archivo se guarda como 18, para que las versiones anteriores lo sigan editando
 const verTxt = n => n >= 14 ? `v1.${n}.0` : `v${n}`;
 let versionArchivo = 0, versionArchivoTxt = '';
@@ -1849,6 +1901,8 @@ const IC = {
   der:      'M12 6l6 6-6 6M6 6l6 6-6 6',
 };
 const ico = (n, t = 16) => IC[n] ? `<svg class="ic" viewBox="0 0 24 24" width="${t}" height="${t}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IC[n]}"/></svg>` : '';
+// Recuadro que aparece bajo un botón de la cabecera y explica qué hace
+function pista(t, d) { return `<span class="pista" role="tooltip"><b>${t}</b><small>${d}</small></span>`; }
 function iconizar(root = document) {
   root.querySelectorAll('[data-ico]:not([data-ico-ok])').forEach(el => {
     const svg = ico(el.dataset.ico, +el.dataset.icoTam || 16);
@@ -6201,7 +6255,7 @@ function pintarNovedadesBoton() {
   const n = novedades.total, b = $('novBadge'), m = novedades.menciones?.length || 0;
   b.hidden = !n; b.textContent = (m ? '@ ' : '') + (n > 99 ? '99+' : n); b.classList.toggle('con-men', !!m);
   $('btnNovedades').classList.toggle('hay', !!n);
-  $('btnNovedades').title = n ? `${pl(n, 'novedad', 'novedades')} desde tu última visita${m ? ` · te mencionaron ${m === 1 ? 'una vez' : m + ' veces'}` : ''}` : 'Novedades: sin cambios desde tu última visita';
+  $('novPista').textContent = n ? `${pl(n, 'novedad', 'novedades')} desde tu última visita${m ? ` · te mencionaron ${m === 1 ? 'una vez' : m + ' veces'}` : ''}` : 'Sin cambios desde tu última visita';
 }
 function avisarNovedades() {
   if (novedades.total && !novedades.menciones?.length) aviso(`${pl(novedades.total, 'novedad', 'novedades')} desde tu última visita · revisa el botón Novedades`);
@@ -6304,7 +6358,8 @@ function manualBase() {
   </ol>
 
   <h2 id="man-2">Trabajo en equipo: tomar y soltar el archivo</h2>
-  <p>El estado del archivo está en la <b>barra superior</b>, que cambia de color: <b>azul</b> si está libre, <b>verde</b> si lo tienes tú, <b>naranja</b> si lo tiene otra persona (con su nombre, desde cuándo y su última actividad) y <b>gris</b> si solo puedes leerlo (archivo de una versión más nueva o navegador sin permiso de escritura). Pasa el cursor sobre el estado para ver la explicación. Algunos botones de la barra muestran solo su ícono; su nombre aparece al pasar el cursor.</p>
+  <p>El estado del archivo está en la <b>barra superior</b>, que cambia de color: <b>azul</b> si está libre, <b>verde</b> si lo tienes tú, <b>naranja</b> si lo tiene otra persona (con su nombre, desde cuándo y su última actividad) y <b>gris</b> si solo puedes leerlo (archivo de una versión más nueva o navegador sin permiso de escritura). Pasa el cursor sobre el estado para ver la explicación. De <b>Abrir</b> hacia la derecha los botones muestran solo su ícono; al pasar el cursor (o llegar con el tabulador) aparece un recuadro que explica qué hace cada uno.</p>
+  <p>Cuando bajas y la barra superior deja de verse, aparece en la esquina un <b>botón flotante</b> con el color del estado (dice <i>Editando</i> o el nombre de quien edita, y cuántas novedades hay). Al pulsarlo se abre un panel con quién edita, tomar o soltar el archivo, deshacer, <b>Nueva actividad</b>, todos los botones de la barra y <b>Volver arriba</b>. Se cierra con <kbd>Esc</kbd> o al hacer clic fuera.</p>
   <p>Para evitar que dos personas editen al mismo tiempo, el archivo funciona con un <b>candado</b>:</p>
   <ul>
     <li><b>Solo lectura</b> (al abrir): puedes ver todo, filtrar y sacar reportes. La vista se actualiza sola cada 15 segundos; también puedes usar <b>Refrescar</b>.</li>
@@ -6907,8 +6962,7 @@ function aplicarTema(t, avisar = false) {
   tema = t; try { t === 'auto' ? localStorage.removeItem('mdexa.tema') : localStorage.setItem('mdexa.tema', t); } catch {}
   if (t === 'auto') delete document.documentElement.dataset.tema; else document.documentElement.dataset.tema = t;
   const sig = { auto: 'claro', claro: 'oscuro', oscuro: 'auto' }[t];
-  $('btnTema').innerHTML = ico(TEMAS[t].ic, 17);
-  $('btnTema').title = `Tema: ${TEMAS[t].t} (${TEMAS[t].d.toLowerCase()}) · clic para cambiar a ${TEMAS[sig].t}`;
+  $('btnTema').innerHTML = ico(TEMAS[t].ic, 17) + pista(`Tema: ${TEMAS[t].t}`, `${TEMAS[t].d}. Clic para cambiar a ${TEMAS[sig].t}`);
   if (avisar) { aviso(`Tema ${TEMAS[t].t.toLowerCase()}${t === 'auto' ? ': sigue a tu sistema' : ''}`); if (nombreArchivo) render(); }
 }
 $('btnTema').onclick = () => aplicarTema({ auto: 'claro', claro: 'oscuro', oscuro: 'auto' }[tema], true);
@@ -7085,8 +7139,7 @@ $('btnIcs').onclick = abrirICS;
 /* ============ Pantalla completa (sin cambiar la vista) ============ */
 function pintarBtnPantalla() {
   const en = !!document.fullscreenElement;
-  $('btnPantalla').innerHTML = ico(en ? 'contraer' : 'expandir', 17);
-  $('btnPantalla').title = en ? 'Salir de pantalla completa (tecla F o Esc)' : 'Pantalla completa (tecla F)';
+  $('btnPantalla').innerHTML = ico(en ? 'contraer' : 'expandir', 17) + pista(en ? 'Salir de pantalla completa' : 'Pantalla completa', en ? 'Tecla F o Esc' : 'Ocupa todo el monitor · tecla F');
   $('btnPantalla').setAttribute('aria-pressed', en);
 }
 function alternarPantalla() {
@@ -7238,6 +7291,47 @@ document.addEventListener('keydown', e => {
   } catch {}
   render();
 })();
+/* ============ Botón flotante (cuando la cabecera deja de verse) ============ */
+let flotFuera = false, flotAbierto = false, flotMas = false, flotPintado = 0;
+const FLOT_BOTONES = [['btnAbrir', 'Abrir'], ['btnRefrescar', 'Refrescar'], ['btnNovedades', 'Novedades'], ['btnBitacora', 'Bitácora'], ['btnHitos', 'Hitos'],
+  ['btnReporte', 'Reporte'], ['btnManual', 'Manual'], ['btnMas', 'Más'], ['btnTema', 'Tema'], ['btnPantalla', 'Pantalla']];
+// El panel refleja la cabecera: mismo estado, y cada botón pulsa el original
+function pintarFlotante() {
+  const el = $('flotante'), b = $('banner');
+  el.hidden = !flotFuera;
+  if (!flotFuera) { flotAbierto = flotMas = false; return; }
+  const cls = ['libre', 'mio', 'otro', 'solo'].find(c => b.classList.contains(c)) || 'libre';
+  const corto = cls === 'mio' ? (modo === 'edicion' ? 'Editando' : 'Tomado') : cls === 'otro' ? candado?.usuario || '' : '';
+  const nov = $('novBadge'), globo = nov.hidden ? '' : `<span class="${nov.className}">${nov.textContent}</span>`;
+  const icono = b.querySelector('.b-ico')?.innerHTML || '', txt = b.querySelector('.est-txt'), acc = b.querySelector('.est-acc');
+  el.className = 'flot ' + cls;
+  el.innerHTML = (flotAbierto ? `<div class="flot-panel" role="dialog" aria-label="Estado y acciones">
+      <div class="flot-cab">${icono}<div title="${esc(txt?.title || '')}">${txt?.innerHTML || ''}</div></div>
+      ${acc ? `<div class="flot-acc">${[...acc.children].map((x, i) => `<button type="button" class="${x.className}" data-flot-acc="${i}" ${x.disabled ? 'disabled' : ''} title="${esc(x.title)}" aria-label="${esc(x.getAttribute('aria-label') || x.textContent.trim())}">${x.innerHTML}</button>`).join('')}</div>` : ''}
+      ${modo === 'edicion' ? `<button type="button" class="prim flot-nueva" data-flot="btnNuevaAct">${ico('mas')} Nueva actividad</button>` : ''}
+      <div class="flot-rej">${FLOT_BOTONES.map(([id, t]) => { const o = $(id); return `<button type="button" data-flot="${id}" ${o.disabled ? 'disabled' : ''} ${id === 'btnMas' ? `aria-expanded="${flotMas}"` : ''}>${o.querySelector(':scope>svg')?.outerHTML || ico(id === 'btnNovedades' ? 'campana' : 'puntos')}<span>${t}</span>${id === 'btnNovedades' ? globo : ''}</button>`; }).join('')}</div>
+      ${flotMas ? `<div class="flot-mas">${[...$('menuMas').querySelectorAll('button')].map(o => `<button type="button" data-flot="${o.id}" title="${esc(o.querySelector('.menu-desc')?.textContent || '')}">${esc(o.querySelector('b')?.textContent || '')}</button>`).join('')}</div>` : ''}
+      <button type="button" class="flot-arriba" data-flot-arriba>${ico('subir', 14)} Volver arriba</button>
+    </div>` : '')
+    + `<button type="button" class="flot-btn" aria-expanded="${flotAbierto}" aria-label="Estado y acciones${corto ? ': ' + esc(corto) : ''}" title="Estado del archivo y acciones">${icono}${corto ? `<span class="flot-txt">${esc(corto)}</span>` : ''}${globo}</button>`;
+}
+const cerrarFlotante = () => { if (flotAbierto) { flotAbierto = flotMas = false; pintarFlotante(); } };
+$('flotante').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  e.stopPropagation();
+  if (b.classList.contains('flot-btn')) { flotAbierto = !flotAbierto; flotMas = false; pintarFlotante(); return; }
+  if (b.dataset.flot === 'btnMas') { flotMas = !flotMas; pintarFlotante(); return; }
+  const original = b.dataset.flotAcc !== undefined ? $('banner').querySelector('.est-acc')?.children[+b.dataset.flotAcc] : b.dataset.flot ? $(b.dataset.flot) : null;
+  if (b.dataset.flot !== 'btnTema') cerrarFlotante();
+  if (b.hasAttribute('data-flot-arriba')) scrollTo({ top: 0, behavior: 'smooth' }); else original?.click();
+});
+document.addEventListener('pointerdown', e => { if (flotAbierto && !e.target.closest('#flotante')) cerrarFlotante(); });
+// Escape cierra primero el panel, sin quitar la selección
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && flotAbierto) { e.stopPropagation(); cerrarFlotante(); } }, true);
+new IntersectionObserver(([x]) => { flotFuera = !x.isIntersecting; pintarFlotante(); }).observe(document.querySelector('header'));
+new MutationObserver(() => { if (flotFuera && !flotPintado) flotPintado = requestAnimationFrame(() => { flotPintado = 0; pintarFlotante(); }); })
+  .observe(document.querySelector('header'), { subtree: true, childList: true, attributes: true, characterData: true });
+
 </script>
 </body>
 </html>

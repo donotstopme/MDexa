@@ -62,7 +62,7 @@ Para equipos de 2 a 15 personas que llevan sus pendientes en Excel, en notas sue
 | **Ver el trabajo de seis maneras** | Lista · Línea de tiempo (Gantt con dependencias) · Tablero (Kanban) · Calendario · Mis actividades · Carga por persona y semana |
 | **Describir cada actividad** | Negocio, responsable, tamaño, prioridad, fechas, estado, etiquetas de color, subtareas, notas con `@menciones`, imágenes, dependencias entre actividades y repetición automática |
 | **Planear por hitos y fases** | Entregables con fecha y descripción, de uno o varios negocios; sus actividades entran solas, con avance y estado (en tiempo, en riesgo, vencido o cumplido) |
-| **Trabajar en equipo sin servidor** | Quien edita "toma" el archivo y los demás lo ven en solo lectura; la barra superior cambia de color según quién lo tiene; los cambios ajenos aparecen solos y se resumen en **Novedades** |
+| **Trabajar en equipo sin servidor** | Quien edita "toma" el archivo y los demás lo ven en solo lectura; la barra superior cambia de color según quién lo tiene (y se vuelve un botón flotante al bajar); los cambios ajenos aparecen solos y se resumen en **Novedades** |
 | **Dar seguimiento** | Avance contra la meta del proyecto con gráfica y proyección de la fecha de término, bitácora de quién cambió qué, respaldos restaurables, deshacer y rehacer |
 | **Reportar** | Reporte completo (pantalla, PDF, `.html` o `.md`), reporte semanal listo para pegar en un correo y modo **Presentar** para las juntas |
 | **Mover datos** | Importar desde Excel o CSV, exportar a CSV, exportar fechas al calendario (`.ics` para Outlook, Google o Apple), crear un sprint nuevo a partir del actual |
@@ -155,6 +155,12 @@ Los hitos se ven en la **Línea de tiempo** y el **Calendario** (arrástralos pa
   </tr>
 </table>
 
+### El botón flotante
+
+Cuando bajas y la barra superior deja de verse, aparece en la esquina un botón del color del estado. Abre un panel con quién edita, tomar o soltar el archivo, **Nueva actividad**, todos los botones de la barra y **Volver arriba**.
+
+![Botón flotante con su panel abierto](docs/capturas/flotante.png)
+
 ### La meta, compacta
 
 Con **Compactar**, el bloque de la meta se reduce a tres líneas: el tiempo transcurrido y las actividades terminadas, alineados para ver el atraso; los hitos como rombos en su fecha, y los dos que siguen.
@@ -186,7 +192,7 @@ Con **Compactar**, el bloque de la meta se reduce a tres líneas: el tiempo tran
 
 - **Manual** (botón en la barra de arriba): la guía completa con buscador (escribe una palabra y solo quedan las secciones que hablan de ella; Enter salta a la siguiente coincidencia) y botón para imprimirla. Cubre todo lo que se describe aquí y más: vistas, filtros, notas y menciones, dependencias, respaldos, importar y exportar, sprints, reportes…
 - **Atajos de teclado**: tecla `?`.
-- Los botones y los íconos tienen una descripción al pasar el cursor encima, y la barra superior siempre dice en qué estado está el archivo: **azul** libre, **verde** lo editas tú, **naranja** lo edita otra persona y **gris** solo lectura.
+- Los botones y los íconos tienen una descripción al pasar el cursor encima, y la barra superior siempre dice en qué estado está el archivo: **azul** libre, **verde** lo editas tú, **naranja** lo edita otra persona y **gris** solo lectura. Sus botones explican qué hacen al pasar el cursor.
 
 ### Atajos de teclado
 
