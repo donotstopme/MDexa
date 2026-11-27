@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { EST, actividadesParaHito, guardarHito, hitoDe, nomCorto, pl, seleccionHito, unicos, type Actividad, type Documento } from '@mdexa/core';
+import { COLORES_ETQ, EST, actividadesParaHito, guardarHito, hitoDe, nomCorto, pl, seleccionHito, unicos, type Actividad, type ColorEtiqueta, type Documento } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { fmtTxt } from '../original/piezas';
 import { Dialogo } from './Dialogo';
@@ -9,7 +9,7 @@ export function FormHito({ doc, id, usuario, onGuardar, aviso, onCerrar }: {
   doc: Documento; id: number | null; usuario: string; onGuardar(fn: (d: Documento) => Documento): void; aviso(m: string): void; onCerrar(): void;
 }) {
   const h = doc.hitos.find(x => x.id === id);
-  const [f, setF] = useState(() => ({ id: h?.id, nombre: h?.nombre ?? '', fecha: h?.fecha ?? '', descripcion: h?.descripcion ?? '', negocios: h?.negocios ?? [], cumplido: h?.cumplido ?? '' }));
+  const [f, setF] = useState(() => ({ id: h?.id, nombre: h?.nombre ?? '', fecha: h?.fecha ?? '', descripcion: h?.descripcion ?? '', negocios: h?.negocios ?? [], cumplido: h?.cumplido ?? '', color: h?.color }));
   /** Casillas que la persona cambió; las demás se marcan solas */
   const [manual, setManual] = useState<ReadonlyMap<number, boolean>>(new Map());
   const negocios = unicos([...doc.actividades.map(a => a.negocio), ...f.negocios]);
@@ -38,6 +38,11 @@ export function FormHito({ doc, id, usuario, onGuardar, aviso, onCerrar }: {
           <label><span>Nombre <b>*</b></span><input autoFocus placeholder="Ej. Diseño aprobado" value={f.nombre} onChange={e => setF({ ...f, nombre: e.target.value })} /></label>
           <label><span>Fecha <b>*</b></span><input type="date" value={f.fecha} onChange={e => setF({ ...f, fecha: e.target.value })} /></label>
           <label className="todo">Descripción<textarea rows={2} placeholder="Qué se entrega y cómo se sabe que está cumplido" value={f.descripcion} onChange={e => setF({ ...f, descripcion: e.target.value })} /></label>
+          <div className="todo"><span className="hito-cab"><span>Color</span></span>
+            <div className="hito-colores" role="group" aria-label="Color del hito">
+              <button type="button" className={`auto ${f.color ? '' : 'on'}`} aria-pressed={!f.color} title="El color cambia según el estado del hito" onClick={() => setF({ ...f, color: undefined })}>Según el estado</button>
+              {(Object.entries(COLORES_ETQ) as [ColorEtiqueta, string][]).map(([c, nom]) => (
+                <button key={c} type="button" className={`etq-col etq-${c} ${f.color === c ? 'on' : ''}`} title={nom} aria-label={nom} aria-pressed={f.color === c} onClick={() => setF({ ...f, color: c })} />))}</div></div>
           <div className="todo"><span className="hito-cab"><span>Negocios <b>*</b></span></span>
             <div className="hito-negs">{!negocios.length && <span className="nd">Todavía no hay actividades con negocio.</span>}
               {negocios.map(n => <label key={n} className="check s-ck"><input type="checkbox" checked={f.negocios.includes(n)}

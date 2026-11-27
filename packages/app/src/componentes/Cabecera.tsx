@@ -11,7 +11,7 @@ const SIG: Record<Tema, Tema> = { auto: 'claro', claro: 'oscuro', oscuro: 'auto'
 export interface Props {
   titulo: string; archivo: string; usuario: string; hayArchivo: boolean;
   novedades: number; menciones: number; tema: Tema;
-  onAbrir(): void; onRefrescar(): void; onNovedades(): void; onBitacora(): void; onHitos?(): void; onReporte(): void; onManual(): void; onTema(t: Tema): void; onUsuario(): void;
+  onAbrir(): void; onRefrescar(): void; onNovedades(): void; onBitacora(): void; onHitos?(): void; logo?: string; onReporte(): void; onManual(): void; onTema(t: Tema): void; onUsuario(): void;
   extras: { titulo: string; desc: string; onClick(): void }[];
   version?: string;
 }
@@ -37,6 +37,8 @@ export function Cabecera(p: Props) {
     <header>
       <div className="cabeza">
         <div className="marca" title={NOMBRE_APP}>
+          {/* logo.png junto a la app (o junto al .md en el escritorio); si no existe, no se muestra */}
+          <img key={p.logo || 'logo.png'} src={p.logo || 'logo.png'} alt="" className="marca-logo" onError={e => { e.currentTarget.style.display = 'none'; }} />
           <span className="marca-txt"><b>{NOMBRE_APP}</b><span className="marca-ver">v{p.version ?? VERSION_TXT}</span></span>
         </div>
         <div className="cabeza-proy">

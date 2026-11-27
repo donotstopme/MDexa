@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MDexa</title>
+<!-- Personalización: nombre en mdexa-config.js e imagen logo.png, junto a este archivo (ambos opcionales) -->
+<script src="mdexa-config.js"></script>
 <script>try { const t = localStorage.getItem('mdexa.tema'); if (t === 'claro' || t === 'oscuro') document.documentElement.dataset.tema = t; } catch {}</script>
 <style>
   :root{--bg:#f5f6f8;--card:#fff;--text:#1c2430;--muted:#667085;--line:#e3e6eb;--line2:#cfd4dc;--accent:#2f6fed;--danger:#d92d20;--ok:#079455;--warn:#dc6803;--grupo:#e9edf5;
@@ -359,7 +361,6 @@
   .seg button{border:0;background:transparent;padding:6px 11px;border-radius:7px;font-size:14px;color:var(--muted)}
   .seg button:hover{border:0;color:var(--text)}
   .seg button.on{background:var(--card);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.12);font-weight:600}
-  .filtros>#qZoom{flex:0 0 auto;min-width:0;width:auto}
 
   /* Línea de tiempo */
   .gantt{overflow:auto;max-height:max(460px,calc(100vh - 190px));border:1px solid var(--line);border-radius:10px;background:var(--card);overscroll-behavior:contain}
@@ -562,9 +563,16 @@
   .ritmo{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid currentColor;margin-top:12px}
 
   /* Tabla */
-  .filtros{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;align-items:center}
-  .filtros>input,.filtros>select{flex:1;min-width:130px}
-  .filtros>.msel{flex:1 1 150px;min-width:120px;max-width:250px}
+  /* Barra en tres secciones separadas por líneas punteadas: vistas y búsqueda · filtros · opciones y acciones */
+  .filtros{margin-bottom:12px}
+  .f-sec{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 0}
+  .f-sec:first-child{padding-top:0}
+  .f-sec:last-child{padding-bottom:0}
+  .f-sec+.f-sec{border-top:2px dashed var(--line2)}
+  .f-sec>.buscar{flex:1 1 260px;max-width:none}
+  .f-sec>.msel{flex:1 1 130px;min-width:110px;max-width:250px}
+  .f-sec>.f-fin{margin-left:auto}
+  .f-sec>select{flex:0 0 auto;min-width:0;width:auto}
   .msel{position:relative}
   .cg-barra{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;margin-bottom:12px;font-size:13.5px}
   .cg-barra label{display:flex;flex-direction:row;align-items:center;gap:6px;color:var(--text)}
@@ -651,7 +659,7 @@
   .nov-it.nov-men{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));background:color-mix(in srgb,var(--accent) 5%,var(--card))}
   .nov-h-men{color:var(--accent)}
   .nov-badge.con-men{background:var(--accent);color:#fff}
-  .filtros>.msel.cols{flex:0 0 auto;min-width:0;max-width:none}
+  .f-sec>.msel.cols{flex:0 0 auto;min-width:0;max-width:none}
   .msel.cols .msel-btn{gap:6px}
   .g-ren{padding:2px 6px;margin-left:4px;opacity:0;transition:opacity .12s;vertical-align:1px}
   tr.grupo:hover .g-ren,.k-carril-cab:hover .g-ren,.g-ren:focus-visible{opacity:.8}
@@ -936,7 +944,16 @@
   }
   /* ---- Hitos en la línea de tiempo, el calendario y la tarjeta de meta ---- */
   .h-Cumplido{--hc:var(--c-verde)} .h-En-tiempo{--hc:var(--accent)} .h-En-riesgo{--hc:var(--c-amar)} .h-Vencido{--hc:var(--c-rojo)}
+  .h-color.h-color{--hc:var(--e)}
+  .g-rombo.h-color.h-Vencido i,.c-hito.h-color.h-Vencido i,.hito-punto.h-color.h-Vencido{outline:2px solid var(--c-rojo);outline-offset:1px}
+  .g-rombo.h-color.h-En-riesgo i,.c-hito.h-color.h-En-riesgo i,.hito-punto.h-color.h-En-riesgo{outline:2px solid var(--c-amar);outline-offset:1px}
+  .hito-punto{display:inline-block;width:9px;height:9px;margin-right:8px;transform:rotate(45deg);background:var(--hc);border-radius:1px}
+  .hito-colores{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+  .hito-colores .auto{padding:3px 12px;font-size:12.5px;font-weight:400;border-radius:99px}
+  .hito-colores .auto.on{border-color:var(--accent);color:var(--accent);font-weight:600}
+  .hito-colores .etq-col{width:22px;height:22px}
   .g-escala.con-hitos{height:auto}
+  .g-escala.con-hitos .g-marca{top:29px;bottom:auto}   /* "Hoy" y "Meta" se quedan arriba de la banda de hitos */
   .g-esq{flex-wrap:wrap;align-content:flex-start;padding-top:14px}
   .g-esq-h{width:100%;display:flex;align-items:center;gap:5px;margin-top:20px}
   .g-hitos{position:relative;border-top:1px solid var(--line)}
@@ -976,7 +993,7 @@
   <header>
     <div class="cabeza">
       <div class="marca" title="MDexa">
-        <img src="bm.png" alt="" class="marca-logo" onerror="this.remove()">
+        <img src="logo.png" alt="" class="marca-logo" onerror="this.remove()">
         <span class="marca-txt"><b id="marcaNombre">MDexa</b><span class="marca-ver" id="marcaVersion"></span></span>
       </div>
       <div class="cabeza-proy">
@@ -1023,32 +1040,37 @@
 
   <div class="card">
     <div class="filtros">
-      <div class="seg" id="segVista" role="tablist">
-        <button data-vista="lista" data-ico="lista" title="Vista de lista (tecla 1)">Lista</button>
-        <button data-vista="gantt" data-ico="gantt" title="Vista de línea de tiempo (tecla 2)">Línea de tiempo</button>
-        <button data-vista="kanban" data-ico="tablero" title="Tablero por estado (tecla 3)">Tablero</button>
-        <button data-vista="cal" data-ico="calendario" title="Calendario mensual por fecha fin (tecla 4)">Calendario</button>
-        <button data-vista="mias" data-ico="usuario" title="Las actividades asignadas a ti (tecla 5)">Mis actividades</button>
-        <button data-vista="carga" data-ico="carga" title="Carga de trabajo por persona y semana (tecla 6)">Carga</button>
+      <div class="f-sec">
+        <div class="seg" id="segVista" role="tablist">
+          <button data-vista="lista" data-ico="lista" title="Vista de lista (tecla 1)">Lista</button>
+          <button data-vista="gantt" data-ico="gantt" title="Vista de línea de tiempo (tecla 2)">Línea de tiempo</button>
+          <button data-vista="kanban" data-ico="tablero" title="Tablero por estado (tecla 3)">Tablero</button>
+          <button data-vista="cal" data-ico="calendario" title="Calendario mensual por fecha fin (tecla 4)">Calendario</button>
+          <button data-vista="mias" data-ico="usuario" title="Las actividades asignadas a ti (tecla 5)">Mis actividades</button>
+          <button data-vista="carga" data-ico="carga" title="Carga de trabajo por persona y semana (tecla 6)">Carga</button>
+        </div>
+        <label class="check" id="lblPersona" hidden>Ver actividades de <select id="qPersona" style="width:auto"></select></label>
+        <select id="qZoom" title="Escala de la línea de tiempo" hidden><option value="dia">Por día</option><option value="semana">Por semana</option><option value="mes">Por mes</option></select>
+        <div class="buscar"><i data-ico="buscar"></i><input id="qTexto" placeholder="Buscar en actividades, notas, subtareas…  ( / )" title="Busca en el nombre, negocio, responsable, etiquetas, subtareas, notas y #número. Varias palabras: deben estar todas."></div>
       </div>
-      <label class="check" id="lblPersona" hidden>Ver actividades de <select id="qPersona" style="width:auto"></select></label>
-      <select id="qZoom" title="Escala de la línea de tiempo" hidden><option value="dia">Por día</option><option value="semana">Por semana</option><option value="mes">Por mes</option></select>
-      <div class="buscar"><i data-ico="buscar"></i><input id="qTexto" placeholder="Buscar en actividades, notas, subtareas…  ( / )" title="Busca en el nombre, negocio, responsable, etiquetas, subtareas, notas y #número. Varias palabras: deben estar todas."></div>
-      <div id="qNeg"></div>
-      <div id="qResp"></div>
-      <div id="qEst"></div>
-      <div id="qTam"></div>
-      <div id="qPri"></div>
-      <div id="qEtq"></div>
-      <div id="qHito"></div>
-      <label class="check" id="lblBacklog" title="Mostrar u ocultar las actividades en Backlog"><input type="checkbox" id="qBacklog" checked> <span>Mostrar backlog</span></label>
-      <div class="msel cols" id="colsWrap"><button type="button" class="msel-btn" id="btnCols" aria-haspopup="true"></button><div class="msel-pop" id="colsPop" hidden></div></div>
-      <button id="btnPresentar" title="Modo presentación para juntas (tecla P)">Presentar</button>
-      <label class="check" id="lblAgrupar">Agrupar por <select id="qAgrupar" class="sel-agrupar">
-        <option value="negocio">Negocio</option><option value="responsable">Responsable</option><option value="prioridad">Prioridad</option>
-        <option value="estado">Estado</option><option value="etiqueta">Etiqueta</option><option value="hito">Hito</option><option value="">Sin agrupar</option></select></label>
-      <button id="btnNuevoHito" hidden title="Crear un hito y elegir sus actividades">Nuevo hito</button>
-      <button class="prim" id="btnNuevaAct" hidden title="Nueva actividad (tecla N)">Nueva actividad</button>
+      <div class="f-sec">
+        <div id="qNeg"></div>
+        <div id="qResp"></div>
+        <div id="qEst"></div>
+        <div id="qTam"></div>
+        <div id="qPri"></div>
+        <div id="qEtq"></div>
+        <div id="qHito"></div>
+      </div>
+      <div class="f-sec">
+        <label class="check" id="lblBacklog" title="Mostrar u ocultar las actividades en Backlog"><input type="checkbox" id="qBacklog" checked> <span>Mostrar backlog</span></label>
+        <div class="msel cols" id="colsWrap"><button type="button" class="msel-btn" id="btnCols" aria-haspopup="true"></button><div class="msel-pop" id="colsPop" hidden></div></div>
+        <button id="btnPresentar" title="Modo presentación para juntas (tecla P)">Presentar</button>
+        <label class="check" id="lblAgrupar">Agrupar por <select id="qAgrupar" class="sel-agrupar">
+          <option value="negocio">Negocio</option><option value="responsable">Responsable</option><option value="prioridad">Prioridad</option>
+          <option value="estado">Estado</option><option value="etiqueta">Etiqueta</option><option value="hito">Hito</option><option value="">Sin agrupar</option></select></label>
+        <button class="prim f-fin" id="btnNuevaAct" hidden title="Nueva actividad (tecla N)">Nueva actividad</button>
+      </div>
     </div>
     <div id="vistaLista">
     <table>
@@ -1324,6 +1346,7 @@
       <label><span>Nombre <b>*</b></span><input id="hNom" placeholder="Ej. Diseño aprobado"></label>
       <label><span>Fecha <b>*</b></span><input type="date" id="hFecha"></label>
       <label class="todo">Descripción<textarea id="hDesc" rows="2" placeholder="Qué se entrega y cómo se sabe que está cumplido"></textarea></label>
+      <div class="todo"><span class="hito-cab"><span>Color</span></span><div class="hito-colores" id="hColores" role="group" aria-label="Color del hito"></div></div>
       <div class="todo"><span class="hito-cab"><span>Negocios <b>*</b></span></span><div class="hito-negs" id="hNegs"></div></div>
       <div class="todo">
         <span class="hito-cab"><span>Actividades incluidas <span class="nd" id="hCuenta"></span></span>
@@ -1538,7 +1561,9 @@ const colorEstado = v => (ESTADOS.find(e => e.v === (ALIAS_ESTADO[normaliza(v ||
    aquí solo se puede ver: no se escribe nada, para no borrar datos que esta versión no conoce. */
 // VERSION_MDEXA es el número de compatibilidad del formato del archivo (las versiones 14 en adelante lo comparan):
 // sólo sube cuando cambia lo que se guarda en el .md. VERSION_TXT es la versión que se muestra.
-const NOMBRE_APP = 'MDexa', VERSION_MDEXA = 19, VERSION_TXT = '1.35.0', VERSION_FECHA = '27 nov 2026';
+// Nombre que se muestra (mdexa-config.js): sin caracteres de HTML ni de control y no demasiado largo
+const limpiaMarca = v => (typeof v === 'string' ? v.replace(/[<>"`\u0000-\u001f]/g, '').trim().slice(0, 40).trim() : '') || 'MDexa';
+const NOMBRE_APP = limpiaMarca(window.MDEXA_CONFIG?.nombre), VERSION_MDEXA = 19, VERSION_TXT = '1.35.1', VERSION_FECHA = '27 nov 2026';
 const VERSION_SIN_HITOS = 18, SIN_HITO = 'Sin hito';   // sin hitos el archivo se guarda como 18, para que las versiones anteriores lo sigan editando
 const verTxt = n => n >= 14 ? `v1.${n}.0` : `v${n}`;
 let versionArchivo = 0, versionArchivoTxt = '';
@@ -2061,12 +2086,13 @@ function setEstado(a, v, terminada) {
 
 /* ============ Markdown <-> datos ============ */
 const LINEA_HITO = /^[-*]\s*H(\d+)\s*\|\s*(\d{4}-\d{2}-\d{2})?\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*(?:\|\s*(\d{4}-\d{2}-\d{2})?\s*(?:\|(.*))?)?$/;
+const LINEA_COLOR_HITO = /^[-*]\s*H(\d+)\s*\|\s*(\w+)\s*$/;
 // Una sección "## Hitos" sólo se interpreta si todas sus líneas tienen el formato; una escrita a mano se conserva tal cual
-function esSeccionHitos(lineas, desde) {
+function esSeccionDe(formato, lineas, desde) {
   for (let i = desde; i < lineas.length; i++) {
     const l = lineas[i].trim();
     if (/^#{1,6}\s/.test(l)) break;
-    if (l && !LINEA_HITO.test(l)) return false;
+    if (l && !formato.test(l)) return false;
   }
   return true;
 }
@@ -2082,19 +2108,26 @@ const versionDe = (hs, acts) => hs.length || acts.some(a => a.hito) ? VERSION_MD
 //   ## Notas
 //   - #ID | fecha ISO | Autor | texto (los saltos de línea como <br>)
 function parseMD(txt) {
-  const acts = [], m = { proyecto: '', inicio: '', fin: '', version: 0 }, nts = [], bit = [], extra = [], colEtq = {}, imgs = [], subsPorAct = {}; let c = null, cols = null, enNotas = false, enBit = false, enEtq = false, enImg = false, enSub = false, enOtra = false, enHitos = false;
+  const acts = [], m = { proyecto: '', inicio: '', fin: '', version: 0 }, nts = [], bit = [], extra = [], colEtq = {}, imgs = [], subsPorAct = {}; let c = null, cols = null, enNotas = false, enBit = false, enEtq = false, enImg = false, enSub = false, enOtra = false, enHitos = false, enColores = false;
+  const coloresHito = {};
   const hs = [], lineas = txt.split(/\r?\n/);
   for (let num = 0; num < lineas.length; num++) {
     const linea = lineas[num], l = linea.trim();
     if (/^#{1,6}\s/.test(l)) {
       const t = normaliza(l); enNotas = /^##\s+notas\b/.test(t); enBit = /^##\s+bitacora\b/.test(t); enEtq = /^##\s+etiquetas\s*$/.test(t); enImg = /^##\s+imagenes\s*$/.test(t); enSub = /^##\s+subtareas\s*$/.test(t);
       // Una sección ## que MDexa no conoce se conserva tal cual (por ejemplo, una agregada a mano)
-      enHitos = /^##\s+hitos\s*$/.test(t) && esSeccionHitos(lineas, num + 1);
-      enOtra = /^##\s/.test(l) && !enNotas && !enBit && !enEtq && !enImg && !enSub && !enHitos;
+      enHitos = /^##\s+hitos\s*$/.test(t) && esSeccionDe(LINEA_HITO, lineas, num + 1);
+      enColores = /^##\s+colores de hitos\s*$/.test(t) && esSeccionDe(LINEA_COLOR_HITO, lineas, num + 1);
+      enOtra = /^##\s/.test(l) && !enNotas && !enBit && !enEtq && !enImg && !enSub && !enHitos && !enColores;
       if (enOtra) extra.push(linea.replace(/\s+$/, ''));
       continue;
     }
     if (enOtra) { extra.push(linea.replace(/\s+$/, '')); continue; }
+    if (enColores) {
+      const mc = l.match(LINEA_COLOR_HITO);
+      if (mc && COLORES_ETQ[normaliza(mc[2])]) coloresHito[+mc[1]] = normaliza(mc[2]);
+      continue;
+    }
     if (enHitos) {
       const mh = l.match(LINEA_HITO);
       if (mh) hs.push({ id: +mh[1], fecha: mh[2] || '', nombre: mh[3], negocios: mh[4].split(';').map(s => s.trim()).filter(Boolean), cumplido: mh[5] || '',
@@ -2155,6 +2188,7 @@ function parseMD(txt) {
                 responsable: g('responsable'), inicio: g('inicio'), fin: g('fin'),
                 estado, terminada: estado === 'Terminado' ? g('terminada') : '', ...(/^H\d+$/i.test(g('hito')) ? { hito: +g('hito').slice(1) } : {}) });
   }
+  hs.forEach(h => { if (coloresHito[h.id]) h.color = coloresHito[h.id]; });
   acts.forEach(a => { if (subsPorAct[a.id]) a.subtareas = subsPorAct[a.id]; });
   let max = Math.max(0, ...acts.map(a => a.id));
   acts.forEach(a => { if (!a.id) a.id = ++max; });
@@ -2173,6 +2207,9 @@ function toMD() {
     md += `| ${a.id} | ${limpia(a.negocio)} | ${limpia(a.actividad)} | ${a.tamano || ''} | ${a.prioridad || ''} | ${limpia(a.responsable)} | ${a.inicio || ''} | ${a.fin || ''} | ${EST(a)} | ${a.terminada || ''} | ${limpia(etqs(a).join(', '))} | ${txtDeps(a)} | ${REPITE[a.repite] || ''} |${conHitos ? ` ${a.hito ? 'H' + a.hito : ''} |` : ''}\n`;
   if (hitos.length) md += '\n## Hitos\n\n' + [...hitos].sort((a, b) => a.id - b.id)
     .map(h => `- H${h.id} | ${h.fecha} | ${limpia(h.nombre)} | ${limpia(h.negocios.join('; '))}${h.cumplido || h.descripcion ? ` | ${h.cumplido}` : ''}${h.descripcion ? ` | ${limpia(h.descripcion)}` : ''}`).join('\n') + '\n';
+  const conColor = [...hitos].sort((a, b) => a.id - b.id).filter(h => h.color);
+  // En una sección aparte: las versiones que no conocen el color la conservan tal cual
+  if (conColor.length) md += '\n## Colores de hitos\n\n' + conColor.map(h => `- H${h.id} | ${h.color}`).join('\n') + '\n';
   const usadas = new Set(todasEtq().map(normaliza)), colores = Object.entries(coloresEtq).filter(([k]) => usadas.has(k));
   if (colores.length) md += '\n## Etiquetas\n\n' + colores.map(([k, c]) => `- ${limpia(todasEtq().find(t => normaliza(t) === k) || k)} | ${c}`).join('\n') + '\n';
   if (seccionesExtra.length) md += '\n' + seccionesExtra.join('\n') + '\n';
@@ -2888,7 +2925,7 @@ function renderEstado() {
   const icoAcc = { tomar: 'lapiz', soltar: 'abierto', liberar: 'abierto', reabrir: 'carpeta', recientes: 'reloj' };
   b.querySelectorAll('button[data-acc]').forEach(x => { if (icoAcc[x.dataset.acc]) x.dataset.ico = icoAcc[x.dataset.acc]; });
   iconizar(b);
-  $('btnNuevaAct').hidden = $('btnNuevoHito').hidden = modo !== 'edicion';
+  $('btnNuevaAct').hidden = modo !== 'edicion';
   $('btnHitos').disabled = !nombreArchivo;
 }
 $('banner').addEventListener('click', e => {
@@ -2898,11 +2935,13 @@ $('banner').addEventListener('click', e => {
 });
 
 function bloqueHitos() {
-  if (!hitos.length) return '';
+  // Con el archivo tomado la sección aparece aunque no haya hitos: desde aquí se crea el primero
+  const ed = modo === 'edicion';
+  if (!hitos.length && !ed) return '';
   const prox = proximosHitos(), color = { Cumplido: 'es-verde', 'En tiempo': 'es-gris', 'En riesgo': 'es-amar', Vencido: 'es-rojo' };
-  return `<div class="m-hitos"><div class="m-hitos-cab"><span class="etq">${ico('bandera', 13)} Próximos hitos</span><button type="button" data-acc="hitos">Ver todos (${hitos.length})</button></div>
-    ${prox.length ? prox.slice(0, 4).map(({ h, info }) => `<button type="button" class="m-hito" data-hito="${h.id}" title="${esc(`${h.negocios.join(', ')}${h.descripcion ? '\n' + h.descripcion : ''}`)}"><span class="m-hito-nom">${esc(h.nombre)}</span><span class="nd">${fmtTxt(h.fecha)}</span>
-      <span class="bar"><span class="f-verde" style="width:${info.pct}%"></span></span><span class="nd">${info.hechas}/${info.total}</span><b class="${color[info.estado]}" title="${esc(info.detalle)}">${info.estado}</b></button>`).join('') : '<div class="nd">Todos los hitos están cumplidos.</div>'}
+  return `<div class="m-hitos"><div class="m-hitos-cab"><span class="etq">${ico('bandera', 13)} Próximos hitos</span><div class="barra">${hitos.length ? `<button type="button" data-acc="hitos">Ver todos (${hitos.length})</button>` : ''}${ed ? '<button type="button" data-acc="nuevo-hito" data-ico="bandera" title="Crear un hito y elegir sus actividades">Nuevo hito</button>' : ''}</div></div>
+    ${prox.length ? prox.slice(0, 4).map(({ h, info }) => `<button type="button" class="m-hito" data-hito="${h.id}" title="${esc(`${h.negocios.join(', ')}${h.descripcion ? '\n' + h.descripcion : ''}`)}"><span class="m-hito-nom"><i class="hito-punto ${claseHito(h, info.estado)}"></i>${esc(h.nombre)}</span><span class="nd">${fmtTxt(h.fecha)}</span>
+      <span class="bar"><span class="f-verde" style="width:${info.pct}%"></span></span><span class="nd">${info.hechas}/${info.total}</span><b class="${color[info.estado]}" title="${esc(info.detalle)}">${info.estado}</b></button>`).join('') : `<div class="nd">${hitos.length ? 'Todos los hitos están cumplidos.' : 'Todavía no hay hitos.'}</div>`}
     ${prox.length > 4 ? `<div class="nd">y ${prox.length - 4} más</div>` : ''}</div>`;
 }
 function renderMeta(x) {
@@ -2936,6 +2975,7 @@ function renderMeta(x) {
   iconizar(card);
   const bm = card.querySelector('[data-acc="meta"]'); if (bm) bm.onclick = () => editarMeta();
   const bh = card.querySelector('[data-acc="hitos"]'); if (bh) bh.onclick = () => abrirHitos();
+  const bn = card.querySelector('[data-acc="nuevo-hito"]'); if (bn) bn.onclick = () => abrirFormHito();
   card.querySelectorAll('.m-hito').forEach(b => b.onclick = () => abrirHito(+b.dataset.hito));
   const ba = card.querySelector('[data-acc="avance"]');
   if (ba) ba.onclick = () => { verAvance = !verAvance; try { localStorage.setItem('mdexa.verAvance', verAvance ? '1' : '0'); } catch {} render(); };
@@ -2985,7 +3025,28 @@ function fila(a, conNegocio, tagNegocio = false) {
   </tr>`;
 }
 
+// La búsqueda y los filtros se recuerdan por archivo, para que recargar la página no los pierda
+const FILTROS_GUARDADOS = { neg: 'qNeg', resp: 'qResp', est: 'qEst', tam: 'qTam', pri: 'qPri', etq: 'qEtq', hito: 'qHito' };
+let claveFiltros = '';
+function cargarFiltros() {
+  const clave = nombreArchivo ? `mdexa.filtros|${nombreArchivo}` : '';
+  if (!clave || clave === claveFiltros) return;
+  claveFiltros = clave;
+  let g = {}; try { g = JSON.parse(localStorage.getItem(clave) || '{}') || {}; } catch {}
+  $('qTexto').value = typeof g.texto === 'string' ? g.texto : '';
+  Object.entries(FILTROS_GUARDADOS).forEach(([k, id]) => fset(id, Array.isArray(g[k]) ? g[k].filter(x => typeof x === 'string') : []));
+}
+function guardarFiltros() {
+  if (!claveFiltros) return;
+  const texto = $('qTexto').value, listas = Object.fromEntries(Object.entries(FILTROS_GUARDADOS).map(([k, id]) => [k, [...fsel(id)]]));
+  try {
+    if (!texto && !Object.values(listas).some(l => l.length)) localStorage.removeItem(claveFiltros);
+    else localStorage.setItem(claveFiltros, JSON.stringify({ texto, ...listas }));
+  } catch {}
+}
+
 function render() {
+  cargarFiltros();
   if (modo !== 'edicion') limpiarDeshacer(); else if (estadoPrevio === null) estadoPrevio = instantanea();
   cargarFavs();
   absorberPropios(); calcularNovedades(); pintarNovedadesBoton();
@@ -3002,7 +3063,7 @@ function render() {
   opcionesMsel('qEtq', [...etiquetas.map(t => ({ v: t, cls: 'etq-punto etq-' + colorEtq(t) })), ...(actividades.some(a => !etqs(a).length) ? [SIN_ETQ] : [])]);
   opcionesMsel('qNeg', actividades.some(a => !a.negocio) ? [...negocios, SIN_NEGOCIO] : negocios);
   opcionesMsel('qResp', actividades.some(a => !a.responsable) ? [...resp, SIN_RESP] : resp);
-  opcionesMsel('qHito', hitos.length ? [...hitosOrdenados().map(h => h.nombre), SIN_HITO] : []);
+  opcionesMsel('qHito', hitos.length ? [...hitosOrdenados().map(h => h.color ? { v: h.nombre, cls: 'etq-punto etq-' + h.color } : h.nombre), SIN_HITO] : []);
   $('qHito').hidden = !hitos.length;
 
   const cols = [...(conNegCol ? [['negocio', 'Negocio']] : []), ['actividad', 'Actividad'], ['prioridad', 'Prioridad'], ['tamano', 'Tamaño'], ['responsable', 'Responsable'],
@@ -3088,6 +3149,7 @@ function render() {
     ESTADOS.map(e => `<span><i class="f-${e.c}"></i>${e.v}: ${x.cuenta(e.v)}</span>`).join('') +
     `<span class="es-rojo">Vencidas: ${x.venc.length}</span>`;
   listaVisible = lista;
+  guardarFiltros();
   if (presentando()) pintarPres();
   renderLateral(lista);
   actualizarSpy();
@@ -3275,8 +3337,8 @@ function renderGantt(bloques, lista, msgVacio) {
   let rombos = '';
   hs.forEach((m, i) => {
     const info = infoHito(m);
-    fondo += `<div class="g-hito-lin" data-hito="${m.id}" style="left:${x(m.fecha) + px / 2}px"></div>`;
-    rombos += `<button type="button" class="g-rombo ${claseHito(info.estado)} ${ed ? 'mov' : ''}" data-hito="${m.id}" style="left:${x(m.fecha) + px / 2}px;top:${carriles[i] * 22 + 3}px"
+    fondo += `<div class="g-hito-lin ${m.color ? 'etq-' + m.color : ''}" data-hito="${m.id}" style="left:${x(m.fecha) + px / 2}px${m.color ? ';border-color:var(--e)' : ''}"></div>`;
+    rombos += `<button type="button" class="g-rombo ${claseHito(m, info.estado)} ${ed ? 'mov' : ''}" data-hito="${m.id}" style="left:${x(m.fecha) + px / 2}px;top:${carriles[i] * 22 + 3}px"
       title="${esc(`${m.nombre}\n${fmtTxt(m.fecha)} · ${info.estado} · ${info.hechas}/${info.total} actividades${m.descripcion ? '\n' + m.descripcion : ''}${ed ? '\n\nArrastra para cambiar la fecha · clic para editar' : ''}`)}"><i></i><span>${esc(m.nombre)}</span></button>`;
   });
 
@@ -3597,7 +3659,7 @@ function renderCal(lista, msgVacio) {
     html += `<div class="c-dia ${d < primero || d > ultimo ? 'fuera' : ''} ${wd === 0 || wd === 6 ? 'finde' : ''} ${d === h ? 'hoy' : ''} ${enMeta ? 'en-meta' : ''}" data-dia="${d}"
         ${ed ? `title="Clic en un espacio vacío para crear una actividad con fecha fin ${fmtTxt(d)}"` : ''}>
       <div class="c-num"><b>${+d.slice(8)}</b>${marcas}${items.length ? `<span class="c-cuenta">${items.length}</span>` : ''}</div>
-      ${hitosCal.filter(m => m.fecha === d).map(m => { const info = infoHito(m); return `<button type="button" class="c-hito ${claseHito(info.estado)}" data-hito="${m.id}" ${ed ? 'draggable="true"' : ''}
+      ${hitosCal.filter(m => m.fecha === d).map(m => { const info = infoHito(m); return `<button type="button" class="c-hito ${claseHito(m, info.estado)}" data-hito="${m.id}" ${ed ? 'draggable="true"' : ''}
         title="${esc(`Hito: ${m.nombre}\n${info.estado} · ${info.hechas}/${info.total} actividades${m.descripcion ? '\n' + m.descripcion : ''}${ed ? '\n\nArrastra a otro día para cambiar la fecha · clic para editar' : ''}`)}"><i></i><span>${esc(m.nombre)}</span></button>`; }).join('')}
       <div class="c-items">${vis.map(chip).join('')}
         ${items.length > MAX_POR_DIA ? `<button class="c-mas" data-mas="${d}">${abierta ? 'Ver menos' : `+${items.length - MAX_POR_DIA} más`}</button>` : ''}</div>
@@ -4608,7 +4670,7 @@ function valorDeGrupo(g) {
 function infoGrupo(g) {
   const v = valorDeGrupo(g); if (!v) return { titulo: g, icono: ico('tienda', 15), orden: g };
   const { campo, valor } = v;
-  if (campo === 'hito') { const l = hitosOrdenados(), n = l.findIndex(h => String(h.id) === valor); return { titulo: n < 0 ? SIN_HITO : l[n].nombre, icono: ico('bandera', 15), orden: n < 0 ? '9' : '0' + String(n).padStart(5, '0') }; }
+  if (campo === 'hito') { const l = hitosOrdenados(), n = l.findIndex(h => String(h.id) === valor); return { titulo: n < 0 ? SIN_HITO : l[n].nombre, icono: l[n]?.color ? `<i class="g-punto-est etq-${l[n].color}" style="background:var(--e)"></i>` : ico('bandera', 15), orden: n < 0 ? '9' : '0' + String(n).padStart(5, '0') }; }
   if (campo === 'negocio') return { titulo: valor || SIN_NEGOCIO, icono: ico('tienda', 15), orden: valor ? '0' + valor : '9' };
   if (campo === 'responsable') return { titulo: valor || SIN_RESP, icono: ico('usuario', 15), orden: valor ? '0' + valor : '9' };
   if (campo === 'prioridad') return { titulo: valor || SIN_PRI, icono: valor ? badgePri(valor, true) : `<span class="g-ico-vacio">${ico('prioridad', 14)}</span>`, orden: String(valor ? ORDEN_PRI.indexOf(valor) : 9) };
@@ -4676,7 +4738,8 @@ function hitosVisibles() {
 }
 const proximosHitos = () => hitosOrdenados().map(h => ({ h, info: infoHito(h) })).filter(x => x.info.estado !== 'Cumplido');
 function carrilesHitos(xs, ancho) { const fin = []; return xs.map(x => { let i = fin.findIndex(f => f <= x); if (i < 0) i = fin.length; fin[i] = x + ancho; return i; }); }
-const claseHito = estado => 'h-' + estado.replace(' ', '-');
+// Clases CSS: el estado y, si se le eligió, su color (que sustituye al del estado)
+const claseHito = (h, estado) => 'h-' + estado.replace(' ', '-') + (h.color ? ` h-color etq-${h.color}` : '');
 // Cambia la fecha (al arrastrar el rombo) conservando las actividades
 function moverHito(id, fecha) {
   const h = hitos.find(x => x.id === id); if (!h || !fecha || h.fecha === fecha || modo !== 'edicion') return;
@@ -4715,17 +4778,18 @@ const anotarHito = detalle => bitacora.push({ fecha: new Date().toISOString(), a
 function guardarHito(d, ids) {
   const previo = hitos.find(h => h.id === d.id);
   const h = { id: previo?.id ?? siguienteIdHito(), nombre: limpiaNombreHito(d.nombre), fecha: d.fecha, negocios: [...new Set(d.negocios)].sort((a, b) => a.localeCompare(b, 'es')),
-    cumplido: d.cumplido, descripcion: String(d.descripcion || '').replace(/\|/g, '/').replace(/\r/g, '').trim().slice(0, 600) };
+    cumplido: d.cumplido, descripcion: String(d.descripcion || '').replace(/\|/g, '/').replace(/\r/g, '').trim().slice(0, 600), ...(d.color ? { color: d.color } : {}) };
   let entran = 0, salen = 0;
   actividades.forEach(a => {
     const estaba = !!previo && a.hito === h.id, queda = (ids ? ids.has(a.id) : estaba) && hitoCompatible(h, a.negocio);
     if (queda === estaba) return;
     if (queda) { a.hito = h.id; entran++; } else { delete a.hito; salen++; }
   });
-  if (previo && !entran && !salen && JSON.stringify(previo) === JSON.stringify(h)) return h;
+  const igual = x => JSON.stringify([x.nombre, x.fecha, x.negocios, x.cumplido, x.descripcion, x.color || '']);
+  if (previo && !entran && !salen && igual(previo) === igual(h)) return h;
   const movs = [entran && `entran ${pl(entran, 'actividad', 'actividades')}`, salen && `salen ${pl(salen, 'actividad', 'actividades')}`];
   const cambios = previo ? [previo.nombre !== h.nombre && `nombre «${previo.nombre}» → «${h.nombre}»`, previo.fecha !== h.fecha && `fecha ${previo.fecha || '—'} → ${h.fecha}`,
-    previo.negocios.join(', ') !== h.negocios.join(', ') && `negocios: ${h.negocios.join(', ')}`, previo.descripcion !== h.descripcion && 'descripción',
+    previo.negocios.join(', ') !== h.negocios.join(', ') && `negocios: ${h.negocios.join(', ')}`, previo.descripcion !== h.descripcion && 'descripción', previo.color !== h.color && 'color',
     previo.cumplido !== h.cumplido && (h.cumplido ? `cumplido el ${h.cumplido}` : 'ya no está cumplido'), ...movs] : movs;
   const resumen = cambios.filter(Boolean).join(', ');
   hitos = previo ? hitos.map(x => x.id === h.id ? h : x) : [...hitos, h];
@@ -4766,7 +4830,7 @@ function pintarHitos() {
   $('hitosLista').innerHTML = !l.length ? '<p class="nd">Todavía no hay hitos. Un hito es un entregable con fecha; las actividades que incluye forman su fase.</p>'
     : `<table><thead><tr><th>Fecha</th><th>Hito</th><th>Negocios</th><th>Actividades</th><th>Avance</th><th>Estado</th>${ed ? '<th></th>' : ''}</tr></thead><tbody>${l.map(h => {
       const i = infoHito(h), faltan = porIncluir(h);
-      return `<tr data-hito="${h.id}"><td>${fmt(h.fecha)}</td><td class="txt">${esc(h.nombre)}${h.descripcion ? `<div class="nd hito-desc">${esc(h.descripcion)}</div>` : ''}${i.inicio ? `<div class="nd">Fase desde el ${fmtTxt(i.inicio)}</div>` : ''}
+      return `<tr data-hito="${h.id}"><td>${fmt(h.fecha)}</td><td class="txt"><i class="hito-punto ${claseHito(h, i.estado)}"></i>${esc(h.nombre)}${h.descripcion ? `<div class="nd hito-desc">${esc(h.descripcion)}</div>` : ''}${i.inicio ? `<div class="nd">Fase desde el ${fmtTxt(i.inicio)}</div>` : ''}
         ${ed && faltan.length ? `<div class="hito-aviso">${pl(faltan.length, 'actividad más encaja', 'actividades más encajan')}<button data-h="incluir" title="${esc(faltan.map(a => `#${a.id} ${nomCorto(a)}`).join('\n'))}">${ico('mas', 13)} Incluir</button></div>` : ''}</td>
         <td>${h.negocios.map(n => `<span class="tag">${esc(n)}</span>`).join('')}</td><td>${i.hechas}/${i.total}</td><td>${i.pct}%</td>
         <td><b class="${color[i.estado]}">${i.estado}</b><div class="nd">${i.detalle}</div></td>
@@ -4790,8 +4854,13 @@ function abrirFormHito(id = null) {
   $('hNom').value = hf.nombre; $('hFecha').value = hf.fecha; $('hDesc').value = hf.descripcion; $('hCumplido').value = hf.cumplido;
   const negs = unicos([...actividades.map(a => a.negocio), ...hf.negocios]);
   $('hNegs').innerHTML = negs.length ? negs.map(n => `<label class="check s-ck"><input type="checkbox" value="${esc(n)}" ${hf.negocios.includes(n) ? 'checked' : ''}> ${esc(n)}</label>`).join('') : '<span class="nd">Todavía no hay actividades con negocio.</span>';
-  pintarArbolHito(); $('dlgHito').showModal(); $('hNom').focus();
+  pintarColoresHito(); pintarArbolHito(); $('dlgHito').showModal(); $('hNom').focus();
 }
+function pintarColoresHito() {
+  $('hColores').innerHTML = `<button type="button" class="auto ${hf.color ? '' : 'on'}" data-color="" aria-pressed="${!hf.color}" title="El color cambia según el estado del hito">Según el estado</button>` +
+    Object.entries(COLORES_ETQ).map(([c, nom]) => `<button type="button" class="etq-col etq-${c} ${hf.color === c ? 'on' : ''}" data-color="${c}" title="${nom}" aria-label="${nom}" aria-pressed="${hf.color === c}"></button>`).join('');
+}
+$('hColores').addEventListener('click', e => { const b = e.target.closest('[data-color]'); if (b && hf) { hf.color = b.dataset.color || undefined; pintarColoresHito(); } });
 function pintarArbolHito() {
   leerFormHito();
   const acts = actividadesParaHito(hf.negocios, hf.id), sel = seleccionHito(hf, hManual);
@@ -4817,7 +4886,6 @@ $('hArbol').addEventListener('change', e => {
 });
 $('hTodasNinguna').addEventListener('click', e => { const b = e.target.closest('[data-hmarcar]'); if (b) marcarHito(actividadesParaHito(hf.negocios, hf.id), !!b.dataset.hmarcar); });
 $('btnHitos').onclick = abrirHitos;
-$('btnNuevoHito').onclick = () => abrirFormHito();
 $('hitosCerrar').onclick = () => $('dlgHitos').close();
 $('hitoNuevo').onclick = () => abrirFormHito();
 $('hitoCancelar').onclick = () => $('dlgHito').close();
@@ -5767,13 +5835,15 @@ $('novCont').addEventListener('click', e => {
 });
 
 /* ============ Manual de uso ============ */
-function manualHTML() {
+// El manual con el nombre personalizado (la clave del encabezado del archivo no cambia)
+const manualHTML = () => manualBase().replace(/(?<!Versión de )MDexa/g, () => NOMBRE_APP);
+function manualBase() {
   const filaEst = e => `<tr><td><span class="muestra f-${e.c}"></span><b class="es-${e.c}">${e.v}</b></td><td>${e.d}</td></tr>`;
   return `<div class="manual">
   <h1>Manual de uso</h1>
   <p class="sub" style="color:var(--muted);margin:0">${NOMBRE_APP} · versión ${VERSION_TXT} · ${VERSION_FECHA}</p>
   <p class="sub" style="color:var(--muted)">MDexa: actividades de equipo en un archivo <code>.md</code> compartido.</p>
-  <nav>${['Para qué sirve', 'Primeros pasos', 'Trabajo en equipo', 'Actividades', 'Tamaños', 'Estados y colores', 'Editar en la tabla', 'Meta del proyecto', 'Filtros', 'Reporte', 'Archivos recientes', 'Formato del archivo', 'Atajos', 'Preguntas frecuentes', 'Favoritas', 'Panel de negocios', 'Íconos', 'Línea de tiempo', 'Tablero', 'Mis actividades', 'Calendario', 'Novedades', 'Notas', 'Bitácora', 'Respaldos', 'Nuevo sprint', 'Métricas', 'Selección múltiple', 'Versiones de MDexa', 'Gráfica de avance', 'Importar y exportar', 'Prioridad y etiquetas', 'Imágenes', 'Modo claro y oscuro', 'Dependencias', 'Subtareas', 'Deshacer', 'Columnas y negocios', 'Reporte semanal', 'Administrar etiquetas', 'Menciones', 'Actividades recurrentes', 'Modo presentación', 'Carga por persona', 'Exportar al calendario', 'Hitos y fases']
+  <nav>${['Para qué sirve', 'Primeros pasos', 'Trabajo en equipo', 'Actividades', 'Tamaños', 'Estados y colores', 'Editar en la tabla', 'Meta del proyecto', 'Filtros', 'Reporte', 'Archivos recientes', 'Formato del archivo', 'Atajos', 'Preguntas frecuentes', 'Favoritas', 'Panel de negocios', 'Íconos', 'Línea de tiempo', 'Tablero', 'Mis actividades', 'Calendario', 'Novedades', 'Notas', 'Bitácora', 'Respaldos', 'Nuevo sprint', 'Métricas', 'Selección múltiple', 'Versiones de MDexa', 'Gráfica de avance', 'Importar y exportar', 'Prioridad y etiquetas', 'Imágenes', 'Modo claro y oscuro', 'Dependencias', 'Subtareas', 'Deshacer', 'Columnas y negocios', 'Reporte semanal', 'Administrar etiquetas', 'Menciones', 'Actividades recurrentes', 'Modo presentación', 'Carga por persona', 'Exportar al calendario', 'Hitos y fases', 'Personalizar']
     .map((s, i) => `<a href="#man-${i}">${s}</a>`).join('')}</nav>
 
   <h2 id="man-0">Para qué sirve</h2>
@@ -5834,6 +5904,7 @@ function manualHTML() {
   <p>Es el periodo en que debe completarse el desarrollo. Se define al crear el archivo y se puede cambiar con <b>Editar meta</b> (con el archivo tomado). Arriba de la tabla se compara el <b>tiempo transcurrido</b> contra las <b>actividades terminadas</b> y se muestra el ritmo: <span class="es-verde">Al día</span>, <span class="es-amar">Ligeramente atrasado</span> o <span class="es-rojo">Atrasado</span>.</p>
 
   <h2 id="man-8">Filtros y agrupación</h2>
+  <p>Al <b>recargar la página</b> (F5) se conservan la vista, la búsqueda, los filtros y la agrupación. La búsqueda y los filtros se recuerdan por archivo en este navegador.</p>
   <p>El <b>buscador</b> (tecla <kbd>/</kbd>) encuentra texto en el nombre de la actividad, el negocio, el responsable, las <b>etiquetas</b>, las <b>subtareas</b> y las <b>notas</b>, sin importar acentos ni mayúsculas. Si escribes varias palabras, deben estar todas (en cualquiera de esos lugares). <code>#12</code> encuentra la actividad 12. Las coincidencias se resaltan, y si lo encontrado está en una nota, subtarea o etiqueta, abajo de la actividad aparece de dónde salió; clic ahí abre la nota o las subtareas.</p>
   <p>Busca por texto o filtra por negocio, responsable, estado (incluye <i>Vencida</i> y <i>Con novedades</i>) y tamaño.</p>
   <ul>
@@ -6272,7 +6343,7 @@ function manualHTML() {
   <h2 id="man-45">Hitos y fases</h2>
   <p>Un <b>hito</b> es un entregable con nombre, fecha y descripción, de uno o varios negocios; por ejemplo «Diseño aprobado». Las actividades que incluye forman su <b>fase</b>. Cada actividad pertenece a lo sumo a un hito.</p>
   <ul>
-    <li>Con el archivo tomado pulsa <b>Nuevo hito</b>: escribe el nombre, la fecha y, si quieres, la descripción; luego marca los <b>negocios</b>.</li>
+    <li>Con el archivo tomado pulsa <b>Nuevo hito</b> (en <b>Próximos hitos</b>, debajo de la meta): escribe el nombre, la fecha y, si quieres, la descripción; luego marca los <b>negocios</b>.</li>
     <li>Las actividades se incluyen <b>solas</b>: las de esos negocios que siguen abiertas, terminan en la fecha del hito o antes y no están en otro. Desmarca las excepciones, usa la casilla de un negocio o <b>Todas · Ninguna</b>. Una actividad que ya está en otro hito se mueve si la marcas.</li>
     <li>La selección queda guardada: si una actividad se atrasa sigue en el hito, y éste aparece <b>En riesgo</b>.</li>
     <li>El botón <b>Hitos</b> (arriba) muestra todos con su avance y estado, para editarlos o borrarlos (sus actividades se conservan). Si hay actividades que encajan y no están, aparece <b>Incluir</b>.</li>
@@ -6281,9 +6352,17 @@ function manualHTML() {
     <li>Los hitos se ven como <b>rombos</b> en la <b>Línea de tiempo</b> (arriba, con una línea punteada) y en el <b>Calendario</b>. Con el archivo tomado, <b>arrástralos</b> para cambiar su fecha (sus actividades se conservan) o haz clic para editarlos. El color indica el estado.</li>
     <li>Debajo de la meta del proyecto aparecen los <b>Próximos hitos</b> con su avance. Los filtros de negocio y de hito también aplican a los rombos.</li>
     <li>El <b>reporte</b> y el <b>reporte semanal</b> incluyen los hitos y avisan de los vencidos o en riesgo. <b>Exportar a CSV</b> agrega la columna Hito; al <b>importar</b>, esa columna asigna un hito que ya exista (una celda vacía no lo quita). En el <b>calendario .ics</b> se exportan como eventos (opción <b>Incluir hitos</b>).</li>
+    <li>Cada hito puede tener un <b>color</b> propio, que se ve en la Línea de tiempo, el Calendario, la tarjeta de meta, el filtro y al agrupar. Con <b>Según el estado</b> el color indica cómo va; con un color propio, los vencidos y en riesgo llevan además un borde rojo o amarillo.</li>
     <li>Estados: <b>Cumplido</b> (todas sus actividades terminaron, o pusiste la fecha de cumplido), <b>Vencido</b> (pasó la fecha), <b>En riesgo</b> (alguna actividad termina después de la fecha) y <b>En tiempo</b>. El avance se calcula con las horas según el tamaño; las canceladas no cuentan.</li>
     <li>Un archivo con hitos se guarda con el formato 19: las versiones anteriores a la 1.35.0 lo abren sólo en lectura.</li>
     <li>La siguiente repetición de una actividad recurrente no se incluye sola.</li>
+  </ul>
+  <h2 id="man-46">Personalizar nombre e imagen</h2>
+  <ul>
+    <li>Pon junto a la aplicación un archivo <code>mdexa-config.js</code> con tu nombre, y tu imagen con el nombre <code>logo.png</code>. Al recargar se ven en la cabecera; el nombre también en la pestaña, los reportes y este manual.</li>
+    <li>El archivo contiene sólo esto: <code>window.MDEXA_CONFIG = { nombre: 'Mi Empresa' };</code></li>
+    <li>Con <code>mdexa.html</code> van en su misma carpeta. En la versión web, junto a <code>index.html</code>. En la aplicación de escritorio, en la carpeta del archivo <code>.md</code>, así todo el equipo ve lo mismo.</li>
+    <li>Los dos son opcionales: sin el primero se muestra el nombre original y sin la imagen no aparece ninguna. El formato del <code>.md</code> no cambia.</li>
   </ul>
   </div>`;
 }
@@ -6388,7 +6467,7 @@ Object.entries({ btnAbrir: 'carpeta', btnNuevo: 'nuevo', btnRefrescar: 'refresca
   btnNovedades: 'campana', novTodo: 'check', novFiltrar: 'buscar', novCerrar: 'x',
   btnNotasForm: 'nota', btnImgsForm: 'imagen', imgElegir: 'subir', imgCerrar: 'x', imgDarAcceso: 'carpeta', visorAbrir: 'archivo', notaAgregar: 'mas', notasCerrar: 'x',
   btnBitacora: 'reloj', btnHistForm: 'reloj', novBit: 'reloj', bitCsv: 'descargar', bitCerrar: 'x',
-  btnMas: 'puntos', btnSprint: 'sprint', btnIcs: 'calendario', icsHacer: 'descargar', icsCancelar: 'x', btnPresentar: 'presentar', btnHitos: 'bandera', btnNuevoHito: 'bandera', hitoGuardar: 'check', hitoNuevo: 'mas', hitosCerrar: 'x', presSalir: 'salir', btnAtajos: 'teclado', atjCerrar: 'x', btnSemanal: 'correo', btnRenNeg: 'lapiz', btnEtqAdmin: 'etiqueta', repSemanal: 'correo', semCopiar: 'copiar', semCorreo: 'correo', semCerrar: 'x', negCancelar: 'x', negHacer: 'check', etqAdmCerrar: 'x', masEtq: 'etiqueta', btnRespaldos: 'capas', btnImportar: 'subir', btnExportar: 'descargar', impElegir: 'archivo', impPlantilla: 'descargar', impCerrar: 'x', impCancelar: 'x', impHacer: 'check', expHacer: 'descargar', expCancelar: 'x', respCerrar: 'x', sCrear: 'check', sCancelar: 'x',
+  btnMas: 'puntos', btnSprint: 'sprint', btnIcs: 'calendario', icsHacer: 'descargar', icsCancelar: 'x', btnPresentar: 'presentar', btnHitos: 'bandera', hitoGuardar: 'check', hitoNuevo: 'mas', hitosCerrar: 'x', presSalir: 'salir', btnAtajos: 'teclado', atjCerrar: 'x', btnSemanal: 'correo', btnRenNeg: 'lapiz', btnEtqAdmin: 'etiqueta', repSemanal: 'correo', semCopiar: 'copiar', semCorreo: 'correo', semCerrar: 'x', negCancelar: 'x', negHacer: 'check', etqAdmCerrar: 'x', masEtq: 'etiqueta', btnRespaldos: 'capas', btnImportar: 'subir', btnExportar: 'descargar', impElegir: 'archivo', impPlantilla: 'descargar', impCerrar: 'x', impCancelar: 'x', impHacer: 'check', expHacer: 'descargar', expCancelar: 'x', respCerrar: 'x', sCrear: 'check', sCancelar: 'x',
   masTodas: 'check', masFav: 'estrella', masElim: 'basura', masCerrar: 'x', masAplicar: 'check', masCancelar: 'x' }).forEach(([id, n]) => { const el = $(id); if (el) el.dataset.ico = n; });
 document.querySelector('#formMeta button[type=submit]').dataset.ico = 'check';
 document.querySelector('#dlgVar button[data-r="una"]').dataset.ico = 'archivo';
@@ -6402,6 +6481,7 @@ $('expTitulo').insertAdjacentHTML('afterbegin', ico('descargar', 20) + ' ');
 iconizar();
 $('menuVersion').textContent = `${NOMBRE_APP} · versión ${VERSION_TXT} · ${VERSION_FECHA}`;
 $('marcaVersion').textContent = `v${VERSION_TXT}`;
+$('marcaNombre').textContent = NOMBRE_APP; document.querySelector('.marca').title = NOMBRE_APP; document.title = NOMBRE_APP;
 $('qTexto').oninput = render; $('qAgrupar').onchange = () => { try { localStorage.setItem('mdexa.agrupar', agrupPor()); } catch {} render(); };
 $('btnAbrir').onclick = abrir; $('btnNuevo').onclick = nuevo;
 $('btnRefrescar').onclick = () => refrescar();

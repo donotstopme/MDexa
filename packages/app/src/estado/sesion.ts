@@ -30,6 +30,8 @@ export interface EstadoSesion {
   puedeEscribir: boolean;
   /** Cuándo viste por última vez este archivo (base de las novedades) */
   vistoFecha: string;
+  /** Último archivo, a la espera de un clic para reabrirlo ('' = ninguno) */
+  pendiente: string;
 }
 
 export interface OpcionesSesion {
@@ -71,7 +73,7 @@ export class Sesion {
 
   constructor(private op: OpcionesSesion) {
     this.alm = op.almacen; this.ui = op.ui;
-    this.estado = { doc: null, nombre: '', modo: 'lectura', usuario: op.usuario ?? '', masNuevo: false, error: '', guardado: null, puedeDeshacer: false, puedeRehacer: false, novedades: sinNovedades(), puedeEscribir: true, vistoFecha: '' };
+    this.estado = { doc: null, nombre: '', modo: 'lectura', usuario: op.usuario ?? '', masNuevo: false, error: '', guardado: null, puedeDeshacer: false, puedeRehacer: false, novedades: sinNovedades(), puedeEscribir: true, vistoFecha: '', pendiente: '' };
     this.local = op.local ?? localEnMemoria();
   }
 
@@ -86,16 +88,20 @@ export class Sesion {
     const doc = parseMD(texto);
     this.textoCargado = texto; this.previo = foto(doc.actividades, doc.hitos);
     this.historial = registrarDeshacer(historialVacio(), doc);   // estado base: el primer cambio también se puede deshacer
-    this.set({ doc, nombre, masNuevo: (doc.meta.version || 0) > VERSION_MDEXA, error: '' });
+    this.set({ doc, nombre, masNuevo: (doc.meta.version || 0) > VERSION_MDEXA, error: '', pendiente: '' });
     this.flags();
     this.recalcular();
     return doc;
   }
 
-  async abrir() {
+  abrir() { return this.cargar(() => this.alm.abrir()); }
+  /** Vuelve a abrir el último archivo (tras recargar la página, el navegador pide confirmarlo con un clic) */
+  abrirPendiente() { return this.cargar(() => this.alm.abrirPendiente!()); }
+
+  private async cargar(leer: () => Promise<ArchivoAbierto | null>) {
     if (!(await this.soltar())) return;
     try {
-      const a = await this.alm.abrir();
+      const a = await leer();
       if (a) {
         await this.cerrarVisita();
         this.visto = null;
@@ -268,7 +274,7 @@ export class Sesion {
     if (!this.alm.reabrirUltimo) return;
     try {
       const a = await this.alm.reabrirUltimo();
-      if (!a) return;
+      if (!a) { const p = await this.alm.pendiente?.(); if (p && !this.estado.doc) this.set({ pendiente: p }); return; }
       this.visto = null; this.aplicar(a.texto, a.nombre); this.set({ modo: 'lectura', puedeEscribir: this.alm.puedeEscribir() });
       await this.cargarVisto(a.nombre); await this.respaldar('Al abrir el archivo', a.texto); this.avisarMenciones();
     } catch { /* sin archivo previo */ }

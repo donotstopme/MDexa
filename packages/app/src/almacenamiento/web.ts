@@ -17,7 +17,8 @@ type Manejador = {
   isSameEntry?(o: unknown): Promise<boolean>;
   getFile(): Promise<File>;
   createWritable(): Promise<Escritor>;
-  requestPermission(o: { mode: 'readwrite' }): Promise<string>;
+  requestPermission(o: { mode: 'read' | 'readwrite' }): Promise<string>;
+  queryPermission?(o: { mode: 'read' }): Promise<string>;
 };
 type VentanaFS = Window & { showOpenFilePicker?: (o: unknown) => Promise<Manejador[]>; showSaveFilePicker?: (o: unknown) => Promise<Manejador & { name: string }>; showDirectoryPicker?: (o: unknown) => Promise<Carpeta> };
 
@@ -54,7 +55,23 @@ export function crearAlmacenamientoWeb(local?: Local): Almacenamiento {
     return { dir: d, nombre: partes[partes.length - 1] };
   };
   const w = window as VentanaFS;
+  type Ultimo = { file: Manejador; nombre: string };
+  const ultimo = async () => { try { return (await local?.get<Ultimo>('ultimo')) ?? null; } catch { return null; } };
+  const recordar = async (file: Manejador, nombre: string) => { try { await local?.set('ultimo', { file, nombre }); } catch { /* no se pudo guardar: habrá que elegirlo otra vez */ } };
+  const usar = async (h: Manejador) => { manejador = h; await buscarCarpeta(); return leer(h); };
   return {
+    async reabrirUltimo() {
+      const u = await ultimo();
+      if (!u || (await u.file.queryPermission?.({ mode: 'read' })) !== 'granted') return null;
+      return usar(u.file);
+    },
+    async pendiente() { return (await ultimo())?.nombre ?? null; },
+    async abrirPendiente() {
+      const u = await ultimo();
+      if (!u) return null;
+      if ((await u.file.requestPermission({ mode: 'read' })) !== 'granted') throw new Error('No se dio permiso para leer el archivo.');
+      return usar(u.file);
+    },
     async abrir() {
       if (!w.showOpenFilePicker) { manejador = null; return viaInput(); }
       try {
@@ -63,8 +80,9 @@ export function crearAlmacenamientoWeb(local?: Local): Almacenamiento {
         if ((e as DOMException).name === 'AbortError') return null;
         throw e;
       }
-      await buscarCarpeta();
-      return leer(manejador);
+      const a = await usar(manejador);
+      await recordar(manejador, a.nombre);
+      return a;
     },
     async releer() { return manejador ? leer(manejador) : null; },
     puedeEscribir: () => manejador !== null,
@@ -79,7 +97,7 @@ export function crearAlmacenamientoWeb(local?: Local): Almacenamiento {
       try { h = await w.showSaveFilePicker({ suggestedName: nombreSugerido, types: tiposMD }); }
       catch (e) { if ((e as DOMException).name === 'AbortError') return null; throw e; }
       const wr = await h.createWritable(); await wr.write(texto); await wr.close();
-      manejador = h; await buscarCarpeta(); return h.name;
+      manejador = h; await buscarCarpeta(); await recordar(h, h.name); return h.name;
     },
     imagenesDisponibles: () => !!manejador && !!w.showDirectoryPicker,
     imagenesAcceso: async () => carpetaOk,

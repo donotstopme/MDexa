@@ -2,7 +2,7 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'n
 import { tmpdir } from 'node:os';
 import * as path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { escrituraAtomica, guardarDato, leerDato, nombreSeguro, rutaImagenSegura } from '../src/archivos';
+import { escrituraAtomica, guardarDato, leerDato, leerMarca, nombreSeguro, rutaImagenSegura } from '../src/archivos';
 
 let dir = '';
 beforeEach(() => { dir = mkdtempSync(path.join(tmpdir(), 'mdexa-')); });
@@ -53,5 +53,16 @@ describe('datos locales', () => {
     const d = path.join(dir, 'datos2'); await guardarDato(d, 'k', 1);
     writeFileSync(path.join(d, readdirSync(d)[0]), '{no es json');
     expect(await leerDato(d, 'k')).toBeUndefined();
+  });
+});
+
+describe('personalización junto al .md', () => {
+  it('lee mdexa-config.js y logo.png de la carpeta del archivo, si existen', async () => {
+    const md = path.join(dir, 'p.md');
+    expect(await leerMarca(md)).toEqual({ config: null, logo: null });
+    expect(await leerMarca(null)).toEqual({ config: null, logo: null });
+    writeFileSync(path.join(dir, 'mdexa-config.js'), "window.MDEXA_CONFIG = { nombre: 'X' };");
+    writeFileSync(path.join(dir, 'logo.png'), Buffer.from([1, 2, 3]));
+    expect(await leerMarca(md)).toEqual({ config: "window.MDEXA_CONFIG = { nombre: 'X' };", logo: 'data:image/png;base64,AQID' });
   });
 });

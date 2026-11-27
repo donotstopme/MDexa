@@ -18,6 +18,7 @@ const api: ApiEscritorio = {
     leer: clave => ipcRenderer.invoke('dato:leer', clave),
     guardar: (clave, valor) => ipcRenderer.invoke('dato:guardar', clave, valor),
   },
+  marca: () => ipcRenderer.invoke('marca:leer'),
   alCambiarArchivo: cb => {
     const f = () => cb();
     ipcRenderer.on('archivo:cambio', f);

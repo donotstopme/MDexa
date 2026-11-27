@@ -17,7 +17,7 @@ En la página de [Releases](https://github.com/donotstopme/MDexa/releases/latest
 | macOS | `mdexa-<versión>-mac-arm64.dmg` (Apple Silicon) · `mdexa-<versión>-mac-x64.dmg` (Intel) |
 | Windows | `mdexa-<versión>-instalador-windows.exe` · `mdexa-<versión>-portable-windows.exe` |
 | Linux | `mdexa-<versión>-linux-x86_64.AppImage` · `mdexa-<versión>-linux-amd64.deb` |
-| Navegador | `mdexa.html`: un solo archivo, se abre con doble clic en Chrome o Edge |
+| Navegador | `mdexa.html`: un solo archivo, se abre con doble clic en Chrome o Edge. Opcional: `mdexa-config.js`, para [personalizar el nombre](#personalizar-nombre-e-imagen) |
 
 Cada release publica también la suma de verificación SHA-256 de todos los archivos, para comprobar que la descarga está íntegra (`shasum -a 256 <archivo>` en macOS y Linux, `Get-FileHash <archivo>` en Windows).
 
@@ -44,6 +44,7 @@ Los instaladores de Windows y Linux se generan en cada release pero todavía no 
 - [Formato del archivo](#formato-del-archivo)
 - [Tus datos y privacidad](#tus-datos-y-privacidad)
 - [Limitaciones conocidas](#limitaciones-conocidas)
+- [Personalizar nombre e imagen](#personalizar-nombre-e-imagen)
 - [Preguntas frecuentes](#preguntas-frecuentes)
 - [Desarrollo](#desarrollo)
 - [Licencia](#licencia)
@@ -130,7 +131,7 @@ El repositorio incluye un flujo de GitHub Actions ([.github/workflows/escritorio
 
 ### Hitos y fases
 
-1. Con el archivo tomado, pulsa **Nuevo hito**: nombre, fecha, descripción (opcional) y uno o varios negocios.
+1. Con el archivo tomado, pulsa **Nuevo hito** (en **Próximos hitos**, debajo de la meta): nombre, fecha, descripción y color (opcionales) y uno o varios negocios.
 2. Las actividades de esos negocios que siguen abiertas y terminan a tiempo **entran solas**; desmarca las excepciones y guarda.
 3. La selección queda fija: si una actividad se atrasa, el hito aparece **En riesgo**.
 
@@ -148,7 +149,7 @@ Los hitos se ven en la **Línea de tiempo** y el **Calendario** (arrástralos pa
 1. **Abrir .md** y elegir el archivo del equipo. Si nadie lo está editando, verás "Solo lectura".
 2. **Tomar para editar** para agregar o cambiar actividades. Se guardan solas; **Deshacer** (Ctrl/Cmd+Z) y **Respaldos** están a la mano. **Soltar archivo** al terminar.
 3. Para comentar sin editar, abre una actividad y escribe una **nota**; las notas, subtareas e imágenes se pueden agregar sin tomar el archivo (mientras nadie más lo esté editando). Usa `@Nombre` para mencionar a alguien: lo verá en sus **Novedades**.
-4. Cambia de vista con las pestañas o las teclas `1`–`6`; busca con `/`; filtra y agrupa con la barra de arriba.
+4. Cambia de vista con las pestañas o las teclas `1`–`6`; busca con `/`; filtra y agrupa con la barra de arriba. Al recargar la página se conserva lo que estabas viendo.
 5. En la junta: **Presentar** (tecla `P`) oculta todo salvo la vista y avanza de negocio con ← →. Después, **Reporte** o **Más → Reporte semanal** para mandar el resumen.
 
 ### Ayuda dentro de la aplicación
@@ -203,6 +204,7 @@ Un `.md` normal: encabezado con el proyecto y la meta, una tabla de actividades 
 ```
 
 - Los hitos van en `## Hitos` (`- H1 | fecha | nombre | negocio; negocio | cumplido | descripción`) y la tabla gana la columna `Hito`. Un archivo con hitos se guarda con el formato **19**: las versiones anteriores a la 1.35.0 lo abren en solo lectura. Sin hitos, el formato sigue siendo el 18.
+- El color elegido para un hito va aparte, en `## Colores de hitos` (`- H1 | morado`); las versiones que no lo conocen lo conservan.
 - Las secciones `##` que la aplicación no conoce (por ejemplo, una que agregues a mano) se conservan al guardar.
 - Un archivo guardado por una versión **más nueva** se abre en solo lectura, para no borrar información que esta versión no entiende.
 - Las imágenes se guardan en una carpeta `nombre-del-archivo-imagenes/` junto al `.md` y se enlazan desde la sección `## Imágenes`, así también se ven en Obsidian, VS Code o GitHub.
@@ -220,6 +222,31 @@ Un `.md` normal: encabezado con el proyecto y la meta, una tabla de actividades 
 - El candado depende de la velocidad con que sincronice la carpeta compartida (ver [Trabajar en equipo](#trabajar-en-equipo)).
 - La aplicación de escritorio aún no está firmada y solo se ha ejecutado en macOS.
 - El ícono de la aplicación de escritorio es provisional.
+
+## Personalizar nombre e imagen
+
+Dos archivos opcionales cambian el nombre y la imagen de la cabecera:
+
+```
+carpeta/
+├── mdexa.html
+├── mdexa-config.js   ← el nombre
+└── logo.png          ← tu imagen
+```
+
+```js
+window.MDEXA_CONFIG = {
+  nombre: 'Mi Empresa'
+};
+```
+
+| Versión | Dónde van los dos archivos |
+|---|---|
+| `mdexa.html` | En su misma carpeta |
+| Web (React) | Junto a `index.html`; en desarrollo (`npm run dev`) se usan los de la raíz del proyecto |
+| Escritorio | En la carpeta del `.md` abierto, así todo el equipo ve lo mismo (el archivo sólo se lee, no se ejecuta) |
+
+El nombre aparece en la cabecera, la pestaña, los reportes y el manual. El formato del `.md` no cambia. Como `mdexa-config.js` es código que ejecuta el navegador, protégelo igual que el HTML.
 
 ## Preguntas frecuentes
 

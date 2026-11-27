@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ESTADOS, EST, PX_DIA, addDias, avanceSubs, choqueFechas, cerrada, conDependencia, descRepite, deps, dias, diaEn, metaGrupo, moverBarra, negocioDe, nomCorto, palabras,
-  carrilesHitos, infoHito, problemaEnlace, programarPorClic, type Hito, rangoGantt, rutaFlecha, sinDependencia, vencida, xDe, type Actividad, type Asa, type Bloque, type Documento, type Novedades, type Zoom,
+  carrilesHitos, claseHito, infoHito, problemaEnlace, programarPorClic, type Hito, rangoGantt, rutaFlecha, sinDependencia, vencida, xDe, type Actividad, type Asa, type Bloque, type Documento, type Novedades, type Zoom,
 } from '@mdexa/core';
 import { Estrella, Ico } from '../original/iconos';
 import { BotonNotas, MarcaNov, PriBadge, Resaltar, TamBadge, colorEstado, fmtTxt } from '../original/piezas';
@@ -137,7 +137,7 @@ export function Gantt(p: PropsGantt) {
   const rombos = hitos.map((h, i) => {
     const info = infoHito(doc, h, hoy), f = fechaH(h);
     return (
-      <button type="button" key={h.id} data-hito={h.id} className={`g-rombo h-${info.estado.replace(' ', '-')} ${ed ? 'mov' : ''}`} style={{ left: x(f) + px / 2, top: carriles[i] * 22 + 3 }}
+      <button type="button" key={h.id} data-hito={h.id} className={`g-rombo ${claseHito(h, info.estado)} ${ed ? 'mov' : ''}`} style={{ left: x(f) + px / 2, top: carriles[i] * 22 + 3 }}
         title={`${h.nombre}\n${fmtTxt(f)} · ${info.estado} · ${info.hechas}/${info.total} actividades${h.descripcion ? '\n' + h.descripcion : ''}${ed ? '\n\nArrastra para cambiar la fecha · clic para editar' : ''}`}
         onPointerDown={e => { if (!ed || e.button !== 0) return; e.preventDefault(); (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId); setArrH({ id: h.id, x0: e.clientX, fecha: h.fecha, d: 0 }); }}
         onPointerMove={e => { if (arrH) setArrH({ ...arrH, d: Math.round((e.clientX - arrH.x0) / px) }); }} onPointerUp={soltarH} onPointerCancel={() => setArrH(null)}
@@ -223,7 +223,7 @@ export function Gantt(p: PropsGantt) {
             <div className={`g-fondo z-${zoom}`} style={{ left: LW, width: W }}>{fondo}
               {doc.meta.inicio && doc.meta.fin && <div className="g-meta" style={{ left: x(doc.meta.inicio), width: (dias(doc.meta.inicio, doc.meta.fin) + 1) * px }} />}
               <div className="g-hoy" style={{ left: x(hoy) + px / 2 }} />
-              {hitos.map(h => <div key={h.id} className="g-hito-lin" style={{ left: x(fechaH(h)) + px / 2 }} />)}</div>
+              {hitos.map(h => <div key={h.id} className={`g-hito-lin ${h.color ? `etq-${h.color}` : ''}`} style={{ left: x(fechaH(h)) + px / 2, ...(h.color ? { borderColor: 'var(--e)' } : {}) }} />)}</div>
             {filas.map(f => {
               if (f.tipo === 'act') return filaAct(f);
               const b = f.b, cerrado = p.colapsados.has(b.g!), fav = b.g === '__fav', m = metaGrupo(b.items);

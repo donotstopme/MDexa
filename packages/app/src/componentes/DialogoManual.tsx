@@ -1,3 +1,4 @@
+import { NOMBRE_APP } from '@mdexa/core';
 import { useEffect, useRef, useState } from 'react';
 import { Ico } from '../original/iconos';
 import { manualHtml, marcarCoincidencias, normaliza } from '../original/manual';
@@ -55,7 +56,7 @@ export function DialogoManual({ onCerrar }: { onCerrar(): void }) {
     if (!w) { window.alert('El navegador bloqueó la ventana. Permite ventanas emergentes para imprimir.'); return; }
     const css = [...document.styleSheets].flatMap(s => { try { return [...s.cssRules].map(r => r.cssText); } catch { return []; } }).join('\n');
     w.document.open();
-    w.document.write(`<!doctype html><html lang="es" data-tema="claro"><head><meta charset="utf-8"><title>Manual de uso · MDexa</title><style>${css}${VARS_IMPRESION}.manual{padding:24px 20px;font-size:14px}.manual nav{display:none}</style></head><body>${manualHtml()}</body></html>`);
+    w.document.write(`<!doctype html><html lang="es" data-tema="claro"><head><meta charset="utf-8"><title>Manual de uso · ${NOMBRE_APP}</title><style>${css}${VARS_IMPRESION}.manual{padding:24px 20px;font-size:14px}.manual nav{display:none}</style></head><body>${manualHtml()}</body></html>`);
     w.document.close(); setTimeout(() => { w.focus(); w.print(); }, 400);
   };
 

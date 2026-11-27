@@ -25,7 +25,7 @@ export interface Actividad {
 }
 
 /** Un hito (también funciona como fase) de uno o varios negocios; `cumplido` = fecha si se marcó a mano */
-export interface Hito { id: number; nombre: string; fecha: string; negocios: string[]; cumplido: string; descripcion: string }
+export interface Hito { id: number; nombre: string; fecha: string; negocios: string[]; cumplido: string; descripcion: string; color?: ColorEtiqueta }
 
 export interface Meta {
   proyecto: string;

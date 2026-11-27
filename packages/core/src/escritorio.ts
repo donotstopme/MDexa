@@ -23,6 +23,8 @@ export interface ApiEscritorio {
   };
   /** Datos locales (qué has visto, respaldos, carpetas): archivos en la carpeta de datos de la aplicación */
   dato: { leer(clave: string): Promise<unknown>; guardar(clave: string, valor: unknown): Promise<void> };
+  /** Personalización junto al .md abierto: el texto de mdexa-config.js y logo.png como data URL (null si no están) */
+  marca(): Promise<{ config: string | null; logo: string | null }>;
   /** Avisa cuando el archivo abierto cambió en disco (otra persona lo guardó). Devuelve la función para dejar de escuchar. */
   alCambiarArchivo(cb: () => void): () => void;
 }

@@ -1,11 +1,23 @@
 import type { Estado, Tamano, Prioridad, Repite, ColorEtiqueta } from './tipos';
 
-export const NOMBRE_APP = 'MDexa';
+/** Nombre del producto: el que va en el formato del archivo y en los identificadores del .ics (no se personaliza) */
+export const NOMBRE_ORIGINAL = 'MDexa';
+/** Un nombre de marca utilizable: sin caracteres de HTML ni de control, y no demasiado largo */
+export const limpiaMarca = (v: unknown): string =>
+  (typeof v === 'string' ? v.replace(/[<>"`\u0000-\u001f]/g, '').trim().slice(0, 40).trim() : '') || NOMBRE_ORIGINAL;
+/** Nombre escrito en un mdexa-config.js, leído como texto (sin ejecutarlo); undefined si no lo trae */
+export function nombreEnConfig(js: string): string | undefined {
+  const m = js.replace(/^\s*\/\/.*$/gm, '').match(/\bnombre["']?\s*:\s*(['"`])((?:\\.|(?!\1)[^\\\n])*)\1/);
+  return m ? m[2].replace(/\\(.)/g, '$1') : undefined;
+}
+/** Nombre que se muestra. En la web lo define mdexa-config.js (window.MDEXA_CONFIG) antes de cargar la app */
+export let NOMBRE_APP: string = limpiaMarca((globalThis as { MDEXA_CONFIG?: { nombre?: unknown } }).MDEXA_CONFIG?.nombre);
+export const ponerNombreApp = (v: unknown): void => { NOMBRE_APP = limpiaMarca(v); };
 /** Número de compatibilidad del formato del .md: sólo sube cuando cambia lo que se guarda. */
 export const VERSION_MDEXA = 19;
 /** Con la que se guardan los archivos sin hitos, para que las versiones anteriores puedan seguir editándolos */
 export const VERSION_SIN_HITOS = 18;
-export const VERSION_TXT = '1.35.0';
+export const VERSION_TXT = '1.35.1';
 export const SIN_HITO = 'Sin hito';
 
 export const SIN_NEGOCIO = 'Sin negocio';

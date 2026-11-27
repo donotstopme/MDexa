@@ -351,7 +351,6 @@
   .seg button{border:0;background:transparent;padding:6px 11px;border-radius:7px;font-size:14px;color:var(--muted)}
   .seg button:hover{border:0;color:var(--text)}
   .seg button.on{background:var(--card);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.12);font-weight:600}
-  .filtros>#qZoom{flex:0 0 auto;min-width:0;width:auto}
 
   /* Línea de tiempo */
   .gantt{overflow:auto;max-height:max(460px,calc(100vh - 190px));border:1px solid var(--line);border-radius:10px;background:var(--card);overscroll-behavior:contain}
@@ -554,9 +553,16 @@
   .ritmo{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid currentColor;margin-top:12px}
 
   /* Tabla */
-  .filtros{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;align-items:center}
-  .filtros>input,.filtros>select{flex:1;min-width:130px}
-  .filtros>.msel{flex:1 1 150px;min-width:120px;max-width:250px}
+  /* Barra en tres secciones separadas por líneas punteadas: vistas y búsqueda · filtros · opciones y acciones */
+  .filtros{margin-bottom:12px}
+  .f-sec{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 0}
+  .f-sec:first-child{padding-top:0}
+  .f-sec:last-child{padding-bottom:0}
+  .f-sec+.f-sec{border-top:2px dashed var(--line2)}
+  .f-sec>.buscar{flex:1 1 260px;max-width:none}
+  .f-sec>.msel{flex:1 1 130px;min-width:110px;max-width:250px}
+  .f-sec>.f-fin{margin-left:auto}
+  .f-sec>select{flex:0 0 auto;min-width:0;width:auto}
   .msel{position:relative}
   .cg-barra{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;margin-bottom:12px;font-size:13.5px}
   .cg-barra label{display:flex;flex-direction:row;align-items:center;gap:6px;color:var(--text)}
@@ -643,7 +649,7 @@
   .nov-it.nov-men{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));background:color-mix(in srgb,var(--accent) 5%,var(--card))}
   .nov-h-men{color:var(--accent)}
   .nov-badge.con-men{background:var(--accent);color:#fff}
-  .filtros>.msel.cols{flex:0 0 auto;min-width:0;max-width:none}
+  .f-sec>.msel.cols{flex:0 0 auto;min-width:0;max-width:none}
   .msel.cols .msel-btn{gap:6px}
   .g-ren{padding:2px 6px;margin-left:4px;opacity:0;transition:opacity .12s;vertical-align:1px}
   tr.grupo:hover .g-ren,.k-carril-cab:hover .g-ren,.g-ren:focus-visible{opacity:.8}
@@ -928,7 +934,16 @@
   }
   /* ---- Hitos en la línea de tiempo, el calendario y la tarjeta de meta ---- */
   .h-Cumplido{--hc:var(--c-verde)} .h-En-tiempo{--hc:var(--accent)} .h-En-riesgo{--hc:var(--c-amar)} .h-Vencido{--hc:var(--c-rojo)}
+  .h-color.h-color{--hc:var(--e)}
+  .g-rombo.h-color.h-Vencido i,.c-hito.h-color.h-Vencido i,.hito-punto.h-color.h-Vencido{outline:2px solid var(--c-rojo);outline-offset:1px}
+  .g-rombo.h-color.h-En-riesgo i,.c-hito.h-color.h-En-riesgo i,.hito-punto.h-color.h-En-riesgo{outline:2px solid var(--c-amar);outline-offset:1px}
+  .hito-punto{display:inline-block;width:9px;height:9px;margin-right:8px;transform:rotate(45deg);background:var(--hc);border-radius:1px}
+  .hito-colores{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+  .hito-colores .auto{padding:3px 12px;font-size:12.5px;font-weight:400;border-radius:99px}
+  .hito-colores .auto.on{border-color:var(--accent);color:var(--accent);font-weight:600}
+  .hito-colores .etq-col{width:22px;height:22px}
   .g-escala.con-hitos{height:auto}
+  .g-escala.con-hitos .g-marca{top:29px;bottom:auto}   /* "Hoy" y "Meta" se quedan arriba de la banda de hitos */
   .g-esq{flex-wrap:wrap;align-content:flex-start;padding-top:14px}
   .g-esq-h{width:100%;display:flex;align-items:center;gap:5px;margin-top:20px}
   .g-hitos{position:relative;border-top:1px solid var(--line)}

@@ -25,6 +25,8 @@ export function IconoGrupo({ info, doc }: { info: InfoGrupo; doc: Documento }) {
   if (info.icono === 'prioridad') return info.valor ? <PriBadge p={info.valor as Prioridad} corto /> : <span className="g-ico-vacio"><Ico n="prioridad" t={14} /></span>;
   if (info.icono === 'estado') return <i className={`g-punto-est f-${colorEstado(info.valor)}`} />;
   if (info.icono === 'etiqueta') return info.valor ? <i className={`g-punto-est etq-${colorEtq(info.valor, doc.coloresEtq)}`} style={{ background: 'var(--e)' }} /> : <Ico n="etiqueta" t={14} />;
+  const colorH = info.icono === 'bandera' ? doc.hitos.find(h => String(h.id) === info.valor)?.color : undefined;
+  if (colorH) return <i className={`g-punto-est etq-${colorH}`} style={{ background: 'var(--e)' }} />;
   return <Ico n={info.icono} t={15} />;
 }
 

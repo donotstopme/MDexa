@@ -92,7 +92,7 @@ export function guardarHito(d: Documento, datos: DatosHito, usuario: string, ids
   if (!negocios.length) return { error: 'Elige al menos un negocio.' };
   if (d.hitos.some(h => h.id !== datos.id && normaliza(h.nombre) === normaliza(nombre))) return { error: `Ya existe un hito llamado «${nombre}».` };
   const previo = d.hitos.find(h => h.id === datos.id);
-  const h: Hito = { id: previo?.id ?? siguienteIdHito(d), nombre, fecha: datos.fecha, negocios, cumplido: datos.cumplido, descripcion: limpiaDesc(datos.descripcion) };
+  const h: Hito = { id: previo?.id ?? siguienteIdHito(d), nombre, fecha: datos.fecha, negocios, cumplido: datos.cumplido, descripcion: limpiaDesc(datos.descripcion), ...(datos.color ? { color: datos.color } : {}) };
   let entran = 0, salen = 0;
   const actividades = d.actividades.map(a => {
     const estaba = !!previo && a.hito === h.id, queda = (ids ? ids.has(a.id) : estaba) && hitoCompatible(h, a.negocio);
@@ -100,11 +100,12 @@ export function guardarHito(d: Documento, datos: DatosHito, usuario: string, ids
     if (queda) { entran++; return { ...a, hito: h.id }; }
     salen++; return sinHito(a);
   });
-  if (previo && !entran && !salen && JSON.stringify(previo) === JSON.stringify(h)) return { doc: d, id: h.id };
+  const igual = (x: Hito) => JSON.stringify([x.nombre, x.fecha, x.negocios, x.cumplido, x.descripcion, x.color || '']);
+  if (previo && !entran && !salen && igual(previo) === igual(h)) return { doc: d, id: h.id };
   const movs = [entran && `entran ${pl(entran, 'actividad', 'actividades')}`, salen && `salen ${pl(salen, 'actividad', 'actividades')}`];
   const cambios = previo ? [
     previo.nombre !== h.nombre && `nombre «${previo.nombre}» → «${h.nombre}»`, previo.fecha !== h.fecha && `fecha ${previo.fecha || '—'} → ${h.fecha}`,
-    previo.negocios.join(', ') !== h.negocios.join(', ') && `negocios: ${h.negocios.join(', ')}`, previo.descripcion !== h.descripcion && 'descripción',
+    previo.negocios.join(', ') !== h.negocios.join(', ') && `negocios: ${h.negocios.join(', ')}`, previo.descripcion !== h.descripcion && 'descripción', previo.color !== h.color && 'color',
     previo.cumplido !== h.cumplido && (h.cumplido ? `cumplido el ${h.cumplido}` : 'ya no está cumplido'), ...movs,
   ] : movs;
   const resumen = cambios.filter(Boolean).join(', ');
@@ -158,6 +159,10 @@ export function infoHito(d: Pick<Documento, 'actividades'>, h: Hito, hoyStr: str
 }
 
 /* ============ Dónde se muestran ============ */
+
+/** Clases CSS de un hito: su estado y, si se le eligió, su color (que sustituye al del estado) */
+export const claseHito = (h: Pick<Hito, 'color'>, estado: EstadoHito): string =>
+  `h-${estado.replace(' ', '-')}${h.color ? ` h-color etq-${h.color}` : ''}`;
 
 /** Hitos que se ven según los filtros: de los negocios elegidos (sin elegir, todos) y de los hitos elegidos */
 export function hitosVisibles(hitos: Hito[], negocios: string[] = [], elegidos: string[] = []): Hito[] {

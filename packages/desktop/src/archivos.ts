@@ -30,6 +30,22 @@ export function rutaImagenSegura(archivoMd: string, ruta: string): string | null
   return path.relative(base, abs).startsWith('..') ? null : abs;
 }
 
+/**
+ * Personalización de la carpeta del .md: mdexa-config.js (sólo se lee como texto, nunca se ejecuta) y logo.png.
+ * Nombres fijos y con límite de tamaño.
+ */
+export async function leerMarca(archivoMd: string | null): Promise<{ config: string | null; logo: string | null }> {
+  const leer = async (nombre: string, max: number) => {
+    if (!archivoMd) return null;
+    try {
+      const ruta = path.join(path.dirname(archivoMd), nombre), s = await fs.stat(ruta);
+      return s.isFile() && s.size <= max ? await fs.readFile(ruta) : null;
+    } catch { return null; }
+  };
+  const [config, logo] = await Promise.all([leer('mdexa-config.js', 20_000), leer('logo.png', 2_000_000)]);
+  return { config: config?.toString('utf8') ?? null, logo: logo ? `data:image/png;base64,${logo.toString('base64')}` : null };
+}
+
 /** Nombre de archivo propio y sin caracteres que algún sistema no admite */
 export const nombreSeguro = (n: string): string => (n.replace(/[\\/:*?"<>|\0]/g, '-').trim() || 'actividades.md');
 

@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, shell, type MenuItemConstructorOptions } from 'electron';
 import { watch, promises as fs, type FSWatcher } from 'node:fs';
 import * as path from 'node:path';
-import { escrituraAtomica, guardarDato, leerDato, nombreSeguro, rutaImagenSegura } from './archivos';
+import { escrituraAtomica, guardarDato, leerDato, leerMarca, nombreSeguro, rutaImagenSegura } from './archivos';
 
 const esMac = process.platform === 'darwin', esDev = !app.isPackaged && !!process.env.MDEXA_DEV_URL;
 const carpetaDatos = () => path.join(app.getPath('userData'), 'datos');
@@ -78,6 +78,7 @@ function registrarIpc() {
     const abs = archivoActual && typeof ruta === 'string' ? rutaImagenSegura(archivoActual, ruta) : null;
     if (abs) await fs.rm(abs, { force: true });
   });
+  ipcMain.handle('marca:leer', () => leerMarca(archivoActual));
   ipcMain.handle('dato:leer', (_e, clave: unknown) => (typeof clave === 'string' ? leerDato(carpetaDatos(), clave) : undefined));
   ipcMain.handle('dato:guardar', (_e, clave: unknown, valor: unknown) => { if (typeof clave === 'string') return guardarDato(carpetaDatos(), clave, valor); });
 }

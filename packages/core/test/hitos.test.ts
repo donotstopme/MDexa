@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  absorberPropios, actividadesParaHito, analizarReporte, aplicarImportacion, carrilesHitos, datosSemana, exportarCsv, filasImportar, generarICS, hitosIcs, hitosVisibles, mapaInicial, moverHito, parseCSV, proximosHitos, reporteMd, textoSemanal, aplicarSoltar, armarBloques, borrarHito, calcularNovedades, conHito, crearSprint, deshacer, filtrar, filtrosVacios, foto, guardarHito, historialVacio,
+  absorberPropios, actividadesParaHito, analizarReporte, aplicarImportacion, carrilesHitos, claseHito, datosSemana, exportarCsv, filasImportar, generarICS, hitosIcs, hitosVisibles, mapaInicial, moverHito, parseCSV, proximosHitos, reporteMd, textoSemanal, aplicarSoltar, armarBloques, borrarHito, calcularNovedades, conHito, crearSprint, deshacer, filtrar, filtrosVacios, foto, guardarHito, historialVacio,
   infoHito, parseMD, porIncluir, quitarHitosAjenos, seleccionHito, registrarDeshacer, renombrarNegocio, restaurarRespaldo, toMD, type Documento,
 } from '../src';
 
@@ -188,5 +188,19 @@ describe('vistas y salidas', () => {
     const h = hitosIcs(d, 'todas', d.actividades, '', false);
     expect(generarICS(d, [], false, 'p.md', new Date(), h)).toContain('UID:p-hito-1@mdexa');
     expect(hitosIcs(d, 'filtradas', d.actividades.filter(a => a.id === 1), '', false).map(x => x.id)).toEqual([1]);
+  });
+});
+
+describe('color', () => {
+  it('se guarda aparte, se lee de vuelta y no cambia la versión del formato', () => {
+    const d = ok(guardarHito(doc(), { ...doc().hitos[0], color: 'morado' }, 'Ana')).doc, t = toMD(d);
+    expect(t).toContain('## Colores de hitos\n\n- H1 | morado'); expect(t).toContain('Versión de MDexa: 19');
+    expect(parseMD(t).hitos[0].color).toBe('morado'); expect(toMD(parseMD(t))).toBe(t);
+    expect(d.bitacora.at(-1)?.detalle).toContain('color'); expect(claseHito(d.hitos[0], 'Vencido')).toBe('h-Vencido h-color etq-morado');
+  });
+  it('se puede volver a "según el estado"', () => {
+    const d = ok(guardarHito(doc(), { ...doc().hitos[0], color: 'rojo' }, 'Ana')).doc;
+    const r = ok(guardarHito(d, { ...d.hitos[0], color: undefined }, 'Ana')).doc;
+    expect(r.hitos[0].color).toBeUndefined(); expect(toMD(r)).not.toContain('Colores de hitos');
   });
 });

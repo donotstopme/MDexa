@@ -2,3 +2,5 @@ node_modules/
 dist/
 .DS_Store
 release/
+# Imagen de marca propia (cada quien pone la suya junto a mdexa.html)
+/logo.png

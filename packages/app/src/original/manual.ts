@@ -1,4 +1,4 @@
-import { PRIORIDADES, TAMANOS } from '@mdexa/core';
+import { NOMBRE_APP, PRIORIDADES, TAMANOS } from '@mdexa/core';
 import { IC } from './iconos';
 import { MANUAL_PLANTILLA } from './manualPlantilla';
 
@@ -15,6 +15,8 @@ const badgePri = (p: string) => `<span class="pri pri-${p}" title="Prioridad ${p
 /** Manual de uso listo para mostrar (sustituye los marcadores por íconos e insignias reales) */
 export function manualHtml(): string {
   return MANUAL_PLANTILLA
+    // el nombre personalizado; la clave del encabezado del archivo no cambia
+    .replace(/(?<!Versión de )MDexa/g, () => NOMBRE_APP)
     .replace(/\{\{ico:([a-z]+):(\d+)\}\}/g, (_m, n: string, t: string) => svgIco(n, +t))
     .replace(/\{\{pri:(\w+)\}\}/g, (_m, p: string) => badgePri(p))
     .replace(/\{\{tam:(\w+)\}\}/g, (_m, t: string) => badgeTam(t))

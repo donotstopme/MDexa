@@ -38,48 +38,53 @@ function Columnas({ ui }: { ui: UI }) {
   );
 }
 
-export function BarraFiltros({ doc, ui, personas, persona, editando, nBacklog, onNueva, onNuevoHito, onPresentar }: {
-  doc: Documento; ui: UI; personas: string[]; persona: string; editando: boolean; nBacklog: number; onNueva(): void; onNuevoHito?(): void; onPresentar(): void;
+export function BarraFiltros({ doc, ui, personas, persona, editando, nBacklog, onNueva, onPresentar }: {
+  doc: Documento; ui: UI; personas: string[]; persona: string; editando: boolean; nBacklog: number; onNueva(): void; onPresentar(): void;
 }) {
   const f = ui.filtros, v = ui.vista, acts = doc.actividades;
   const negs = unicos(acts.map(a => a.negocio)), resp = unicos(acts.map(a => a.responsable)), etiquetas = todasEtq(acts);
   const enM = v === 'mias';
   return (
     <div className="filtros">
-      <div className="seg" role="tablist">
-        {(Object.keys(VISTAS) as Vista[]).map((k, i) => (
-          <button key={k} role="tab" aria-selected={v === k} className={v === k ? 'on' : ''} title={`${TIT_VISTA[k]} (tecla ${i + 1})`} onClick={() => ui.setVista(k)}>
-            <Ico n={ICO_VISTA[k]} /> {VISTAS[k]}</button>
-        ))}
+      <div className="f-sec">
+        <div className="seg" role="tablist">
+          {(Object.keys(VISTAS) as Vista[]).map((k, i) => (
+            <button key={k} role="tab" aria-selected={v === k} className={v === k ? 'on' : ''} title={`${TIT_VISTA[k]} (tecla ${i + 1})`} onClick={() => ui.setVista(k)}>
+              <Ico n={ICO_VISTA[k]} /> {VISTAS[k]}</button>
+          ))}
+        </div>
+        {enM && <label className="check">Ver actividades de <select style={{ width: 'auto' }} value={persona} onChange={e => ui.setPersona(e.target.value)}>
+          {!personas.length && <option value="">—</option>}{personas.map(p => <option key={p}>{p}</option>)}</select></label>}
+        {v === 'gantt' && <select title="Escala de la línea de tiempo" value={ui.zoom} onChange={e => ui.setZoom(e.target.value as 'dia' | 'semana' | 'mes')}>
+          <option value="dia">Por día</option><option value="semana">Por semana</option><option value="mes">Por mes</option></select>}
+        <div className="buscar"><Ico n="buscar" />
+          <input placeholder="Buscar en actividades, notas, subtareas…  ( / )" value={f.texto} onChange={e => ui.setFiltros({ texto: e.target.value })}
+            title="Busca en el nombre, negocio, responsable, etiquetas, subtareas, notas y #número. Varias palabras: deben estar todas." /></div>
       </div>
-      {enM && <label className="check">Ver actividades de <select style={{ width: 'auto' }} value={persona} onChange={e => ui.setPersona(e.target.value)}>
-        {!personas.length && <option value="">—</option>}{personas.map(p => <option key={p}>{p}</option>)}</select></label>}
-      {v === 'gantt' && <select title="Escala de la línea de tiempo" value={ui.zoom} onChange={e => ui.setZoom(e.target.value as 'dia' | 'semana' | 'mes')}>
-        <option value="dia">Por día</option><option value="semana">Por semana</option><option value="mes">Por mes</option></select>}
-      <div className="buscar"><Ico n="buscar" />
-        <input placeholder="Buscar en actividades, notas, subtareas…  ( / )" value={f.texto} onChange={e => ui.setFiltros({ texto: e.target.value })}
-          title="Busca en el nombre, negocio, responsable, etiquetas, subtareas, notas y #número. Varias palabras: deben estar todas." /></div>
-      <Msel todos="Todos los negocios" varios="negocios" sel={f.neg} onChange={neg => ui.setFiltros({ neg })} opciones={acts.some(a => !a.negocio) ? [...negs, SIN_NEGOCIO] : negs} />
-      {!enM && <Msel todos="Todos los responsables" varios="responsables" sel={f.resp} onChange={r => ui.setFiltros({ resp: r })} opciones={acts.some(a => !a.responsable) ? [...resp, SIN_RESP] : resp} />}
-      <Msel todos="Todos los estados" varios="estados" sel={f.est} onChange={est => ui.setFiltros({ est })}
-        opciones={[...ESTADOS.map(e => ({ v: e, c: ({ Backlog: 'gris', Planeado: 'azul', 'En progreso': 'amar', Terminado: 'verde', Cancelado: 'rojo' } as Record<string, string>)[e] })),
-          { v: 'Otros', sep: true }, 'Vencida', 'Bloqueada', 'Recurrente', 'Con novedades']} />
-      <Msel todos="Todos los tamaños" varios="tamaños" sel={f.tam} onChange={tam => ui.setFiltros({ tam })} opciones={[...Object.keys(TAMANOS), SIN_TAM]} />
-      <Msel todos="Todas las prioridades" varios="prioridades" sel={f.pri} onChange={pri => ui.setFiltros({ pri })} opciones={[...Object.keys(PRIORIDADES).map(p => ({ v: p, cls: `pri-punto pri-${p}` })), SIN_PRI]} />
-      <Msel todos="Todas las etiquetas" varios="etiquetas" sel={f.etq} onChange={etq => ui.setFiltros({ etq })}
-        opciones={[...etiquetas.map(t => ({ v: t, cls: `etq-punto etq-${colorEtq(t, doc.coloresEtq)}` })), ...(acts.some(a => !etqs(a).length) ? [SIN_ETQ] : [])]} />
-      {!!doc.hitos.length && <Msel todos="Todos los hitos" varios="hitos" sel={f.hito} onChange={hito => ui.setFiltros({ hito })} opciones={[...hitosOrdenados(doc.hitos).map(h => h.nombre), SIN_HITO]} />}
-      <label className="check" title="Mostrar u ocultar las actividades en Backlog">
-        <input type="checkbox" checked={f.verBacklog} onChange={e => ui.setFiltros({ verBacklog: e.target.checked })} /> <span>Mostrar backlog{nBacklog ? ` (${nBacklog})` : ''}</span></label>
-      {v === 'lista' && <Columnas ui={ui} />}
-      <button title="Modo presentación para juntas (tecla P)" onClick={onPresentar}><Ico n="presentar" /> Presentar</button>
-      {!['mias', 'cal', 'carga'].includes(v) && (
-        <label className="check">Agrupar por <select className="sel-agrupar" title="Agrupa la lista, el tablero y la línea de tiempo" value={ui.agrupar} onChange={e => ui.setAgrupar(e.target.value as Agrupar)}>
-          <option value="negocio">Negocio</option><option value="responsable">Responsable</option><option value="prioridad">Prioridad</option>
-          <option value="estado">Estado</option><option value="etiqueta">Etiqueta</option><option value="hito">Hito</option><option value="">Sin agrupar</option></select></label>
-      )}
-      {editando && <button title="Crear un hito y elegir sus actividades" onClick={onNuevoHito}><Ico n="bandera" /> Nuevo hito</button>}
-      {editando && <button className="prim" title="Nueva actividad (tecla N)" onClick={onNueva}><Ico n="mas" /> Nueva actividad</button>}
+      <div className="f-sec">
+        <Msel todos="Todos los negocios" varios="negocios" sel={f.neg} onChange={neg => ui.setFiltros({ neg })} opciones={acts.some(a => !a.negocio) ? [...negs, SIN_NEGOCIO] : negs} />
+        {!enM && <Msel todos="Todos los responsables" varios="responsables" sel={f.resp} onChange={r => ui.setFiltros({ resp: r })} opciones={acts.some(a => !a.responsable) ? [...resp, SIN_RESP] : resp} />}
+        <Msel todos="Todos los estados" varios="estados" sel={f.est} onChange={est => ui.setFiltros({ est })}
+          opciones={[...ESTADOS.map(e => ({ v: e, c: ({ Backlog: 'gris', Planeado: 'azul', 'En progreso': 'amar', Terminado: 'verde', Cancelado: 'rojo' } as Record<string, string>)[e] })),
+            { v: 'Otros', sep: true }, 'Vencida', 'Bloqueada', 'Recurrente', 'Con novedades']} />
+        <Msel todos="Todos los tamaños" varios="tamaños" sel={f.tam} onChange={tam => ui.setFiltros({ tam })} opciones={[...Object.keys(TAMANOS), SIN_TAM]} />
+        <Msel todos="Todas las prioridades" varios="prioridades" sel={f.pri} onChange={pri => ui.setFiltros({ pri })} opciones={[...Object.keys(PRIORIDADES).map(p => ({ v: p, cls: `pri-punto pri-${p}` })), SIN_PRI]} />
+        <Msel todos="Todas las etiquetas" varios="etiquetas" sel={f.etq} onChange={etq => ui.setFiltros({ etq })}
+          opciones={[...etiquetas.map(t => ({ v: t, cls: `etq-punto etq-${colorEtq(t, doc.coloresEtq)}` })), ...(acts.some(a => !etqs(a).length) ? [SIN_ETQ] : [])]} />
+        {!!doc.hitos.length && <Msel todos="Todos los hitos" varios="hitos" sel={f.hito} onChange={hito => ui.setFiltros({ hito })} opciones={[...hitosOrdenados(doc.hitos).map(h => (h.color ? { v: h.nombre, cls: `etq-punto etq-${h.color}` } : h.nombre)), SIN_HITO]} />}
+      </div>
+      <div className="f-sec">
+        <label className="check" title="Mostrar u ocultar las actividades en Backlog">
+          <input type="checkbox" checked={f.verBacklog} onChange={e => ui.setFiltros({ verBacklog: e.target.checked })} /> <span>Mostrar backlog{nBacklog ? ` (${nBacklog})` : ''}</span></label>
+        {v === 'lista' && <Columnas ui={ui} />}
+        <button title="Modo presentación para juntas (tecla P)" onClick={onPresentar}><Ico n="presentar" /> Presentar</button>
+        {!['mias', 'cal', 'carga'].includes(v) && (
+          <label className="check">Agrupar por <select className="sel-agrupar" title="Agrupa la lista, el tablero y la línea de tiempo" value={ui.agrupar} onChange={e => ui.setAgrupar(e.target.value as Agrupar)}>
+            <option value="negocio">Negocio</option><option value="responsable">Responsable</option><option value="prioridad">Prioridad</option>
+            <option value="estado">Estado</option><option value="etiqueta">Etiqueta</option><option value="hito">Hito</option><option value="">Sin agrupar</option></select></label>
+        )}
+        {editando && <button className="prim f-fin" title="Nueva actividad (tecla N)" onClick={onNueva}><Ico n="mas" /> Nueva actividad</button>}
+      </div>
     </div>
   );
 }

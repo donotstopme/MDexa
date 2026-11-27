@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import {
   ESTADOS, SIN_NEGOCIO, toMD, carpetaImagenes, datosAvance, agregarNota, analizarMeta, armarBloques, backlogOculto, claveNota, conColorEtiqueta, conEstado, conMeta, conSubtareas, estadoEscritura, mencionesEn,
-  gruposDe, hitosVisibles, moverHito, borrarEtiqueta, crearSprint, documentoNuevo, normaliza, renombrarEtiqueta, renombrarNegocio, type OpcionesSprint,
+  gruposDe, NOMBRE_APP, nombreEnConfig, ponerNombreApp, hitosVisibles, moverHito, borrarEtiqueta, crearSprint, documentoNuevo, normaliza, renombrarEtiqueta, renombrarNegocio, type OpcionesSprint,
   aplicarImportacion, bloqueadasAlMover, exportarCsv, loteEliminar, loteEstado, loteFechas, loteNegocio, lotePrioridad, loteResponsable, loteTamano, rangoSeleccion, type Estado, type Prioridad, type Tamano, type FilaImp, type Mapa,
   nomCorto, pendientesAlMover, personasConocidas, ponerEtiqueta, quitarNota, subtareasDe, negocioDe, type Nota, type Subtarea, EST, fechaISO, filtrar, statsNegocios, unicos, type Bloque, type Documento,
 } from '@mdexa/core';
@@ -88,6 +88,21 @@ export function App() {
   const presNeg = useRef<string[] | null>(null), presFs = useRef(false);
   const [, setReloj] = useState(0);
   const [formHito, setFormHito] = useState<{ id: number | null } | null>(null);
+  // Personalización: en el escritorio, mdexa-config.js y logo.png junto al .md abierto; en la web, junto a la app
+  const [marca, setMarca] = useState<{ nombre: string; logo?: string }>(() => ({ nombre: NOMBRE_APP }));
+  const nombreBase = useRef(NOMBRE_APP);
+  useEffect(() => {
+    const api = window.mdexaEscritorio;
+    if (!api || !e.nombre) return;
+    let vigente = true;
+    void api.marca().then(m => {
+      if (!vigente) return;
+      ponerNombreApp((m.config && nombreEnConfig(m.config)) || nombreBase.current);
+      setMarca({ nombre: NOMBRE_APP, logo: m.logo ?? undefined });
+    }).catch(() => {});
+    return () => { vigente = false; };
+  }, [e.nombre]);
+  useEffect(() => { document.title = (doc?.meta.proyecto ? doc.meta.proyecto + ' · ' : '') + marca.nombre; }, [doc?.meta.proyecto, marca.nombre]);
   const [renNeg, setRenNeg] = useState<string | undefined>(undefined);
   const [negElegido, setNegElegido] = useState('');
   const hoy = fechaISO(new Date());
@@ -387,7 +402,7 @@ export function App() {
         fecha={(() => { const f = new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }); return f.charAt(0).toUpperCase() + f.slice(1) + ' · ' + new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }); })()}
         negocio={ui.filtros.neg.length > 1 ? `${ui.filtros.neg.length} negocios` : ui.filtros.neg.length === 1 ? `${ui.filtros.neg[0]} · ${negociosPres.indexOf(ui.filtros.neg[0])} de ${negociosPres.length - 1}` : 'Todos los negocios'}
         onNegocio={pasarNegocio} onZoom={zoomPres} onSalir={salirPres} />}
-      <Cabecera titulo={doc?.meta.proyecto || (e.nombre ? e.nombre.replace(/\.md$/i, '') : 'Sin proyecto abierto')} archivo={e.nombre} hayArchivo={!!doc} usuario={e.usuario}
+      <Cabecera logo={marca.logo} titulo={doc?.meta.proyecto || (e.nombre ? e.nombre.replace(/\.md$/i, '') : 'Sin proyecto abierto')} archivo={e.nombre} hayArchivo={!!doc} usuario={e.usuario}
         novedades={e.novedades.total} menciones={e.novedades.menciones.length} tema={ui.tema}
         onAbrir={() => sesion.abrir()} onRefrescar={() => sesion.refrescar()} onNovedades={() => setDlg(dlg === 'novedades' ? null : 'novedades')} onBitacora={() => { setBitAct(null); setDlg('bitacora'); }} onHitos={() => setDlg('hitos')} onManual={() => setDlg('manual')}
         onReporte={async () => { if (modo === 'lectura') await sesion.refrescar({ silencioso: true }); setDlg('reporte'); }}
@@ -395,7 +410,7 @@ export function App() {
         extras={[{ titulo: 'Nuevo .md', desc: 'Archivo vacío para un proyecto nuevo', onClick: () => setFormMeta('nuevo') }, ...(doc ? [{ titulo: 'Nuevo sprint', desc: 'Copia actividades elegidas a un archivo nuevo', onClick: () => setDlg('sprint') }, { titulo: 'Importar desde Excel o CSV', desc: 'Carga actividades de un archivo o pegadas de Excel', onClick: () => setDlg('importar') }, { titulo: 'Exportar a CSV', desc: 'Las actividades en un archivo para Excel', onClick: () => setDlg('exportar') }, { titulo: 'Reporte semanal', desc: 'Resumen de la semana listo para un correo', onClick: () => setDlg('semanal') }, { titulo: 'Exportar al calendario (.ics)', desc: 'Fechas fin para Outlook, Google o Apple', onClick: () => setDlg('ics') }, { titulo: 'Renombrar negocio', desc: 'Cambia el nombre en todas sus actividades', onClick: () => abrirRenombrar() }, { titulo: 'Administrar etiquetas', desc: 'Renombrar, recolorear o borrar etiquetas', onClick: () => setDlg('etqadmin') }, { titulo: 'Respaldos', desc: 'Ver o restaurar versiones anteriores', onClick: () => setDlg('respaldos') }, { titulo: 'Descargar copia .md', desc: 'Guarda la versión actual en tu computadora', onClick: () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([toMD(doc)], { type: 'text/markdown' })); a.download = e.nombre || 'actividades.md'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); } }] : []), { titulo: 'Atajos de teclado', desc: 'Tecla ? en cualquier momento', onClick: () => setDlg('atajos') }]} />
       <Banner hayArchivo={!!doc} modo={modo} masNuevo={e.masNuevo} versionArchivo={doc?.meta.versionTxt || String(doc?.meta.version ?? '')} puedeEscribir={e.puedeEscribir}
         candado={doc?.candado ?? null} usuario={e.usuario} guardado={e.guardado} puedeDeshacer={e.puedeDeshacer} puedeRehacer={e.puedeRehacer}
-        onTomar={() => sesion.tomar()} onSoltar={() => sesion.soltar()} onLiberar={() => sesion.liberar()} onDeshacer={() => sesion.deshacer()} onRehacer={() => sesion.rehacer()} onAbrir={() => sesion.abrir()} onManual={() => setDlg('manual')} />
+        onTomar={() => sesion.tomar()} onSoltar={() => sesion.soltar()} onLiberar={() => sesion.liberar()} onDeshacer={() => sesion.deshacer()} onRehacer={() => sesion.rehacer()} onAbrir={() => sesion.abrir()} onManual={() => setDlg('manual')} pendiente={e.pendiente} onAbrirPendiente={() => void sesion.abrirPendiente()} />
       {e.error && <div className="banner otro" role="alert"><span className="b-ico" /><div>{e.error}</div></div>}
 
       <div className={`layout ${doc ? (ui.compacto ? 'compacto' : '') : 'sin-lateral'}`}>
@@ -403,11 +418,11 @@ export function App() {
           onElegir={elegirNegocio} favs={ui.favs.size && ui.vista !== 'mias' ? { n: ui.favs.size, visible: lista.some(a => ui.favs.has(a.id)) } : null} />}
         <main>
           {doc && analisis && <TarjetaMeta doc={doc} a={analisis} editando={editando} onEditar={() => setFormMeta('editar')} verAvance={ui.verAvance} onVerAvance={ui.setVerAvance}
-          unidad={ui.unidadAvance} onUnidad={ui.setUnidadAvance} avance={datosAvance(doc, ui.unidadAvance, hoy)} hoy={hoy} onHito={abrirHito} onHitos={() => setDlg('hitos')} />}
+          unidad={ui.unidadAvance} onUnidad={ui.setUnidadAvance} avance={datosAvance(doc, ui.unidadAvance, hoy)} hoy={hoy} onHito={abrirHito} onHitos={() => setDlg('hitos')} onNuevoHito={() => setFormHito({ id: null })} />}
           <div className="card">
             {doc ? (
               <>
-                <BarraFiltros doc={doc} ui={ui} personas={personas} persona={ui.persona || e.usuario} editando={editando} nBacklog={nBacklog} onNueva={() => abrirForm(null)} onNuevoHito={() => setFormHito({ id: null })} onPresentar={entrarPres} />
+                <BarraFiltros doc={doc} ui={ui} personas={personas} persona={ui.persona || e.usuario} editando={editando} nBacklog={nBacklog} onNueva={() => abrirForm(null)} onPresentar={entrarPres} />
                 {ui.vista === 'lista' && <Lista sel={sel} renombrar={editando && porNegocio ? abrirRenombrar : undefined} doc={doc} bloques={bloques} texto={ui.filtros.texto} edicion={ed} novIds={novIds} orden={ui.orden} onOrden={ui.setOrden}
                   colsOcultas={ui.colsOcultas} agrupaPorNegocio={porNegocio} hayAgrupacion={!!ui.agrupar} colapsados={ui.colapsados} onGrupo={ui.alternarGrupo}
                   favs={ui.favs} onFav={ui.alternarFav} acc={acc} onEditar={id => abrirForm(id)} onEliminar={eliminar}

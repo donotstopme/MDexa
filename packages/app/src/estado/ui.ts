@@ -9,11 +9,29 @@ export const COLS_OPC = [['negocio', 'Negocio'], ['prioridad', 'Prioridad'], ['t
 const leer = (k: string): string | null => { try { return localStorage.getItem(k); } catch { return null; } };
 const guardar = (k: string, v: string | null) => { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch { /* sin almacenamiento local */ } };
 
+const LISTAS = ['neg', 'resp', 'est', 'tam', 'pri', 'etq', 'hito'] as const;
+/** Lo que se guarda de la barra de filtros ("Mostrar backlog" va aparte: vale para todos los archivos) */
+export const textoFiltros = (f: Filtros): string | null =>
+  (f.texto || LISTAS.some(k => f[k].length) ? JSON.stringify({ texto: f.texto, ...Object.fromEntries(LISTAS.map(k => [k, f[k]])) }) : null);
+export function leerFiltros(txt: string | null, verBacklog: boolean): Filtros {
+  const f = { ...filtrosVacios(), verBacklog };
+  try {
+    const g = JSON.parse(txt || '{}') as Record<string, unknown>;
+    if (typeof g.texto === 'string') f.texto = g.texto;
+    for (const k of LISTAS) { const v = g[k]; if (Array.isArray(v)) f[k] = v.filter((x): x is string => typeof x === 'string'); }
+  } catch { /* guardado ilegible: sin filtros */ }
+  return f;
+}
+
 /** Preferencias de pantalla; se recuerdan en este navegador con las mismas claves que el HTML original */
 export function useUI(archivo: string, proyecto: string) {
   const [vista, setVistaS] = useState<Vista>(() => { const v = leer('mdexa.vista') as Vista; return v in VISTAS ? v : 'lista'; });
   const [agrupar, setAgruparS] = useState<Agrupar>(() => { const v = leer('mdexa.agrupar'); return v !== null && ['', 'negocio', 'responsable', 'prioridad', 'estado', 'etiqueta', 'hito'].includes(v) ? (v as Agrupar) : 'negocio'; });
-  const [filtros, setFiltros] = useState<Filtros>(() => ({ ...filtrosVacios(), verBacklog: leer('mdexa.verBacklog') !== '0' }));
+  // La búsqueda y los filtros se recuerdan por archivo, para que recargar la página no los pierda
+  const claveFiltros = archivo ? `mdexa.filtros|${archivo}` : '';
+  const [guardados, setGuardados] = useState(() => ({ clave: '', f: { ...filtrosVacios(), verBacklog: leer('mdexa.verBacklog') !== '0' } }));
+  if (claveFiltros && guardados.clave !== claveFiltros) setGuardados({ clave: claveFiltros, f: leerFiltros(leer(claveFiltros), guardados.f.verBacklog) });
+  const filtros = guardados.f;
   const [orden, setOrden] = useState<Orden>({ k: 'inicio', asc: true });
   const [colapsados, setColapsados] = useState<Set<string>>(new Set());
   const [colsOcultas, setColsOcultas] = useState<Set<string>>(() => { try { return new Set(JSON.parse(leer('mdexa.colsOcultas') || '[]')); } catch { return new Set(); } });
@@ -34,8 +52,11 @@ export function useUI(archivo: string, proyecto: string) {
   const act = useMemo(() => ({
     setVista: (v: Vista) => { setVistaS(v); guardar('mdexa.vista', v); },
     setAgrupar: (a: Agrupar) => { setAgruparS(a); guardar('mdexa.agrupar', a); },
-    setFiltros: (p: Partial<Filtros>) => { if (p.verBacklog !== undefined) guardar('mdexa.verBacklog', p.verBacklog ? '1' : '0'); setFiltros(f => ({ ...f, ...p })); },
-    limpiarFiltros: () => setFiltros(f => ({ ...filtrosVacios(), verBacklog: f.verBacklog })),
+    setFiltros: (p: Partial<Filtros>) => {
+      if (p.verBacklog !== undefined) guardar('mdexa.verBacklog', p.verBacklog ? '1' : '0');
+      setGuardados(s => { const f = { ...s.f, ...p }; if (s.clave) guardar(s.clave, textoFiltros(f)); return { ...s, f }; });
+    },
+    limpiarFiltros: () => setGuardados(s => { const f = { ...filtrosVacios(), verBacklog: s.f.verBacklog }; if (s.clave) guardar(s.clave, null); return { ...s, f }; }),
     setOrden,
     alternarGrupo: (g: string) => setColapsados(s => { const n = new Set(s); if (n.has(g)) n.delete(g); else n.add(g); return n; }),
     abrirGrupo: (g: string) => setColapsados(s => { const n = new Set(s); n.delete(g); return n; }),

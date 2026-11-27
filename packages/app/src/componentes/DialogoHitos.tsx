@@ -1,4 +1,4 @@
-import { borrarHito, guardarHito, hitosOrdenados, hoy, infoHito, pl, porIncluir, type Documento, type Hito } from '@mdexa/core';
+import { borrarHito, claseHito, guardarHito, hitosOrdenados, hoy, infoHito, pl, porIncluir, type Documento, type Hito } from '@mdexa/core';
 import { Ico } from '../original/iconos';
 import { fmtTxt } from '../original/piezas';
 import { Dialogo } from './Dialogo';
@@ -36,7 +36,7 @@ export function DialogoHitos({ doc, usuario, editando, onNuevo, onEditarHito, on
               return (
                 <tr key={h.id} data-hito={h.id}>
                   <td>{h.fecha ? fmtTxt(h.fecha) : '—'}</td>
-                  <td className="txt">{h.nombre}
+                  <td className="txt"><i className={`hito-punto ${claseHito(h, i.estado)}`} />{h.nombre}
                     {h.descripcion && <div className="nd hito-desc">{h.descripcion}</div>}
                     {i.inicio && <div className="nd">Fase desde el {fmtTxt(i.inicio)}</div>}
                     {editando && !!faltan.length && <div className="hito-aviso">{pl(faltan.length, 'actividad más encaja', 'actividades más encajan')}

@@ -14,6 +14,7 @@ function apiFalsa() {
     crear: async (n, t) => { est.texto = t; est.nombre = n; return n; },
     imagen: { guardar: async (r, d) => { est.imgs.set(r, d); }, leer: async r => est.imgs.get(r) ?? null, borrar: async r => { est.imgs.delete(r); } },
     dato: { leer: async k => est.datos.get(k), guardar: async (k, v) => { est.datos.set(k, v); } },
+    marca: async () => ({ config: null, logo: null }),
     alCambiarArchivo: cb => { est.cb = cb; return () => { est.cb = null; }; },
   };
   return { api, est };

@@ -6,13 +6,18 @@ export interface Props {
   hayArchivo: boolean; modo: 'lectura' | 'edicion'; masNuevo: boolean; versionArchivo: string; puedeEscribir: boolean;
   candado: Candado | null; usuario: string; guardado: Date | null; puedeDeshacer: boolean; puedeRehacer: boolean; textoDeshacer?: string;
   onTomar(): void; onSoltar(): void; onLiberar(): void; onDeshacer(): void; onRehacer(): void; onAbrir(): void; onManual?(): void;
+  pendiente?: string; onAbrirPendiente?(): void;
 }
 
 /** Aviso de estado del archivo: quién lo edita y qué puedes hacer (mismos textos del original) */
 export function Banner(p: Props) {
   let cls = '', icono = 'ojo', cuerpo: React.ReactNode, acciones: React.ReactNode = null;
   const c = p.candado, mio = !!c && c.usuario === p.usuario;
-  if (!p.hayArchivo) {
+  if (!p.hayArchivo && p.pendiente) {
+    cls = 'libre'; icono = 'carpeta';
+    cuerpo = <div>Último archivo consultado: <b>{p.pendiente}</b><div className="det">El navegador pide confirmar el permiso para volver a leerlo.</div></div>;
+    acciones = <div className="barra"><button onClick={p.onAbrir}>Abrir otro…</button><button className="prim" onClick={p.onAbrirPendiente}><Ico n="carpeta" /> Abrir {p.pendiente}</button></div>;
+  } else if (!p.hayArchivo) {
     icono = 'carpeta';
     cuerpo = <div>Abre el <b>.md</b> compartido o crea uno nuevo para empezar. <span className="det">¿Primera vez? Consulta el <a href="#" onClick={e => { e.preventDefault(); p.onManual?.(); }}>manual de uso</a>.</span></div>;
     acciones = <div className="barra"><button className="prim" onClick={p.onAbrir}><Ico n="carpeta" /> Abrir .md</button></div>;

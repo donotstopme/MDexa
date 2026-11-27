@@ -8,12 +8,14 @@ import { EST, limpiaSub, normaliza, subtareasDe } from './utilidades';
 
 const LINEA_HITO = /^[-*]\s*H(\d+)\s*\|\s*(\d{4}-\d{2}-\d{2})?\s*\|\s*([^|]+?)\s*\|\s*([^|]*?)\s*(?:\|\s*(\d{4}-\d{2}-\d{2})?\s*(?:\|(.*))?)?$/;
 
+const LINEA_COLOR_HITO = /^[-*]\s*H(\d+)\s*\|\s*(\w+)\s*$/;
+
 /** Una sección "## Hitos" sólo se interpreta si todas sus líneas tienen el formato; una escrita a mano se conserva tal cual */
-function esSeccionHitos(lineas: string[], desde: number): boolean {
+function esSeccionDe(formato: RegExp, lineas: string[], desde: number): boolean {
   for (let i = desde; i < lineas.length; i++) {
     const l = lineas[i].trim();
     if (/^#{1,6}\s/.test(l)) break;
-    if (l && !LINEA_HITO.test(l)) return false;
+    if (l && !formato.test(l)) return false;
   }
   return true;
 }
@@ -26,7 +28,7 @@ export const versionDe = (d: Pick<Documento, 'hitos' | 'actividades'>): number =
  * Formato del archivo:
  *   - Proyecto: ...    - Meta inicio: AAAA-MM-DD    - Meta fin: AAAA-MM-DD
  *   - En edición: Nombre | desde | último latido     (sólo mientras alguien edita)
- *   ## Hitos: - H1 | fecha | nombre | negocio; negocio | cumplido | descripción  (y columna "Hito" en la tabla, sólo si hay hitos)
+ *   ## Hitos: - H1 | fecha | nombre | negocio; negocio | cumplido | descripción  (y el color aparte, en ## Colores de hitos)  (y columna "Hito" en la tabla, sólo si hay hitos)
  *   | ID | Negocio | Actividad | Tamaño | Prioridad | Responsable | Inicio | Fin | Estado | Terminada | Etiquetas | Depende de | Repite |
  *   ## Etiquetas · ## Notas · ## Subtareas · ## Imágenes · ## Bitácora · (otras ## se conservan)
  */
@@ -36,7 +38,8 @@ export function parseMD(txt: string): Documento {
   const coloresEtq: Record<string, ColorEtiqueta> = {}, imagenes: Documento['imagenes'] = [];
   const subsPorAct: Record<number, { t: string; ok: boolean }[]> = {};
   let candado: Documento['candado'] = null, cols: string[] | null = null;
-  let enNotas = false, enBit = false, enEtq = false, enImg = false, enSub = false, enHitos = false, enOtra = false;
+  let enNotas = false, enBit = false, enEtq = false, enImg = false, enSub = false, enHitos = false, enColores = false, enOtra = false;
+  const coloresHito: Record<number, ColorEtiqueta> = {};
   const hitos: Documento['hitos'] = [], lineas = txt.split(/\r?\n/);
 
   for (let num = 0; num < lineas.length; num++) {
@@ -45,12 +48,18 @@ export function parseMD(txt: string): Documento {
       const t = normaliza(l);
       enNotas = /^##\s+notas\b/.test(t); enBit = /^##\s+bitacora\b/.test(t); enEtq = /^##\s+etiquetas\s*$/.test(t);
       enImg = /^##\s+imagenes\s*$/.test(t); enSub = /^##\s+subtareas\s*$/.test(t);
-      enHitos = /^##\s+hitos\s*$/.test(t) && esSeccionHitos(lineas, num + 1);
-      enOtra = /^##\s/.test(l) && !enNotas && !enBit && !enEtq && !enImg && !enSub && !enHitos;
+      enHitos = /^##\s+hitos\s*$/.test(t) && esSeccionDe(LINEA_HITO, lineas, num + 1);
+      enColores = /^##\s+colores de hitos\s*$/.test(t) && esSeccionDe(LINEA_COLOR_HITO, lineas, num + 1);
+      enOtra = /^##\s/.test(l) && !enNotas && !enBit && !enEtq && !enImg && !enSub && !enHitos && !enColores;
       if (enOtra) extra.push(linea.replace(/\s+$/, ''));
       continue;
     }
     if (enOtra) { extra.push(linea.replace(/\s+$/, '')); continue; }
+    if (enColores) {
+      const mc = l.match(LINEA_COLOR_HITO);
+      if (mc && (COLORES_ETQ as Record<string, string>)[normaliza(mc[2])]) coloresHito[+mc[1]] = normaliza(mc[2]) as ColorEtiqueta;
+      continue;
+    }
     if (enHitos) {
       const mh = l.match(LINEA_HITO);
       if (mh) hitos.push({ id: +mh[1], fecha: mh[2] || '', nombre: mh[3], negocios: mh[4].split(';').map(s => s.trim()).filter(Boolean), cumplido: mh[5] || '',
@@ -121,6 +130,7 @@ export function parseMD(txt: string): Documento {
       ...(/^H\d+$/i.test(g('hito')) ? { hito: +g('hito').slice(1) } : {}),
     });
   }
+  hitos.forEach(h => { if (coloresHito[h.id]) h.color = coloresHito[h.id]; });
   acts.forEach(a => { if (subsPorAct[a.id]) a.subtareas = subsPorAct[a.id]; });
   let max = Math.max(0, ...acts.map(a => a.id));
   acts.forEach(a => { if (!a.id) a.id = ++max; });
@@ -140,6 +150,9 @@ export function toMD(doc: Documento, version: { num: number; txt: string } = { n
     md += `| ${a.id} | ${limpia(a.negocio)} | ${limpia(a.actividad)} | ${a.tamano || ''} | ${a.prioridad || ''} | ${limpia(a.responsable)} | ${a.inicio || ''} | ${a.fin || ''} | ${EST(a)} | ${a.terminada || ''} | ${limpia(etqs(a).join(', '))} | ${txtDeps(actividades, a)} | ${(a.repite && REPITE[a.repite]) || ''} |${conHitos ? ` ${a.hito ? 'H' + a.hito : ''} |` : ''}\n`;
   if (hitos.length) md += '\n## Hitos\n\n' + [...hitos].sort((a, b) => a.id - b.id)
     .map(h => `- H${h.id} | ${h.fecha} | ${limpia(h.nombre)} | ${limpia(h.negocios.join('; '))}${h.cumplido || h.descripcion ? ` | ${h.cumplido}` : ''}${h.descripcion ? ` | ${limpia(h.descripcion)}` : ''}`).join('\n') + '\n';
+  const conColor = [...hitos].sort((a, b) => a.id - b.id).filter(h => h.color);
+  // En una sección aparte: las versiones que no conocen el color la conservan tal cual
+  if (conColor.length) md += '\n## Colores de hitos\n\n' + conColor.map(h => `- H${h.id} | ${h.color}`).join('\n') + '\n';
   const todas = todasEtq(actividades), usadas = new Set(todas.map(normaliza));
   const colores = Object.entries(coloresEtq).filter(([k]) => usadas.has(k));
   if (colores.length) md += '\n## Etiquetas\n\n' + colores.map(([k, c]) => `- ${limpia(todas.find(t => normaliza(t) === k) || k)} | ${c}`).join('\n') + '\n';

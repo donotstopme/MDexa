@@ -38,8 +38,12 @@ export interface Almacenamiento {
   /** Libera las URL creadas (al abrir otro archivo) */
   liberarImagenes(): void;
 
-  /** (Escritorio) Reabre el último archivo al iniciar */
+  /** Reabre el último archivo al iniciar (en el navegador, sólo si aún tiene permiso para leerlo) */
   reabrirUltimo?(): Promise<ArchivoAbierto | null>;
+  /** (Navegador) Nombre del último archivo, cuando hace falta un clic para volver a abrirlo */
+  pendiente?(): Promise<string | null>;
+  /** (Navegador) Pide permiso y abre el último archivo; debe llamarse desde un clic */
+  abrirPendiente?(): Promise<ArchivoAbierto | null>;
   /** (Escritorio) Avisa cuando el archivo cambió en disco; devuelve la función para dejar de escuchar */
   alCambiar?(cb: () => void): () => void;
 }
