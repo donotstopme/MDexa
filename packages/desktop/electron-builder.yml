@@ -21,6 +21,7 @@ mac:
     - { target: dmg, arch: [x64, arm64] }
     - { target: zip, arch: [x64, arm64] }
 win:
+  icon: build/icon.png
   target:
     - { target: nsis, arch: [x64] }
     - { target: portable, arch: [x64] }
@@ -30,6 +31,7 @@ nsis:
   perMachine: false
   allowToChangeInstallationDirectory: true
 linux:
+  icon: build/icon.png   # sin esto toma el de macOS, que lleva margen
   executableName: mdexa
   category: Office
   target: [AppImage, deb]
