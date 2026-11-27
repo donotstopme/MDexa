@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import {
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { datosCopia, loteDuplicar,
   ESTADOS, SIN_NEGOCIO, toMD, carpetaImagenes, datosAvance, agregarNota, analizarMeta, armarBloques, backlogOculto, claveNota, conColorEtiqueta, conEstado, conMeta, conSubtareas, estadoEscritura, mencionesEn,
   gruposDe, NOMBRE_APP, nombreEnConfig, ponerNombreApp, hitosVisibles, moverHito, borrarEtiqueta, crearSprint, documentoNuevo, normaliza, renombrarEtiqueta, renombrarNegocio, type OpcionesSprint,
   aplicarImportacion, bloqueadasAlMover, exportarCsv, loteEliminar, loteEstado, loteFechas, loteNegocio, lotePrioridad, loteResponsable, loteTamano, rangoSeleccion, type Estado, type Prioridad, type Tamano, type FilaImp, type Mapa,
@@ -27,7 +27,7 @@ import { DialogoHitos } from './componentes/DialogoHitos';
 import { FormHito } from './componentes/FormHito';
 import { DialogoExportar } from './componentes/DialogoExportar';
 import { DialogoImportar } from './componentes/DialogoImportar';
-import { DialogoMasivo, type CambioMasivo, type TipoMasivo } from './componentes/DialogoMasivo';
+import { MenuMasivo, type CambioMasivo, type TipoMasivo } from './componentes/MenuMasivo';
 import { BarraPresentacion } from './componentes/BarraPresentacion';
 import { DialogoAtajos } from './componentes/DialogoAtajos';
 import { DialogoIcs } from './componentes/DialogoIcs';
@@ -75,8 +75,9 @@ export function App() {
   const [bitAct, setBitAct] = useState<number | null>(null);
   const [seleccion, setSeleccion] = useState<Set<number>>(new Set());
   const ultimoSel = useRef<number | null>(null);
-  const [masivo, setMasivo] = useState<TipoMasivo | null>(null);
+  const [masivo, setMasivo] = useState<{ tipo: TipoMasivo; ancla: HTMLElement } | null>(null);
   const [etqMasivo, setEtqMasivo] = useState<HTMLElement | null>(null);
+  const cerrarMenu = useCallback(() => setMasivo(null), []);
   const [notasId, setNotasId] = useState<number | null>(null);
   const [imgId, setImgId] = useState<number | null>(null);
   const [subs, setSubs] = useState<{ id: number; ancla: HTMLElement } | null>(null);
@@ -159,6 +160,12 @@ export function App() {
     const unico = ui.filtros.neg.length === 1 ? ui.filtros.neg[0] : '';
     setForm({ id, preset: id ? undefined : { negocio: unico && unico !== SIN_NEGOCIO ? unico : '', ...preset } });
   };
+  /** Abre «Nueva actividad» ya llena con los datos de otra; nada se crea hasta guardar */
+  const duplicar = (id: number) => {
+    const a = doc?.actividades.find(x => x.id === id);
+    if (!a || !doc || !editando) return;
+    setForm({ id: null, preset: { copia: { ...datosCopia(doc, a), de: a.id, negocioOrigen: a.negocio, nombreOrigen: a.actividad } } });
+  };
   const eliminar = (id: number) => {
     const a = doc?.actividades.find(x => x.id === id);
     if (!a || !window.confirm(`¿Eliminar "${a.actividad.split('\n')[0]}"?\n\nSi ya no se va a hacer, considera marcarla como "Cancelado" para que quede en el reporte.`)) return;
@@ -168,7 +175,7 @@ export function App() {
   const escritura = estadoEscritura({ hayArchivo: !!doc, masNuevo: e.masNuevo, modo, puedeEscribir: e.puedeEscribir, candado: doc?.candado ?? null, usuario: e.usuario, versionTxt: doc?.meta.versionTxt });
 
   // Selección múltiple (sólo con el archivo tomado); se limpia al soltar y se poda si las actividades desaparecen
-  useEffect(() => { if (!editando) { setSeleccion(s => (s.size ? new Set() : s)); setEtqMasivo(null); } }, [editando]);
+  useEffect(() => { if (!editando) { setSeleccion(s => (s.size ? new Set() : s)); setEtqMasivo(null); setMasivo(null); } }, [editando]);
   useEffect(() => { if (doc) setSeleccion(s => { const ids = new Set(doc.actividades.map(a => a.id)), n = new Set([...s].filter(i => ids.has(i))); return n.size === s.size ? s : n; }); }, [doc]);
   useEffect(() => {
     const esc = (ev: KeyboardEvent) => { if (ev.key === 'Escape' && !document.querySelector('dialog[open]')) setSeleccion(s => (s.size ? new Set() : s)); };
@@ -198,16 +205,14 @@ export function App() {
     const n = seleccion.size; if (!n) return;
     sesion.editar(fn); sesion.avisar(`${desc} · ${n} ${n === 1 ? 'actividad' : 'actividades'}`);
   };
+  const cambiarEstado = (est: Estado) => {
+    const bl = doc ? bloqueadasAlMover(doc, seleccion, est) : [];
+    if (bl.length && !window.confirm(`${bl.length} de las actividades elegidas ${bl.length === 1 ? 'depende' : 'dependen'} de otras que aún no terminan:\n\n${bl.slice(0, 8).map(a => `• #${a.id} ${nomCorto(a)} (espera a ${pendientesAlMover(doc!.actividades, a, est).map(d => '#' + d.id).join(', ')})`).join('\n')}${bl.length > 8 ? `\n… y ${bl.length - 8} más` : ''}\n\n¿Pasarlas a ${est} de todos modos?`)) return;
+    lote(d => loteEstado(d, seleccion, est), `Estado: ${est}`);
+  };
   const masivas = {
-    estado: (est: Estado) => {
-      const bl = doc ? bloqueadasAlMover(doc, seleccion, est) : [];
-      if (bl.length && !window.confirm(`${bl.length} de las actividades elegidas ${bl.length === 1 ? 'depende' : 'dependen'} de otras que aún no terminan:\n\n${bl.slice(0, 8).map(a => `• #${a.id} ${nomCorto(a)} (espera a ${pendientesAlMover(doc!.actividades, a, est).map(d => '#' + d.id).join(', ')})`).join('\n')}${bl.length > 8 ? `\n… y ${bl.length - 8} más` : ''}\n\n¿Pasarlas a ${est} de todos modos?`)) return;
-      lote(d => loteEstado(d, seleccion, est), `Estado: ${est}`);
-    },
-    tamano: (t: Tamano | '') => lote(d => loteTamano(d, seleccion, t), t ? `Tamaño: ${t}` : 'Sin tamaño'),
-    prioridad: (p: Prioridad | '') => lote(d => lotePrioridad(d, seleccion, p), p ? `Prioridad: ${p}` : 'Sin prioridad'),
-    etiquetas: (el: HTMLElement) => setEtqMasivo(x => (x ? null : el)),
-    cambio: (t: TipoMasivo) => setMasivo(t),
+    etiquetas: (el: HTMLElement) => { setMasivo(null); setEtqMasivo(x => (x ? null : el)); },
+    menu: (tipo: TipoMasivo, ancla: HTMLElement) => { setEtqMasivo(null); setMasivo(m => (m?.tipo === tipo ? null : { tipo, ancla })); },
     favoritas: () => { ui.alternarFavs([...seleccion]); const n = seleccion.size; sesion.avisar(`${[...seleccion].every(i => ui.favs.has(i)) ? 'Quitadas de' : 'Agregadas a'} tus favoritas · ${n} ${n === 1 ? 'actividad' : 'actividades'}`); },
     eliminar: () => {
       if (!doc || !seleccion.size) return;
@@ -220,7 +225,16 @@ export function App() {
   };
   const aplicarMasivo = (c: CambioMasivo) => {
     setMasivo(null);
-    if (c.tipo === 'responsable') lote(d => loteResponsable(d, seleccion, c.valor), c.valor ? `Responsable: ${c.valor}` : 'Sin responsable');
+    if (c.tipo === 'duplicar') {
+      if (!doc) return;
+      const r = loteDuplicar(doc, seleccion, c.opciones), k = r.nuevas.length;
+      sesion.editar(d => loteDuplicar(d, seleccion, c.opciones).doc);
+      (c.opciones.negocios ?? []).forEach(n => ui.abrirGrupo(n)); setSeleccion(new Set(r.nuevas));
+      sesion.avisar(`${k} ${k === 1 ? 'copia creada' : 'copias creadas'}`);
+    } else if (c.tipo === 'estado') cambiarEstado(c.valor);
+    else if (c.tipo === 'tamano') lote(d => loteTamano(d, seleccion, c.valor), c.valor ? `Tamaño: ${c.valor}` : 'Sin tamaño');
+    else if (c.tipo === 'prioridad') lote(d => lotePrioridad(d, seleccion, c.valor), c.valor ? `Prioridad: ${c.valor}` : 'Sin prioridad');
+    else if (c.tipo === 'responsable') lote(d => loteResponsable(d, seleccion, c.valor), c.valor ? `Responsable: ${c.valor}` : 'Sin responsable');
     else if (c.tipo === 'negocio') { lote(d => loteNegocio(d, seleccion, c.valor), `Negocio: ${c.valor}`); ui.abrirGrupo(c.valor); }
     else lote(d => loteFechas(d, seleccion, c.cambio), c.cambio.op === 'mover' ? `Fechas movidas ${c.cambio.dias > 0 ? '+' : ''}${c.cambio.dias} días` : c.cambio.op === 'quitar' ? 'Fechas quitadas' : c.cambio.op === 'ini' ? `Inicio: ${c.cambio.fecha}` : `Fin: ${c.cambio.fecha}`);
   };
@@ -299,7 +313,7 @@ export function App() {
         if (ev.key === '+' || ev.key === '=') { ev.preventDefault(); zoomPres(0.1); return; }
         if (ev.key === '-') { ev.preventDefault(); zoomPres(-0.1); return; }
       }
-      if (hayDialogo || subs || etq) return;
+      if (hayDialogo || subs || etq || document.querySelector('.ms-pop')) return;
       const k = ev.key.toLowerCase();
       if (ev.key === '/') { ev.preventDefault(); const i = document.querySelector<HTMLInputElement>('.filtros .buscar input'); i?.focus(); i?.select(); }
       else if (k === 'f') { ev.preventDefault(); if (document.fullscreenElement) void document.exitFullscreen().catch(() => {}); else void document.documentElement.requestFullscreen?.().catch(() => {}); }
@@ -402,22 +416,22 @@ export function App() {
         fecha={(() => { const f = new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }); return f.charAt(0).toUpperCase() + f.slice(1) + ' · ' + new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }); })()}
         negocio={ui.filtros.neg.length > 1 ? `${ui.filtros.neg.length} negocios` : ui.filtros.neg.length === 1 ? `${ui.filtros.neg[0]} · ${negociosPres.indexOf(ui.filtros.neg[0])} de ${negociosPres.length - 1}` : 'Todos los negocios'}
         onNegocio={pasarNegocio} onZoom={zoomPres} onSalir={salirPres} />}
-      <Cabecera logo={marca.logo} titulo={doc?.meta.proyecto || (e.nombre ? e.nombre.replace(/\.md$/i, '') : 'Sin proyecto abierto')} archivo={e.nombre} hayArchivo={!!doc} usuario={e.usuario}
+      <Cabecera estado={<Banner hayArchivo={!!doc} modo={modo} masNuevo={e.masNuevo} versionArchivo={doc?.meta.versionTxt || String(doc?.meta.version ?? '')} puedeEscribir={e.puedeEscribir}
+        candado={doc?.candado ?? null} usuario={e.usuario} guardado={e.guardado} puedeDeshacer={e.puedeDeshacer} puedeRehacer={e.puedeRehacer}
+        onTomar={() => sesion.tomar()} onSoltar={() => sesion.soltar()} onLiberar={() => sesion.liberar()} onDeshacer={() => sesion.deshacer()} onRehacer={() => sesion.rehacer()} onAbrir={() => sesion.abrir()} onManual={() => setDlg('manual')} pendiente={e.pendiente} onAbrirPendiente={() => void sesion.abrirPendiente()} />}
+        logo={marca.logo} titulo={doc?.meta.proyecto || (e.nombre ? e.nombre.replace(/\.md$/i, '') : 'Sin proyecto abierto')} archivo={e.nombre} hayArchivo={!!doc} usuario={e.usuario}
         novedades={e.novedades.total} menciones={e.novedades.menciones.length} tema={ui.tema}
         onAbrir={() => sesion.abrir()} onRefrescar={() => sesion.refrescar()} onNovedades={() => setDlg(dlg === 'novedades' ? null : 'novedades')} onBitacora={() => { setBitAct(null); setDlg('bitacora'); }} onHitos={() => setDlg('hitos')} onManual={() => setDlg('manual')}
         onReporte={async () => { if (modo === 'lectura') await sesion.refrescar({ silencioso: true }); setDlg('reporte'); }}
         onTema={ui.setTema} onUsuario={() => sesion.cambiarUsuario()}
         extras={[{ titulo: 'Nuevo .md', desc: 'Archivo vacío para un proyecto nuevo', onClick: () => setFormMeta('nuevo') }, ...(doc ? [{ titulo: 'Nuevo sprint', desc: 'Copia actividades elegidas a un archivo nuevo', onClick: () => setDlg('sprint') }, { titulo: 'Importar desde Excel o CSV', desc: 'Carga actividades de un archivo o pegadas de Excel', onClick: () => setDlg('importar') }, { titulo: 'Exportar a CSV', desc: 'Las actividades en un archivo para Excel', onClick: () => setDlg('exportar') }, { titulo: 'Reporte semanal', desc: 'Resumen de la semana listo para un correo', onClick: () => setDlg('semanal') }, { titulo: 'Exportar al calendario (.ics)', desc: 'Fechas fin para Outlook, Google o Apple', onClick: () => setDlg('ics') }, { titulo: 'Renombrar negocio', desc: 'Cambia el nombre en todas sus actividades', onClick: () => abrirRenombrar() }, { titulo: 'Administrar etiquetas', desc: 'Renombrar, recolorear o borrar etiquetas', onClick: () => setDlg('etqadmin') }, { titulo: 'Respaldos', desc: 'Ver o restaurar versiones anteriores', onClick: () => setDlg('respaldos') }, { titulo: 'Descargar copia .md', desc: 'Guarda la versión actual en tu computadora', onClick: () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([toMD(doc)], { type: 'text/markdown' })); a.download = e.nombre || 'actividades.md'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); } }] : []), { titulo: 'Atajos de teclado', desc: 'Tecla ? en cualquier momento', onClick: () => setDlg('atajos') }]} />
-      <Banner hayArchivo={!!doc} modo={modo} masNuevo={e.masNuevo} versionArchivo={doc?.meta.versionTxt || String(doc?.meta.version ?? '')} puedeEscribir={e.puedeEscribir}
-        candado={doc?.candado ?? null} usuario={e.usuario} guardado={e.guardado} puedeDeshacer={e.puedeDeshacer} puedeRehacer={e.puedeRehacer}
-        onTomar={() => sesion.tomar()} onSoltar={() => sesion.soltar()} onLiberar={() => sesion.liberar()} onDeshacer={() => sesion.deshacer()} onRehacer={() => sesion.rehacer()} onAbrir={() => sesion.abrir()} onManual={() => setDlg('manual')} pendiente={e.pendiente} onAbrirPendiente={() => void sesion.abrirPendiente()} />
       {e.error && <div className="banner otro" role="alert"><span className="b-ico" /><div>{e.error}</div></div>}
 
       <div className={`layout ${doc ? (ui.compacto ? 'compacto' : '') : 'sin-lateral'}`}>
         {doc && <PanelNegocios stats={stats} total={doc.actividades.length} compacto={ui.compacto} onCompacto={ui.setCompacto} activo={activoPanel} filtra={filtraPanel}
           onElegir={elegirNegocio} favs={ui.favs.size && ui.vista !== 'mias' ? { n: ui.favs.size, visible: lista.some(a => ui.favs.has(a.id)) } : null} />}
         <main>
-          {doc && analisis && <TarjetaMeta doc={doc} a={analisis} editando={editando} onEditar={() => setFormMeta('editar')} verAvance={ui.verAvance} onVerAvance={ui.setVerAvance}
+          {doc && analisis && <TarjetaMeta compacta={ui.metaCompacta} onCompacta={ui.setMetaCompacta} doc={doc} a={analisis} editando={editando} onEditar={() => setFormMeta('editar')} verAvance={ui.verAvance} onVerAvance={ui.setVerAvance}
           unidad={ui.unidadAvance} onUnidad={ui.setUnidadAvance} avance={datosAvance(doc, ui.unidadAvance, hoy)} hoy={hoy} onHito={abrirHito} onHitos={() => setDlg('hitos')} onNuevoHito={() => setFormHito({ id: null })} />}
           <div className="card">
             {doc ? (
@@ -425,7 +439,7 @@ export function App() {
                 <BarraFiltros doc={doc} ui={ui} personas={personas} persona={ui.persona || e.usuario} editando={editando} nBacklog={nBacklog} onNueva={() => abrirForm(null)} onPresentar={entrarPres} />
                 {ui.vista === 'lista' && <Lista sel={sel} renombrar={editando && porNegocio ? abrirRenombrar : undefined} doc={doc} bloques={bloques} texto={ui.filtros.texto} edicion={ed} novIds={novIds} orden={ui.orden} onOrden={ui.setOrden}
                   colsOcultas={ui.colsOcultas} agrupaPorNegocio={porNegocio} hayAgrupacion={!!ui.agrupar} colapsados={ui.colapsados} onGrupo={ui.alternarGrupo}
-                  favs={ui.favs} onFav={ui.alternarFav} acc={acc} onEditar={id => abrirForm(id)} onEliminar={eliminar}
+                  favs={ui.favs} onFav={ui.alternarFav} acc={acc} onEditar={id => abrirForm(id)} onDuplicar={duplicar} onEliminar={eliminar}
                   onFiltrarEtq={t => ui.setFiltros({ etq: [t] })} msgVacio={msgVacio} />}
                 {ui.vista === 'kanban' && <Tablero sel={sel} renombrar={editando && porNegocio ? abrirRenombrar : undefined} doc={doc} bloques={bloques} texto={ui.filtros.texto} agrupar={ui.agrupar} ocultaBacklog={backlogOculto(ui.filtros)} edicion={ed} novIds={novIds}
                   colapsados={ui.colapsados} onGrupo={ui.alternarGrupo} favs={ui.favs} onFav={ui.alternarFav} acc={acc} onEditar={id => abrirForm(id)} aviso={m => sesion.avisar(m)}
@@ -467,8 +481,8 @@ export function App() {
       {dlg === 'atajos' && <DialogoAtajos onCerrar={() => setDlg(null)} />}
       {doc && dlg === 'importar' && <DialogoImportar doc={doc} editando={editando} onImportar={(f, m) => void importar(f, m)} onCerrar={() => setDlg(null)} />}
       {doc && dlg === 'exportar' && <DialogoExportar total={doc.actividades.length} visibles={lista.length} onExportar={exportar} onCerrar={() => setDlg(null)} />}
-      {doc && editando && <BarraMasiva n={seleccion.size} todasFav={seleccion.size > 0 && [...seleccion].every(i => ui.favs.has(i))} hayMasVisibles={ordenVisible.some(i => !seleccion.has(i))} acc={masivas} />}
-      {doc && masivo && seleccion.size > 0 && <DialogoMasivo doc={doc} tipo={masivo} n={seleccion.size} onAplicar={aplicarMasivo} onCerrar={() => setMasivo(null)} />}
+      {doc && editando && <BarraMasiva n={seleccion.size} todasFav={seleccion.size > 0 && [...seleccion].every(i => ui.favs.has(i))} nVisibles={ordenVisible.length} hayMasVisibles={ordenVisible.some(i => !seleccion.has(i))} abierto={masivo?.tipo} acc={masivas} />}
+      {doc && masivo && editando && seleccion.size > 0 && <MenuMasivo key={masivo.tipo} doc={doc} ids={seleccion} tipo={masivo.tipo} ancla={masivo.ancla} onAplicar={aplicarMasivo} onCerrar={cerrarMenu} />}
       {doc && etqMasivo && editando && seleccion.size > 0 && <PopEtiquetas onAdministrar={() => setDlg('etqadmin')} doc={doc} ids={[...seleccion]} ancla={etqMasivo} onPoner={(t, poner) => sesion.editar(d => ponerEtiqueta(d, [...seleccion], t, poner))}
         onColor={(t, c) => sesion.editar(d => conColorEtiqueta(d, t, c))} onCerrar={() => setEtqMasivo(null)} />}
       {doc && dlg === 'respaldos' && <DialogoRespaldos sesion={sesion} nombre={e.nombre} onCerrar={() => setDlg(null)} />}
@@ -476,7 +490,7 @@ export function App() {
         onTerminar={() => void terminarDesdeSubs(subs.id)} onCerrar={() => setSubs(null)} />}
       {doc && etq && editando && <PopEtiquetas onAdministrar={() => setDlg('etqadmin')} doc={doc} ids={[etq.id]} ancla={etq.ancla} onPoner={(t, poner) => sesion.editar(d => ponerEtiqueta(d, [etq.id], t, poner))}
         onColor={(t, c) => sesion.editar(d => conColorEtiqueta(d, t, c))} onCerrar={() => setEtq(null)} />}
-      {doc && form && <FormActividad key={form.id ?? 'nueva'} doc={doc} id={form.id} preset={form.preset} nNotas={form.id ? doc.notas.filter(n => n.act === form.id).length : 0}
+      {doc && form && <FormActividad key={form.id ?? (form.preset?.copia ? `copia-${form.preset.copia.de}` : 'nueva')} onDuplicar={duplicar} doc={doc} id={form.id} preset={form.preset} nNotas={form.id ? doc.notas.filter(n => n.act === form.id).length : 0}
         onCerrar={() => setForm(null)} onGuardar={fn => sesion.editar(fn)} onEliminar={eliminar} onNotas={id => { setForm(null); acc.notas(id); }} onImagenes={id => { setForm(null); acc.imgs(id); }} nImgs={form.id ? doc.imagenes.filter(x => x.act === form.id).length : 0} onHistorial={id => { setForm(null); setBitAct(id); setDlg('bitacora'); }} />}
       {formMeta === 'editar' && doc && <FormMeta meta={doc.meta} onCerrar={() => setFormMeta(null)} onGuardar={r => sesion.editar(d => conMeta(d, r, e.usuario))} />}
       {formMeta === 'nuevo' && <FormMeta meta={{ proyecto: '', inicio: hoy, fin: '' }} onCerrar={() => setFormMeta(null)} onGuardar={r => void sesion.nuevoArchivo(documentoNuevo(r), 'actividades.md')} />}
@@ -484,7 +498,7 @@ export function App() {
       {doc && dlg === 'etqadmin' && <DialogoEtiquetasAdmin doc={doc} editando={editando} onRenombrar={renombrarEtq} onColor={(t, c) => sesion.editar(d => conColorEtiqueta(d, t, c))} onBorrar={borrarEtq} onCerrar={() => setDlg(null)} />}
       {doc && dlg === 'sprint' && <DialogoSprint doc={doc} archivo={e.nombre} hoy={hoy} onCrear={o => void crearSprintDe(o)} onCerrar={() => setDlg(null)} />}
       {pideUsuario && <DialogoUsuario inicial={e.usuario} onListo={n => { pideUsuario.resolver(n); setPideUsuario(null); }} />}
-      {toast && <div className="toast" role="status">{toast}</div>}
+      {toast && <div id="toast" className="ver" role="status">{toast}</div>}
     </div>
   );
 }

@@ -9,49 +9,63 @@ export interface Props {
   pendiente?: string; onAbrirPendiente?(): void;
 }
 
-/** Aviso de estado del archivo: quién lo edita y qué puedes hacer (mismos textos del original) */
+/**
+ * Estado del archivo, dentro de la barra superior: quién lo edita, desde cuándo y qué puedes hacer.
+ * La clase (libre, mio, otro, solo) da el color a toda la cabecera; la explicación larga sale al pasar el cursor.
+ */
 export function Banner(p: Props) {
-  let cls = '', icono = 'ojo', cuerpo: React.ReactNode, acciones: React.ReactNode = null;
+  let cls = 'libre', icono = 'ojo', titulo: React.ReactNode, detalle: React.ReactNode = null, ayuda = '', acciones: React.ReactNode = null;
   const c = p.candado, mio = !!c && c.usuario === p.usuario;
   if (!p.hayArchivo && p.pendiente) {
-    cls = 'libre'; icono = 'carpeta';
-    cuerpo = <div>Último archivo consultado: <b>{p.pendiente}</b><div className="det">El navegador pide confirmar el permiso para volver a leerlo.</div></div>;
-    acciones = <div className="barra"><button onClick={p.onAbrir}>Abrir otro…</button><button className="prim" onClick={p.onAbrirPendiente}><Ico n="carpeta" /> Abrir {p.pendiente}</button></div>;
+    icono = 'carpeta';
+    titulo = <>Último consultado: <b>{p.pendiente}</b></>; detalle = 'Confirma el permiso para volver a leerlo';
+    ayuda = 'El navegador pide confirmar el permiso para volver a leerlo.';
+    acciones = <button className="prim" title={`Abrir ${p.pendiente}`} onClick={p.onAbrirPendiente}><Ico n="carpeta" /> Reabrir</button>;
   } else if (!p.hayArchivo) {
     icono = 'carpeta';
-    cuerpo = <div>Abre el <b>.md</b> compartido o crea uno nuevo para empezar. <span className="det">¿Primera vez? Consulta el <a href="#" onClick={e => { e.preventDefault(); p.onManual?.(); }}>manual de uso</a>.</span></div>;
-    acciones = <div className="barra"><button className="prim" onClick={p.onAbrir}><Ico n="carpeta" /> Abrir .md</button></div>;
+    titulo = <>Abre o crea un <b>.md</b> para empezar</>;
+    detalle = <>¿Primera vez? Consulta el <a href="#" onClick={e => { e.preventDefault(); p.onManual?.(); }}>manual de uso</a></>;
   } else if (p.masNuevo) {
-    cls = 'otro'; icono = 'alerta';
-    cuerpo = <div><b>Solo lectura: el archivo es de una versión más nueva de MDexa.</b> Lo guardó la v{p.versionArchivo} y tú tienes la v{VERSION_TXT}.
-      <div className="det">Para no borrar información que esta versión no conoce, no se permite editar, comentar ni restaurar.</div></div>;
+    cls = 'solo'; icono = 'alerta';
+    titulo = <b>Solo lectura: versión más nueva</b>; detalle = `Archivo v${p.versionArchivo} · tienes la v${VERSION_TXT}`;
+    ayuda = 'El archivo es de una versión más nueva de MDexa. Para no borrar información que esta versión no conoce, no se permite editar, comentar ni restaurar.';
   } else if (!p.puedeEscribir) {
-    cls = 'libre';
-    cuerpo = <div>Solo lectura.<div className="det">Este navegador no puede bloquear ni escribir el archivo compartido; usa Chrome o Edge para trabajo en equipo.</div></div>;
+    cls = 'solo';
+    titulo = <b>Solo lectura</b>; detalle = 'Usa Chrome o Edge para editar';
+    ayuda = 'Este navegador no puede bloquear ni escribir el archivo compartido; usa Chrome o Edge para trabajo en equipo.';
   } else if (p.modo === 'edicion') {
     cls = 'mio'; icono = 'lapiz';
-    cuerpo = <div><b>Estás editando.</b> Nadie más puede editar hasta que sueltes el archivo. Cada cambio se guarda al momento.
-      <div className="det">{p.guardado ? 'Último guardado: ' + p.guardado.toLocaleTimeString('es-MX') : ''}</div></div>;
-    acciones = <div className="barra">
+    titulo = <b>Estás editando</b>; detalle = p.guardado ? 'Guardado ' + p.guardado.toLocaleTimeString('es-MX') : 'Cada cambio se guarda al momento';
+    ayuda = 'Nadie más puede editar hasta que sueltes el archivo. Cada cambio se guarda al momento.';
+    acciones = <>
       <button className="ico-btn" disabled={!p.puedeDeshacer} onClick={p.onDeshacer} title={p.puedeDeshacer ? `Deshacer ${p.textoDeshacer ?? ''} (Ctrl+Z)` : 'Nada que deshacer'} aria-label="Deshacer"><Ico n="deshacer" /></button>
       <button className="ico-btn" disabled={!p.puedeRehacer} onClick={p.onRehacer} title={p.puedeRehacer ? 'Rehacer (Ctrl+Y)' : 'Nada que rehacer'} aria-label="Rehacer"><Ico n="rehacer" /></button>
-      <button className="prim" onClick={p.onSoltar}><Ico n="abierto" /> Soltar archivo</button></div>;
+      <button className="prim" onClick={p.onSoltar}><Ico n="abierto" /> Soltar archivo</button></>;
   } else if (c && mio) {
     cls = 'mio'; icono = 'lapiz';
-    cuerpo = <div>El archivo sigue tomado a tu nombre desde {fmtHora(c.desde)}.<div className="det">Probablemente recargaste la página mientras editabas.</div></div>;
-    acciones = <div className="barra"><button onClick={p.onLiberar}><Ico n="abierto" /> Soltar archivo</button><button className="prim" onClick={p.onTomar}><Ico n="lapiz" /> Continuar editando</button></div>;
+    titulo = <b>Tomado a tu nombre</b>; detalle = `Desde ${fmtHora(c.desde)}`;
+    ayuda = 'El archivo sigue tomado a tu nombre. Probablemente recargaste la página mientras editabas.';
+    acciones = <><button onClick={p.onLiberar}><Ico n="abierto" /> Soltar</button><button className="prim" onClick={p.onTomar}><Ico n="lapiz" /> Continuar editando</button></>;
   } else if (c && candadoVigente(c)) {
     cls = 'otro'; icono = 'candado';
-    cuerpo = <div><b>{c.usuario}</b> está editando desde {fmtHora(c.desde)} (activo {hace(c.latido)}). Puedes ver, pero no editar.<div className="det">La vista se actualiza sola cada 15 segundos.</div></div>;
-    acciones = <div className="barra"><button disabled><Ico n="candado" /> Tomar para editar</button></div>;
+    titulo = <><b>{c.usuario}</b> está editando</>; detalle = `Desde ${fmtHora(c.desde)} · activo ${hace(c.latido)}`;
+    ayuda = 'Puedes ver, pero no editar. La vista se actualiza sola cada 15 segundos.';
+    acciones = <button disabled><Ico n="candado" /> Tomar para editar</button>;
   } else if (c) {
     cls = 'otro'; icono = 'alerta';
-    cuerpo = <div><b>{c.usuario}</b> tomó el archivo pero no tiene actividad desde {fmtHora(c.latido)}. Probablemente cerró sin soltarlo.</div>;
-    acciones = <div className="barra"><button className="prim" onClick={p.onTomar}><Ico n="lapiz" /> Tomar de todos modos</button></div>;
+    titulo = <><b>{c.usuario}</b> tomó el archivo</>; detalle = `Sin actividad desde ${fmtHora(c.latido)}`;
+    ayuda = 'No tiene actividad: probablemente cerró sin soltarlo.';
+    acciones = <button className="prim" onClick={p.onTomar}><Ico n="lapiz" /> Tomar de todos modos</button>;
   } else {
-    cls = 'libre';
-    cuerpo = <div>Solo lectura. Nadie está editando el archivo.<div className="det">La vista se actualiza sola cada 15 segundos.</div></div>;
-    acciones = <div className="barra"><button className="prim" onClick={p.onTomar}><Ico n="lapiz" /> Tomar para editar</button></div>;
+    titulo = <b>Libre para editar</b>; detalle = 'Nadie lo está editando';
+    ayuda = 'Solo lectura. La vista se actualiza sola cada 15 segundos.';
+    acciones = <button className="prim" onClick={p.onTomar}><Ico n="lapiz" /> Tomar para editar</button>;
   }
-  return <div id="banner" className={`banner ${cls}`}><span className="b-ico"><Ico n={icono} t={22} /></span>{cuerpo}{acciones}</div>;
+  return (
+    <div id="banner" className={`estado ${cls}`} role="status">
+      <span className="b-ico"><Ico n={icono} t={20} /></span>
+      <div className="est-txt" title={ayuda || undefined}><span>{titulo}</span>{detalle && <span className="det">{detalle}</span>}</div>
+      {acciones && <div className="est-acc">{acciones}</div>}
+    </div>
+  );
 }

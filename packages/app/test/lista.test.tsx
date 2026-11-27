@@ -67,11 +67,11 @@ describe('Cabecera de estado, panel y meta', () => {
   const baseBanner = { hayArchivo: true, modo: 'lectura' as const, masNuevo: false, versionArchivo: '', puedeEscribir: true, candado: null, usuario: 'Ana', guardado: null,
     puedeDeshacer: false, puedeRehacer: false, onTomar() {}, onSoltar() {}, onLiberar() {}, onDeshacer() {}, onRehacer() {}, onAbrir() {} };
   it('banner: libre, otra persona editando, editando', () => {
-    expect(renderToStaticMarkup(<Banner {...baseBanner} />)).toContain('Nadie está editando el archivo');
+    expect(renderToStaticMarkup(<Banner {...baseBanner} />)).toContain('Libre para editar');
     const ahora = new Date().toISOString();
-    expect(renderToStaticMarkup(<Banner {...baseBanner} candado={{ usuario: 'Luis', desde: ahora, latido: ahora }} />)).toContain('está editando desde');
+    expect(renderToStaticMarkup(<Banner {...baseBanner} candado={{ usuario: 'Luis', desde: ahora, latido: ahora }} />)).toContain('está editando');
     const e = renderToStaticMarkup(<Banner {...baseBanner} modo="edicion" />);
-    expect(e).toContain('Estás editando.'); expect(e).toContain('Soltar archivo');
+    expect(e).toContain('Estás editando'); expect(e).toContain('Soltar archivo');
   });
   it('panel de negocios con avance y vencidas, como el original', () => {
     const stats = statsNegocios(demo, demo.actividades, HOY);

@@ -40,6 +40,7 @@ export function useUI(archivo: string, proyecto: string) {
   const [zoom, setZoomS] = useState<'dia' | 'semana' | 'mes'>(() => { const z = leer('mdexa.zoom'); return z === 'dia' || z === 'mes' ? z : 'semana'; });
   const [persona, setPersonaS] = useState(() => leer('mdexa.persona') || '');
   const [verAvance, setVerAvanceS] = useState(() => leer('mdexa.verAvance') === '1');
+  const [metaCompacta, setMetaCompactaS] = useState(() => leer('mdexa.metaCompacta') === '1');
   const [unidadAvance, setUnidadAvanceS] = useState<'act' | 'h'>(() => (leer('mdexa.avanceUnidad') === 'h' ? 'h' : 'act'));
   const claveFavs = `mdexa.favoritas|${archivo}|${proyecto}`;
   const [favs, setFavs] = useState<Set<number>>(new Set());
@@ -66,6 +67,7 @@ export function useUI(archivo: string, proyecto: string) {
     setTema: (t: Tema) => { setTemaS(t); guardar('mdexa.tema', t === 'auto' ? null : t); },
     setZoom: (z: 'dia' | 'semana' | 'mes') => { setZoomS(z); guardar('mdexa.zoom', z); },
     setVerAvance: (v: boolean) => { setVerAvanceS(v); guardar('mdexa.verAvance', v ? '1' : '0'); },
+    setMetaCompacta: (v: boolean) => { setMetaCompactaS(v); guardar('mdexa.metaCompacta', v ? '1' : '0'); },
     setUnidadAvance: (u: 'act' | 'h') => { setUnidadAvanceS(u); guardar('mdexa.avanceUnidad', u); },
     setPersona: (p: string) => { setPersonaS(p); guardar('mdexa.persona', p); },
   }), []);
@@ -81,6 +83,6 @@ export function useUI(archivo: string, proyecto: string) {
     guardar(claveFavs, JSON.stringify([...n])); return n;
   }), [claveFavs]);
 
-  return { alternarFavs, vista, agrupar, filtros, orden, colapsados, colsOcultas, compacto, tema, zoom, persona, favs, alternarFav, verAvance, unidadAvance, ...act };
+  return { alternarFavs, vista, agrupar, filtros, orden, colapsados, colsOcultas, compacto, tema, zoom, persona, favs, alternarFav, verAvance, unidadAvance, metaCompacta, ...act };
 }
 export type UI = ReturnType<typeof useUI>;

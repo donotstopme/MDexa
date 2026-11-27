@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  absorberPropios, actividadesParaHito, analizarReporte, aplicarImportacion, carrilesHitos, claseHito, creaCicloHito, hitosDeSprint, misHitos, textoRecorrido, datosSemana, exportarCsv, filasImportar, generarICS, hitosIcs, hitosVisibles, mapaInicial, moverHito, parseCSV, proximosHitos, reporteMd, textoSemanal, aplicarSoltar, armarBloques, borrarHito, calcularNovedades, conHito, crearSprint, deshacer, filtrar, filtrosVacios, foto, guardarHito, historialVacio,
+  absorberPropios, actividadesParaHito, analizarReporte, aplicarImportacion, carrilesHitos, claseHito, cuandoEs, marcasMeta, plazoMeta, creaCicloHito, hitosDeSprint, misHitos, textoRecorrido, datosSemana, exportarCsv, filasImportar, generarICS, hitosIcs, hitosVisibles, mapaInicial, moverHito, parseCSV, proximosHitos, reporteMd, textoSemanal, aplicarSoltar, armarBloques, borrarHito, calcularNovedades, conHito, crearSprint, deshacer, filtrar, filtrosVacios, foto, guardarHito, historialVacio,
   infoHito, parseMD, porIncluir, quitarHitosAjenos, seleccionHito, registrarDeshacer, renombrarNegocio, restaurarRespaldo, toMD, type Documento,
 } from '../src';
 
@@ -252,5 +252,26 @@ describe('mis hitos', () => {
     const d = { ...doc(), actividades: doc().actividades.map(x => (x.id <= 2 ? { ...x, responsable: x.id === 1 ? 'Ana' : 'ana' } : x)) };
     expect(misHitos(d, 'Ana', '2026-10-01').map(x => [x.h.id, x.mias.length, x.pendientes.map(p => p.id)])).toEqual([[1, 2, [2]]]);
     expect(misHitos(d, 'Luis')).toEqual([]);
+  });
+});
+
+describe('meta compacta', () => {
+  it('dice cuánto falta o cuánto pasó', () => {
+    expect(['2026-11-27', '2026-11-28', '2026-11-26', '2026-12-02', '2026-11-25'].map(f => cuandoEs(f, '2026-11-27'))).toEqual(['hoy', 'mañana', 'ayer', 'en 5 días', 'hace 2 días']);
+    expect(plazoMeta('2026-10-01', '2026-12-15', '2026-11-27')).toBe('quedan 18 días');
+    expect(plazoMeta('2026-10-01', '2026-12-15', '2026-12-15')).toBe('termina hoy');
+    expect(plazoMeta('2026-10-01', '2026-12-15', '2026-09-30')).toBe('inicia mañana');
+    expect(plazoMeta('2026-10-01', '2026-12-15', '2026-12-17')).toBe('terminó hace 2 días');
+  });
+  it('coloca los hitos en la escala de la meta, agrupa los cercanos y marca los de fuera', () => {
+    const d = doc();
+    d.meta = { ...d.meta, inicio: '2026-10-01', fin: '2026-10-10' };
+    const h = (id: number, fecha: string) => ({ id, fecha, nombre: `H${id}`, negocios: ['Tienda'], cumplido: '', descripcion: '' });
+    d.hitos = [h(1, '2026-09-01'), h(2, '2026-10-05'), h(3, '2026-10-05'), h(4, '2026-10-10'), h(5, '2026-12-01')];
+    const m = marcasMeta(d, '2026-10-06');
+    expect(m.map(x => [x.x, x.fuera, x.hitos.map(y => y.h.id)])).toEqual([[0, 'antes', [1]], [50, '', [2, 3]], [100, '', [4, 5]]]);
+    expect(marcasMeta({ ...d, hitos: [h(5, '2026-12-01')] }, '2026-10-06')[0]!.fuera).toBe('después');
+    expect(m[1]!.estado).toBe('Vencido');
+    expect(marcasMeta({ ...d, meta: { ...d.meta, fin: '' } })).toEqual([]);
   });
 });

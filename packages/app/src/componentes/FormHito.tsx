@@ -3,6 +3,7 @@ import { COLORES_ETQ, EST, actividadesParaHito, conSigno, creaCicloHito, hitosOr
 import { Ico } from '../original/iconos';
 import { fmtTxt } from '../original/piezas';
 import { Dialogo } from './Dialogo';
+import { CampoTit } from './Campos';
 
 /** Ventana para crear o editar un hito: nombre, fecha, descripción, negocios y las actividades que incluye */
 export function FormHito({ doc, id, usuario, onGuardar, aviso, onCerrar }: {
@@ -36,20 +37,20 @@ export function FormHito({ doc, id, usuario, onGuardar, aviso, onCerrar }: {
       <form noValidate onSubmit={guardar} id="formHito">
         <h2><Ico n="bandera" t={20} /> {h ? 'Editar hito' : 'Nuevo hito'}</h2>
         <div className="grid">
-          <label><span>Nombre <b>*</b></span><input autoFocus placeholder="Ej. Diseño aprobado" value={f.nombre} onChange={e => setF({ ...f, nombre: e.target.value })} /></label>
-          <label><span>Fecha <b>*</b></span><input type="date" value={f.fecha} onChange={e => setF({ ...f, fecha: e.target.value })} /></label>
-          <label className="todo">Descripción<textarea rows={2} placeholder="Qué se entrega y cómo se sabe que está cumplido" value={f.descripcion} onChange={e => setF({ ...f, descripcion: e.target.value })} /></label>
-          <div className="todo"><span className="hito-cab"><span>Color</span></span>
+          <label><CampoTit ico="bandera" req>Nombre</CampoTit><input autoFocus placeholder="Ej. Diseño aprobado" value={f.nombre} onChange={e => setF({ ...f, nombre: e.target.value })} /></label>
+          <label><CampoTit ico="calendario" req>Fecha</CampoTit><input type="date" value={f.fecha} onChange={e => setF({ ...f, fecha: e.target.value })} /></label>
+          <label className="todo"><CampoTit ico="nota">Descripción</CampoTit><textarea rows={2} placeholder="Qué se entrega y cómo se sabe que está cumplido" value={f.descripcion} onChange={e => setF({ ...f, descripcion: e.target.value })} /></label>
+          <div className="todo"><span className="hito-cab"><CampoTit ico="sol">Color</CampoTit></span>
             <div className="hito-colores" role="group" aria-label="Color del hito">
               <button type="button" className={`auto ${f.color ? '' : 'on'}`} aria-pressed={!f.color} title="El color cambia según el estado del hito" onClick={() => setF({ ...f, color: undefined })}>Según el estado</button>
               {(Object.entries(COLORES_ETQ) as [ColorEtiqueta, string][]).map(([c, nom]) => (
                 <button key={c} type="button" className={`etq-col etq-${c} ${f.color === c ? 'on' : ''}`} title={nom} aria-label={nom} aria-pressed={f.color === c} onClick={() => setF({ ...f, color: c })} />))}</div></div>
-          <div className="todo"><span className="hito-cab"><span>Negocios <b>*</b></span></span>
+          <div className="todo"><span className="hito-cab"><CampoTit ico="tienda" req>Negocios</CampoTit></span>
             <div className="hito-negs">{!negocios.length && <span className="nd">Todavía no hay actividades con negocio.</span>}
               {negocios.map(n => <label key={n} className="check s-ck"><input type="checkbox" checked={f.negocios.includes(n)}
                 onChange={e => setF({ ...f, negocios: e.target.checked ? [...f.negocios, n] : f.negocios.filter(x => x !== n) })} /> {n}</label>)}</div></div>
           <div className="todo">
-            <span className="hito-cab"><span>Actividades incluidas <span className="nd">({sel.size} de {acts.length})</span></span>
+            <span className="hito-cab"><CampoTit ico="lista">Actividades incluidas <span className="nd">({sel.size} de {acts.length})</span></CampoTit>
               {!!acts.length && <span><button type="button" onClick={() => marcar(acts, true)}>Todas</button> <button type="button" onClick={() => marcar(acts, false)}>Ninguna</button></span>}</span>
             {!f.negocios.length ? <p className="nd">Elige uno o varios negocios: se incluyen solas sus actividades abiertas que terminan en la fecha del hito o antes.</p> : (
               <div className="hito-arbol">{f.negocios.slice().sort((a, b) => a.localeCompare(b, 'es')).map(n => {
@@ -66,16 +67,16 @@ export function FormHito({ doc, id, usuario, onGuardar, aviso, onCerrar }: {
               })}</div>)}
             {!f.fecha && !!f.negocios.length && <p className="nd">Pon la fecha para que se marquen las que encajan.</p>}
           </div>
-          {!!otros.length && <div className="todo"><span className="hito-cab"><span>Depende de <span className="nd">(hitos que deben cumplirse antes)</span></span></span>
+          {!!otros.length && <div className="todo"><span className="hito-cab"><CampoTit ico="cadena">Depende de <span className="nd">(hitos que deben cumplirse antes)</span></CampoTit></span>
             <div className="hito-negs" id="hDeps">{otros.map(x => {
               const marcado = f.depende.includes(x.id), ciclo = !marcado && creaCicloHito(doc.hitos, idF, x.id);
               return <label key={x.id} className="check s-ck" title={ciclo ? 'Ese hito ya depende de éste' : x.fecha ? fmtTxt(x.fecha) : ''}>
                 <input type="checkbox" checked={marcado} disabled={ciclo} onChange={e => setF({ ...f, depende: e.target.checked ? [...f.depende, x.id] : f.depende.filter(n => n !== x.id) })} />
                 <i className={`hito-punto ${x.color ? `h-color etq-${x.color}` : 'h-En-tiempo'}`} />{x.nombre}</label>;
             })}</div></div>}
-          {rec && <div className="todo hito-hist"><span className="hito-cab"><span>Historial de fechas <span className="nd">(recorrido {pl(rec.veces, 'vez', 'veces')} · {conSigno(rec.dias)} desde el {fmtTxt(rec.original)})</span></span></span>
+          {rec && <div className="todo hito-hist"><span className="hito-cab"><CampoTit ico="reloj">Historial de fechas <span className="nd">(recorrido {pl(rec.veces, 'vez', 'veces')} · {conSigno(rec.dias)} desde el {fmtTxt(rec.original)})</span></CampoTit></span>
             <ul>{[...h!.cambios!].reverse().map(c => <li key={c.cuando}>{fmtTxt(c.antes)} → <b>{fmtTxt(c.despues)}</b> <span className="nd">· {c.autor} · {new Date(c.cuando).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}</span></li>)}</ul></div>}
-          <label>Cumplido el<input type="date" value={f.cumplido} onChange={e => setF({ ...f, cumplido: e.target.value })} />
+          <label><CampoTit ico="check">Cumplido el</CampoTit><input type="date" value={f.cumplido} onChange={e => setF({ ...f, cumplido: e.target.value })} />
             <span className="nota-dep">Opcional: se cumple solo cuando terminan sus actividades.</span></label>
         </div>
         <div className="pie"><span className="ayuda">* Obligatorio</span><div className="barra"><button type="button" onClick={onCerrar}><Ico n="x" /> Cancelar</button><button type="submit" className="prim"><Ico n="check" /> Guardar hito</button></div></div>

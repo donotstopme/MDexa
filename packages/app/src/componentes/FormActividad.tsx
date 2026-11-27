@@ -1,30 +1,36 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   EST, ESTADOS, PRIORIDADES, REPITE, TAMANOS, actividadNueva, avanceSubs, cerrada, colorEtq, conEstado, creaCiclo, dependientesDe, descRepite, deps, etqs,
-  hoy, leerEtqs, limpiaEtq, limpiaSub, negocioDe, nomCorto, normaliza, pendientesAlMover, todasEtq, unicos, type Actividad, type Documento, type Estado, type Repite,
+  hitoCompatible, hoy, leerEtqs, limpiaEtq, limpiaSub, negocioDe, nomCorto, normaliza, pendientesAlMover, todasEtq, unicos, type Actividad, type Documento, type Estado, type Prioridad, type Repite, type Tamano,
 } from '@mdexa/core';
 import { Ico } from '../original/iconos';
+import { CampoTit, Opciones } from './Campos';
+import { IcoPri, IcoTam, colorEstado } from '../original/piezas';
 
-export interface Preset { negocio?: string; responsable?: string; fin?: string }
+/** Datos de la actividad que se está duplicando */
+export type Copia = Omit<Actividad, 'id'> & { de: number; negocioOrigen: string; nombreOrigen: string };
+export interface Preset { negocio?: string; responsable?: string; fin?: string; copia?: Copia }
 interface Props {
   doc: Documento; id: number | null; preset?: Preset; nNotas?: number;
-  onCerrar(): void; onGuardar(fn: (d: Documento) => Documento): void; onEliminar(id: number): void; onNotas(id: number): void; onImagenes(id: number): void; nImgs?: number; onHistorial(id: number): void;
+  onCerrar(): void; onGuardar(fn: (d: Documento) => Documento): void; onEliminar(id: number): void; onDuplicar?(id: number): void; onNotas(id: number): void; onImagenes(id: number): void; nImgs?: number; onHistorial(id: number): void;
 }
 
 const separarLineas = (txt: string) => txt.split(/\r?\n/).map(l => l.replace(/^\s*(?:[-*•·]|\d+[.)])\s+/, '').trim()).filter(Boolean);
 
 /** Ventana de actividad: negocio y responsable son combos con alta libre (se elige uno existente o se escribe uno nuevo) */
-export function FormActividad({ doc, id, preset = {}, nNotas = 0, onCerrar, onGuardar, onEliminar, onNotas, onImagenes, nImgs = 0, onHistorial }: Props) {
+export function FormActividad({ doc, id, preset = {}, nNotas = 0, onCerrar, onGuardar, onEliminar, onNotas, onImagenes, nImgs = 0, onHistorial, onDuplicar }: Props) {
   const dlg = useRef<HTMLDialogElement>(null);
   const a = id ? doc.actividades.find(x => x.id === id) ?? null : null;
+  const [copia, setCopia] = useState(preset.copia);
+  const origen = a ?? preset.copia;
   const [f, setF] = useState(() => ({
-    negocio: a?.negocio ?? preset.negocio ?? '', actividad: a?.actividad ?? '', responsable: a?.responsable ?? preset.responsable ?? '', tamano: a?.tamano ?? '',
-    inicio: a?.inicio ?? '', fin: a?.fin ?? preset.fin ?? '', estado: (a ? EST(a) : 'Backlog') as Estado, terminada: a?.terminada ?? '', prioridad: a?.prioridad ?? '',
-    repite: a?.repite ?? '' as Repite | '',
+    negocio: origen?.negocio ?? preset.negocio ?? '', actividad: origen?.actividad ?? '', responsable: origen?.responsable ?? preset.responsable ?? '', tamano: origen?.tamano ?? '',
+    inicio: origen?.inicio ?? '', fin: origen?.fin ?? preset.fin ?? '', estado: (a ? EST(a) : preset.copia?.estado ?? 'Backlog') as Estado, terminada: a?.terminada ?? '', prioridad: origen?.prioridad ?? '',
+    repite: origen?.repite ?? '' as Repite | '',
   }));
-  const [etiquetas, setEtiquetas] = useState<string[]>(a ? [...etqs(a)] : []);
-  const [depende, setDepende] = useState<number[]>(a ? [...deps(doc.actividades, a)] : []);
-  const [subs, setSubs] = useState(a?.subtareas?.map(x => ({ ...x })) ?? []);
+  const [etiquetas, setEtiquetas] = useState<string[]>(origen ? [...etqs(origen as Actividad)] : []);
+  const [depende, setDepende] = useState<number[]>(origen ? [...deps(doc.actividades, origen as Actividad)] : []);
+  const [subs, setSubs] = useState(origen?.subtareas?.map(x => ({ ...x })) ?? []);
   const [etqTxt, setEtqTxt] = useState(''), [depTxt, setDepTxt] = useState(''), [subTxt, setSubTxt] = useState('');
   const [varias, setVarias] = useState<{ lineas: string[]; seguir: boolean } | null>(null);
   const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) => setF(x => ({ ...x, [k]: v }));
@@ -60,6 +66,15 @@ export function FormActividad({ doc, id, preset = {}, nNotas = 0, onCerrar, onGu
     return l.length;
   };
 
+  /** Para avisar si se va a duplicar con cambios sin guardar */
+  const foto = JSON.stringify([f, etiquetas, depende, subs]);
+  const [fotoInicial] = useState(foto);
+  const pedirCopia = () => {
+    if (!a) return;
+    if ((foto !== fotoInicial || etqTxt.trim() || depTxt.trim() || subTxt.trim()) && !window.confirm(`Los cambios sin guardar de #${a.id} no se copiarán y se perderán. ¿Duplicar de todos modos?`)) return;
+    onDuplicar?.(a.id);
+  };
+
   /** Valida y arma el cambio; si el texto trae varias líneas, primero pregunta si son varias actividades */
   const guardar = (seguir: boolean, forzar?: 'una' | 'varias') => {
     const negocio = f.negocio.trim(), texto = f.actividad.trim();
@@ -72,14 +87,16 @@ export function FormActividad({ doc, id, preset = {}, nNotas = 0, onCerrar, onGu
     if (pend.length && !window.confirm(`"${texto.split('\n')[0]}" depende de:\n\n${pend.map(d => `• #${d.id} ${nomCorto(d)} (${EST(d)})`).join('\n')}\n\n${pend.length === 1 ? 'Esa actividad aún no termina' : 'Esas actividades aún no terminan'}. ¿Pasarla a ${f.estado} de todos modos?`)) return;
     const lineas = separarLineas(texto);
     if (lineas.length > 1 && !forzar) { setVarias({ lineas, seguir }); return; }
-    const textos = forzar === 'varias' ? lineas : [texto.replace(/\n\s*\n+/g, '\n')];
+    // La copia que se cambió de negocio no necesita el «(copia)» que se le puso en el original
+    const textos = forzar === 'varias' ? lineas : [copia && negocio !== copia.negocioOrigen && texto === copia.actividad.trim() ? copia.nombreOrigen : texto.replace(/\n\s*\n+/g, '\n')];
+    const hito = copia?.hito ? doc.hitos.find(h => h.id === copia.hito && hitoCompatible(h, negocio))?.id : undefined;
     const subsF = subs.map(x => ({ t: limpiaSub(x.t), ok: !!x.ok })).filter(x => x.t);
     const etqF = [...new Set([...etiquetas, ...leerEtqs(etqTxt)])];
     const comunes = { negocio, responsable: f.responsable.trim(), inicio: f.inicio, fin: f.fin, tamano: f.tamano, prioridad: f.prioridad, repite: f.repite };
     onGuardar(d => {
       let acts = [...d.actividades];
       textos.forEach((t, i) => {
-        const datos: Partial<Actividad> = { ...comunes, actividad: t, etiquetas: [...etqF], depende: [...depende], ...(subsF.length ? { subtareas: subsF.map(x => ({ ...x })) } : {}) };
+        const datos: Partial<Actividad> = { ...comunes, ...(hito ? { hito } : {}), actividad: t, etiquetas: [...etqF], depende: [...depende], ...(subsF.length ? { subtareas: subsF.map(x => ({ ...x })) } : {}) };
         if (i === 0 && id) acts = acts.map(x => { if (x.id !== id) return x; const { subtareas: _s, ...resto } = x; void _s; return conEstado({ ...resto, ...datos } as Actividad, f.estado, f.terminada); });
         else acts.push(conEstado(actividadNueva({ ...d, actividades: acts }, { ...datos, actividad: t }), f.estado, f.terminada));
       });
@@ -87,7 +104,7 @@ export function FormActividad({ doc, id, preset = {}, nNotas = 0, onCerrar, onGu
     });
     if (seguir) {
       setF(x => ({ ...x, actividad: '', inicio: '', fin: '', tamano: '', estado: 'Backlog', terminada: '', repite: '' }));
-      setDepende([]); setSubs([]); setVarias(null);
+      setDepende([]); setSubs([]); setVarias(null); setCopia(undefined);
     } else onCerrar();
   };
 
@@ -95,31 +112,37 @@ export function FormActividad({ doc, id, preset = {}, nNotas = 0, onCerrar, onGu
 
   return (
     <>
-      <dialog ref={dlg} onClose={onCerrar} onCancel={e => { if (varias) e.preventDefault(); }}>
-        <form noValidate onSubmit={e => { e.preventDefault(); guardar(((e.nativeEvent as SubmitEvent).submitter as HTMLElement | null)?.id === 'btnOtra'); }}>
-          <h2>{a ? 'Editar actividad' : 'Nueva actividad'}</h2>
+      <dialog ref={dlg} id="dlgAct" onClose={onCerrar} onCancel={e => { if (varias) e.preventDefault(); }}>
+        <form noValidate onSubmit={e => { e.preventDefault(); guardar(((e.nativeEvent as SubmitEvent).submitter as HTMLElement | null)?.id === 'btnOtra'); }}
+          onKeyDown={e => {
+            if (e.key !== 'Enter') return;
+            if (e.ctrlKey || e.metaKey) { e.preventDefault(); guardar(false); } else if ((e.target as HTMLInputElement).type === 'radio') e.preventDefault();
+          }}>
+          <h2><Ico n={a ? 'lapiz' : 'mas'} t={20} /> {a ? <>Editar actividad <span className="nd">#{a.id}</span></> : copia ? <>Nueva actividad <span className="nd">copia de #{copia.de}</span></> : 'Nueva actividad'}</h2>
           <div className="grid">
-            <label><span>Negocio <b>*</b></span><input list="listaNeg" placeholder="Ej. Tienda Centro" value={f.negocio} onChange={e => set('negocio', e.target.value)} autoFocus={!f.negocio} /></label>
-            <label>Responsable<input list="listaResp" placeholder="Elige uno o escribe uno nuevo" value={f.responsable} onChange={e => set('responsable', e.target.value)} />
+            <label className="todo"><CampoTit ico="lista" req>Actividad</CampoTit>
+              <textarea rows={3} placeholder="Escribe una actividad, o pega varias, una por línea" value={f.actividad} onChange={e => set('actividad', e.target.value)} autoFocus /></label>
+            <label><CampoTit ico="tienda" req>Negocio</CampoTit><input list="listaNeg" placeholder="Ej. Tienda Centro" value={f.negocio} onChange={e => set('negocio', e.target.value)} /></label>
+            <label><CampoTit ico="usuario">Responsable</CampoTit><input list="listaResp" placeholder="Elige uno o escribe uno nuevo" value={f.responsable} onChange={e => set('responsable', e.target.value)} />
               {nuevoResp && <span className="nota-dep">Se creará «{f.responsable.trim()}» como responsable nuevo.</span>}</label>
-            <label>Fecha inicio<input type="date" value={f.inicio} onChange={e => set('inicio', e.target.value)} /></label>
-            <label>Fecha fin<input type="date" value={f.fin} onChange={e => set('fin', e.target.value)} /></label>
-            <label className="todo"><span>Actividad <b>*</b></span>
-              <textarea rows={4} placeholder="Escribe una actividad, o pega varias, una por línea" value={f.actividad} onChange={e => set('actividad', e.target.value)} autoFocus={!!f.negocio}
-                onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); guardar(false); } }} /></label>
-            <label>Tamaño
-              <select value={f.tamano} onChange={e => set('tamano', e.target.value as typeof f.tamano)}>
-                <option value="">Sin tamaño</option>{Object.entries(TAMANOS).map(([k, t]) => <option key={k} value={k}>{k} · {t.txt}</option>)}</select>
-              {f.tamano === 'XL' && <span className="nota-xl">Una actividad XL debería partirse. Puedes escribir sus partes una por línea y elegir "Son varias actividades".</span>}</label>
-            <label>Estado<select value={f.estado} onChange={e => { const v = e.target.value as Estado; setF(x => ({ ...x, estado: v, terminada: v === 'Terminado' && !x.terminada ? hoy() : x.terminada })); }}>
-              {ESTADOS.map(e => <option key={e}>{e}</option>)}</select></label>
-            <label>Prioridad<select value={f.prioridad} onChange={e => set('prioridad', e.target.value as typeof f.prioridad)}>
-              <option value="">Sin prioridad</option>{Object.keys(PRIORIDADES).map(p => <option key={p}>{p}</option>)}</select></label>
-            <label>Se repite<select value={f.repite} onChange={e => set('repite', e.target.value as Repite | '')}>
+            <div className="campo todo"><CampoTit ico="tablero">Estado</CampoTit>
+              <Opciones nombre="fEst" etiqueta="Estado" valor={f.estado} onChange={v => setF(x => ({ ...x, estado: v, terminada: v === 'Terminado' && !x.terminada ? hoy() : x.terminada }))}
+                opciones={ESTADOS.map(e => ({ v: e, c: `es-${colorEstado(e)}`, n: e }))} /></div>
+            <div className="campo"><CampoTit ico="prioridad">Prioridad</CampoTit>
+              <Opciones nombre="fPri" etiqueta="Prioridad" valor={f.prioridad} onChange={v => set('prioridad', v)}
+                opciones={[{ v: '' as const, c: 'nd', n: '—', t: 'Sin prioridad' }, ...(Object.keys(PRIORIDADES) as Prioridad[]).map(p => ({ v: p, c: `pri-${p}`, n: <><IcoPri p={p} />{p}</>, t: PRIORIDADES[p].d }))]} /></div>
+            <div className="campo"><CampoTit ico="carga">Tamaño</CampoTit>
+              <Opciones nombre="fTam" etiqueta="Tamaño" valor={f.tamano} onChange={v => set('tamano', v)}
+                opciones={[{ v: '' as const, c: 'nd', n: '—', t: 'Sin tamaño' }, ...(Object.keys(TAMANOS) as Tamano[]).map(t => ({ v: t, c: `tam-${t}`, n: t, t: TAMANOS[t].txt }))]} />
+              {f.tamano === 'XL' ? <span className="nota-xl">Una actividad XL debería partirse. Puedes escribir sus partes una por línea y elegir "Son varias actividades".</span>
+                : f.tamano ? <span className={`nota-tam tam-${f.tamano}`}><IcoTam t={f.tamano} /> <span className="nd">{TAMANOS[f.tamano].txt}</span></span> : null}</div>
+            <label><CampoTit ico="calendario">Fecha inicio</CampoTit><input type="date" value={f.inicio} onChange={e => set('inicio', e.target.value)} /></label>
+            <label><CampoTit ico="calendario">Fecha fin</CampoTit><input type="date" value={f.fin} onChange={e => set('fin', e.target.value)} /></label>
+            <label><CampoTit ico="repetir">Se repite</CampoTit><select value={f.repite} onChange={e => set('repite', e.target.value as Repite | '')}>
               <option value="">No se repite</option>{Object.entries(REPITE).map(([k, t]) => <option key={k} value={k}>{t}</option>)}</select>
               <span className="nota-dep">{f.repite ? `${descRepite({ fin: f.fin, inicio: f.inicio } as Actividad, f.repite)}${f.fin || f.inicio ? '' : ' (según la fecha de terminación)'}. Al terminarla se crea sola la siguiente.` : ''}</span></label>
-            {term && <label>Fecha en que se terminó<input type="date" value={f.terminada} onChange={e => set('terminada', e.target.value)} /></label>}
-            <div className="todo f-subs"><span className="f-subs-cab">Subtareas <span className="nd">{subs.length ? `${avanceSubs({ subtareas: subs } as Actividad).h}/${subs.length}` : ''}</span></span>
+            {term && <label><CampoTit ico="check">Fecha en que se terminó</CampoTit><input type="date" value={f.terminada} onChange={e => set('terminada', e.target.value)} /></label>}
+            <div className="todo f-subs"><span className="f-subs-cab"><Ico n="checklist" t={14} /> Subtareas <span className="nd">{subs.length ? `${avanceSubs({ subtareas: subs } as Actividad).h}/${subs.length}` : ''}</span></span>
               <div className="sub-lista">{subs.map((x, i) => (
                 <div key={i} className={`sub-fila ${x.ok ? 'ok' : ''}`}>
                   <input type="checkbox" checked={x.ok} aria-label="Lista" onChange={e => setSubs(s => s.map((y, j) => (j === i ? { ...y, ok: e.target.checked } : y)))} />
@@ -128,7 +151,7 @@ export function FormActividad({ doc, id, preset = {}, nNotas = 0, onCerrar, onGu
               <input placeholder="Agregar subtarea y presionar Enter (puedes pegar varias, una por línea)" autoComplete="off" value={subTxt} onChange={e => setSubTxt(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); e.stopPropagation(); agregarSubs(subTxt); setSubTxt(''); } }}
                 onPaste={e => { const t = e.clipboardData.getData('text'); if (/\n/.test(t.trim())) { e.preventDefault(); agregarSubs(t); setSubTxt(''); } }} /></div>
-            <label className="todo">Depende de
+            <label className="todo"><CampoTit ico="cadena">Depende de</CampoTit>
               <div className="etq-input"><span>{depende.map((n, i) => { const d = doc.actividades.find(x => x.id === n); return (
                 <span key={n} className={`dep ${d && cerrada(d) ? 'ok' : 'bloq'}`} title={d ? `${nomCorto(d)} (${EST(d)})` : ''}>#{n}{d ? ' ' + nomCorto(d).slice(0, 32) : ''}
                   <button type="button" className="etq-x" aria-label={`Quitar #${n}`} onClick={() => setDepende(depende.filter((_, j) => j !== i))}>×</button></span>); })}</span>
@@ -136,20 +159,23 @@ export function FormActividad({ doc, id, preset = {}, nNotas = 0, onCerrar, onGu
                   onKeyDown={e => { if ((e.key === 'Enter' && !e.ctrlKey && !e.metaKey) || e.key === ',') { e.preventDefault(); e.stopPropagation(); agregarDep(); } else if (e.key === 'Backspace' && !depTxt && depende.length) setDepende(depende.slice(0, -1)); }}
                   onBlur={() => { if (/^#\d+ /.test(depTxt)) agregarDep(); }} /></div>
               <span className="nota-dep">{quienesDependen.length ? `De esta actividad dependen: ${quienesDependen.map(x => '#' + x.id + ' ' + nomCorto(x)).join(', ')}` : ''}</span></label>
-            <label className="todo">Etiquetas
+            <label className="todo"><CampoTit ico="etiqueta">Etiquetas</CampoTit>
               <div className="etq-input"><span>{etiquetas.map((t, i) => (
                 <span key={t} className={`etq etq-${colorEtq(t, doc.coloresEtq)}`}>{t}<button type="button" className="etq-x" aria-label={`Quitar ${t}`} onClick={() => setEtiquetas(etiquetas.filter((_, j) => j !== i))}>×</button></span>))}</span>
                 <input list="listaEtq" placeholder="Escribe una etiqueta y presiona Enter" autoComplete="off" value={etqTxt} onChange={e => setEtqTxt(e.target.value)}
                   onKeyDown={e => { if ((e.key === 'Enter' && !e.ctrlKey && !e.metaKey) || e.key === ',') { e.preventDefault(); e.stopPropagation(); agregarEtq(); } else if (e.key === 'Backspace' && !etqTxt && etiquetas.length) setEtiquetas(etiquetas.slice(0, -1)); }}
                   onBlur={() => { if (todasE.some(t => normaliza(t) === normaliza(etqTxt))) agregarEtq(); }} /></div></label>
           </div>
-          <div className="pie">
+          <div className="pie pie-act">
             <span className="ayuda">* Obligatorio · <kbd>Ctrl</kbd>+<kbd>Enter</kbd> para guardar</span>
-            <div className="barra">
-              {a && <button type="button" className="peligro" onClick={() => onEliminar(a.id)}><Ico n="basura" /> Eliminar</button>}
+            <div className="barra pie-sec">
+              {a && <button type="button" className="peligro solo" title="Eliminar" aria-label="Eliminar" onClick={() => onEliminar(a.id)}><Ico n="basura" /></button>}
+              {a && <button type="button" id="btnDuplicarForm" onClick={pedirCopia}><Ico n="copiar" /> Duplicar</button>}
               {a && <button type="button" onClick={() => onNotas(a.id)}><Ico n="nota" /> {nNotas ? `Notas (${nNotas})` : 'Notas'}</button>}
               {a && <button type="button" onClick={() => onImagenes(a.id)}><Ico n="imagen" /> {nImgs ? `Imágenes (${nImgs})` : 'Imágenes'}</button>}
               {a && <button type="button" onClick={() => onHistorial(a.id)}><Ico n="reloj" /> Historial</button>}
+            </div>
+            <div className="barra">
               <button type="button" onClick={onCerrar}><Ico n="x" /> Cancelar</button>
               {!a && <button type="submit" id="btnOtra"><Ico n="mas" /> Guardar y agregar otra</button>}
               <button type="submit" className="prim" id="btnGuardarForm"><Ico n="check" /> Guardar</button>

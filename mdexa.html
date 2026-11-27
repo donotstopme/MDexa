@@ -162,13 +162,43 @@
   #tabla tr.seleccionada{background:color-mix(in srgb,var(--accent) 17%,var(--card))!important;--fila:var(--accent)}
   .g-fila.seleccionada{background:color-mix(in srgb,var(--accent) 17%,var(--card))!important}
   .k-tarjeta.seleccionada{outline:2px solid var(--accent);outline-offset:1px;background:color-mix(in srgb,var(--accent) 7%,var(--card))}
-  .masiva{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:25;display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line2);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.22);padding:8px 10px;max-width:calc(100vw - 24px)}
-  .masiva button,.masiva select{padding:6px 10px;font-size:13.5px}
-  .masiva select{width:auto}
+  /* Barra oscura en un renglón: selección · menús de cambio · acciones */
+  .masiva{position:fixed;left:12px;right:12px;bottom:16px;margin:0 auto;width:fit-content;max-width:calc(100vw - 24px);z-index:25;display:flex;align-items:center;gap:3px;background:#14233b;color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.32);padding:7px 8px;overflow-x:auto;scrollbar-width:none}
+  .masiva button{flex-shrink:0;min-height:36px;min-width:36px;padding:6px 8px;font-size:13.5px;background:transparent;border-color:transparent;color:#fff;white-space:nowrap}
+  .masiva button:hover:not(:disabled),.masiva button[aria-expanded=true]{background:rgba(255,255,255,.14);border-color:transparent}
+  .masiva button:focus-visible{outline:2px solid #9cc2ff;outline-offset:-2px}
+  .masiva button.ms-todas{color:#9cc2ff}
+  .masiva button.peligro{color:#ff9c92}
+  .masiva button.ms-fav.on svg{color:#ffc933;fill:currentColor}
+  .ms-car{font-size:10px;opacity:.55}
   .ms-n{font-size:14px;padding:0 4px;white-space:nowrap}
   .ms-n b{display:inline-block;min-width:24px;text-align:center;background:var(--accent);color:#fff;border-radius:99px;padding:1px 7px;margin-right:2px}
-  .ms-sep{width:1px;align-self:stretch;background:var(--line)}
-  body.con-masiva .wrap{padding-bottom:120px}
+  .ms-sep{width:1px;align-self:stretch;flex-shrink:0;background:rgba(255,255,255,.24);margin:4px 5px}
+  @media (max-width:1279px){ .masiva .ms-menu .t,.masiva .ms-car,.ms-n span{display:none} }
+  .ms-pop{position:fixed;z-index:60;min-width:210px;max-width:min(340px,calc(100vw - 16px));max-height:min(62vh,440px);overflow:auto;display:flex;flex-direction:column;gap:2px;background:var(--card);color:var(--text);border:1px solid var(--line2);border-radius:12px;box-shadow:0 12px 34px rgba(0,0,0,.26);padding:8px}
+  .ms-pop-tit{font-size:12px;font-weight:600;color:var(--muted);padding:0 6px 6px}
+  .ms-pop .ms-op{justify-content:flex-start;flex-shrink:0;width:100%;border:0;background:transparent;padding:7px 8px;font-size:14px;gap:9px;text-align:left}
+  .ms-pop .ms-op:hover,.ms-pop .ms-op:focus-visible{background:var(--bg)}
+  .ms-ok{margin-left:auto;display:flex;color:var(--accent)}
+  .ms-nuevo{color:var(--accent)!important}
+  .ms-lista{display:flex;flex-direction:column;gap:2px;min-width:240px}
+  .ms-fecha{display:flex;align-items:center;gap:8px;padding:3px 6px;font-size:13.5px}
+  .ms-fecha>span:first-child{width:44px}
+  .ms-fecha input{width:150px}
+  .ms-fecha input[type=number]{width:76px}
+  .ms-fecha button{margin-left:auto;padding:5px 12px;font-size:13px}
+  .ms-ayuda{font-size:11.5px;color:var(--muted);padding:0 6px 6px 58px}
+  /* ---- Duplicar ---- */
+  .ms-dup{display:flex;flex-direction:column;gap:5px;width:300px;max-width:100%;padding:0 6px 4px}
+  .ms-dup-tit{font-size:12px;font-weight:600;color:var(--muted)}
+  label.ms-dup-op{flex-direction:row;align-items:center;gap:8px;font-size:14px;color:var(--text);cursor:pointer}
+  .ms-dup-op input{width:auto;margin:0}
+  .ms-dup-negs{display:grid;grid-template-columns:1fr 1fr;gap:5px 10px;padding:2px 0 6px 24px;max-height:150px;overflow:auto}
+  .ms-dup .ms-fecha{padding:2px 0}
+  .ms-dup .ms-fecha>span:first-child{width:96px}
+  .ms-dup .ms-fecha select{width:auto}
+  .ms-dup>button{margin-top:6px}
+  body.con-masiva .wrap{padding-bottom:100px}
   body.con-masiva #toast{bottom:84px}
   /* ---- Ventana de hito ---- */
   .hito-cab{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;font-size:13px}
@@ -187,8 +217,6 @@
   .hito-aviso button{padding:2px 8px;font-size:12px}
   .m-opciones{display:flex;flex-direction:column;gap:10px}
   .m-opciones .check{flex-wrap:wrap}
-  #dlgMas{width:min(520px,calc(100vw - 24px))}
-  #dlgMas h2{display:flex;align-items:center;gap:8px}
 
   /* Menú "Más" */
   .menu-wrap{position:relative}
@@ -499,7 +527,7 @@
   header{--cab:#13243d;background:linear-gradient(90deg,#0f1d33,#1a3150);color:#fff;margin:-20px -20px 16px;padding:14px 20px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
   @media (prefers-color-scheme: dark){:root:not([data-tema=claro]) header{background:linear-gradient(90deg,#0b1526,#152a47)}}
   :root[data-tema=oscuro] header{background:linear-gradient(90deg,#0b1526,#152a47)}
-  header h1{color:#fff}
+  header h1{color:#fff;font-size:15px}
   header .archivo{color:rgba(255,255,255,.72)}
   header .archivo a{color:#9cc2ff}
   header .archivo svg{color:rgba(255,255,255,.6)}
@@ -512,8 +540,41 @@
   /* en pantallas medianas, botones más juntos para que la cabecera siga en un renglón */
   @media (max-width:1560px){ header .barra{gap:6px} header .barra>button,header .menu-wrap>button{padding-left:9px;padding-right:9px} }
   header #btnNovedades.hay{border-color:#ff8a80;background:rgba(255,90,80,.14)}
-  header .nov-badge{box-shadow:0 0 0 2px #13243d}
+  header .nov-badge{box-shadow:0 0 0 2px rgba(0,0,0,.3)}
   header .menu{color:var(--text)}
+
+  /* ---- Estado del archivo dentro de la cabecera: azul libre, verde tú, naranja otra persona, gris sin permiso ---- */
+  header:has(.estado.mio){background:linear-gradient(90deg,#08382a,#116347)}
+  header:has(.estado.otro){background:linear-gradient(90deg,#6a3104,#a4520c)}
+  header:has(.estado.solo){background:linear-gradient(90deg,#2b333f,#475365)}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-tema=claro]) header:has(.estado.mio){background:linear-gradient(90deg,#06291f,#0d4f39)}
+    :root:not([data-tema=claro]) header:has(.estado.otro){background:linear-gradient(90deg,#522603,#83410a)}
+    :root:not([data-tema=claro]) header:has(.estado.solo){background:linear-gradient(90deg,#20262f,#37404e)}
+  }
+  :root[data-tema=oscuro] header:has(.estado.mio){background:linear-gradient(90deg,#06291f,#0d4f39)}
+  :root[data-tema=oscuro] header:has(.estado.otro){background:linear-gradient(90deg,#522603,#83410a)}
+  :root[data-tema=oscuro] header:has(.estado.solo){background:linear-gradient(90deg,#20262f,#37404e)}
+  header{transition:background-color .2s}
+  header .cabeza{flex:0 1 auto;flex-wrap:nowrap;gap:14px}
+  header .cabeza-proy h1{max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .estado{display:flex;flex:1 1 330px;min-width:0;align-items:center;gap:10px;border-left:1px solid rgba(255,255,255,.22);padding-left:14px;min-height:40px}
+  .estado .b-ico,header .estado.libre .b-ico,header .estado.mio .b-ico,header .estado.otro .b-ico{color:#fff}
+  .est-txt{display:flex;flex-direction:column;line-height:1.3;font-size:14px;margin-right:auto;min-width:0;overflow-wrap:anywhere}
+  .est-txt .det{font-size:12px;color:rgba(255,255,255,.82)}
+  .est-txt a{color:#fff}
+  .est-acc{display:flex;gap:6px;align-items:center}
+  .est-acc button{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);color:#fff;font-size:13.5px;white-space:nowrap}
+  .est-acc button:hover:not(:disabled){background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.55)}
+  .est-acc button.prim{background:#fff;border-color:#fff;color:#0f1d33;font-weight:600}
+  .est-acc button.prim:hover:not(:disabled){background:#e8eefb}
+  header .barra>button,header .menu-wrap>button,.est-acc button{min-height:38px;min-width:38px}
+  header .barra>button.solo-ico .t{display:none}
+  /* Si no hay espacio, el resto de los botones también queda sólo con su ícono */
+  @media (max-width:1620px){ header .barra>button.cede .t,header .menu-wrap>button.cede .t{display:none} }
+  @media (min-width:1420px){ header .barra>button.cede[aria-label=Hitos] .t,header .barra>button.cede[aria-label=Reporte] .t{display:inline} }
+  @media (max-width:1080px){ .estado{flex-basis:100%;border-left:0;padding-left:0;order:3} }
+  @media (max-width:700px){ .estado{flex-wrap:wrap} .est-txt{flex:1 1 180px} }
   .archivo{color:var(--muted);font-size:13px}
   .archivo a{color:var(--accent)}
   .barra{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center}
@@ -566,16 +627,22 @@
   .ritmo{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid currentColor;margin-top:12px}
 
   /* Tabla */
-  /* Barra en tres secciones separadas por líneas punteadas: vistas y búsqueda · filtros · opciones y acciones */
+  /* Barra en dos secciones separadas por una línea punteada: vistas, búsqueda, opciones y «Nueva» en un renglón · filtros */
   .filtros{margin-bottom:12px}
   .f-sec{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 0}
   .f-sec:first-child{padding-top:0}
   .f-sec:last-child{padding-bottom:0}
   .f-sec+.f-sec{border-top:2px dashed var(--line2)}
-  .f-sec>.buscar{flex:1 1 260px;max-width:none}
+  .f-linea{display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%}
+  .f-linea>.buscar{flex:1 1 90px;min-width:90px;max-width:none}
+  /* Sólo la vista activa muestra su nombre; las demás, el ícono (el nombre sale al pasar el cursor) */
+  .f-linea>.seg button{padding:6px 9px}
+  .f-linea>.seg button:not(.on) span{display:none}
+  .f-linea .check select{width:auto}
   .f-sec>.msel{flex:1 1 130px;min-width:110px;max-width:250px}
-  .f-sec>.f-fin{margin-left:auto}
-  .f-sec>select{flex:0 0 auto;min-width:0;width:auto}
+  .f-linea>.f-fin{margin-left:auto}
+  .f-linea>.f-ico{padding:7px 10px;align-self:stretch}
+  .f-linea>select{flex:0 0 auto;min-width:0;width:auto}
   .msel{position:relative}
   .cg-barra{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;margin-bottom:12px;font-size:13.5px}
   .cg-barra label{display:flex;flex-direction:row;align-items:center;gap:6px;color:var(--text)}
@@ -627,7 +694,7 @@
   .pres-zoom{display:flex;gap:4px}
   .pres-salir{font-weight:600}
   body.presentando header,body.presentando #banner,body.presentando #lateral,body.presentando #metaCard,body.presentando .filtros,body.presentando #masiva,
-  body.presentando .g-ayuda,body.presentando #toastHueco{display:none !important}
+  body.presentando .g-ayuda,body.presentando .ms-pop,body.presentando #toastHueco{display:none !important}
   body.presentando .wrap{padding:16px 20px 30px}
   body.presentando .layout{grid-template-columns:minmax(0,1fr) !important}
   body.presentando main{zoom:var(--pres-zoom,1.3)}
@@ -662,7 +729,7 @@
   .nov-it.nov-men{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));background:color-mix(in srgb,var(--accent) 5%,var(--card))}
   .nov-h-men{color:var(--accent)}
   .nov-badge.con-men{background:var(--accent);color:#fff}
-  .f-sec>.msel.cols{flex:0 0 auto;min-width:0;max-width:none}
+  .f-linea>.msel.cols{flex:0 0 auto;min-width:0;max-width:none}
   .msel.cols .msel-btn{gap:6px}
   .g-ren{padding:2px 6px;margin-left:4px;opacity:0;transition:opacity .12s;vertical-align:1px}
   tr.grupo:hover .g-ren,.k-carril-cab:hover .g-ren,.g-ren:focus-visible{opacity:.8}
@@ -825,8 +892,9 @@
   th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
   th{font-size:12px;color:var(--muted);font-weight:600;cursor:pointer;user-select:none;white-space:nowrap}
   td.txt{white-space:pre-line}
-  td.acc{white-space:nowrap;text-align:right}
-  td.acc button{padding:4px 8px;font-size:13px;background:color-mix(in srgb,var(--card) 80%,transparent)}
+  td.acc{white-space:nowrap;text-align:right;padding-left:2px;padding-right:4px}
+  td.acc button+button{margin-left:1px}
+  td.acc button{padding:4px 5px;font-size:13px;background:color-mix(in srgb,var(--card) 80%,transparent)}
   .ed{border:1px solid transparent;background:transparent;padding:4px 6px;border-radius:6px;font-size:14px;min-width:0;cursor:pointer}
   .ed:hover{border-color:var(--line2)}
   .ed:focus{border-color:var(--accent);background:var(--card);outline:none;cursor:text}
@@ -838,6 +906,34 @@
   select.ed.est{border-radius:99px;border-color:currentColor;padding:3px 8px;font-weight:600;background:color-mix(in srgb,var(--card) 70%,transparent)}
   select.ed option{color:var(--text);background:var(--card);font-weight:400}
   .celda-est{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  /* ---- La lista se ajusta a su ancho para no salirse de la pantalla (en celular ya se muestra como tarjetas) ---- */
+  #vistaLista{container-type:inline-size}
+  @media (min-width:801px){
+    @container (max-width:1060px){
+      #vistaLista th,#tabla td{padding-left:4px;padding-right:4px}
+      #tabla td.col-sel{padding-left:8px}
+      #tabla input.ed{min-width:76px;padding-left:3px;padding-right:3px;font-size:13px}
+      #tabla input.ed[type=date]{min-width:0;width:108px;font-size:12.5px;padding-left:2px;padding-right:0}
+      #tabla input.ed[type=date]::-webkit-calendar-picker-indicator{margin-left:2px;padding:0;width:13px}
+      #tabla select.ed{padding-left:1px;padding-right:0;font-size:12.5px}
+      #tabla select.ed.est{padding-left:5px;padding-right:2px}
+    }
+    /* más angosta: sin los íconos junto a prioridad y tamaño, y los botones de la fila uno bajo otro */
+    @container (max-width:880px){
+      #tabla .celda-tam>.pri,#tabla .celda-tam>.tam{display:none}
+      #tabla td.acc button{display:flex;margin:0 0 3px auto}
+    }
+    /* si aun así no cabe, se desliza dentro de su tarjeta en lugar de ensanchar la página */
+    @container (max-width:760px){ #vistaLista>table{display:block;overflow-x:auto} }
+  }
+  /* en celular, la tabla y sus filas toman el ancho disponible */
+  @media (max-width:800px){
+    #vistaLista>table,#tabla{display:block;width:100%}
+    #tabla tr.grupo td{white-space:normal}
+    #tabla tr td.txt{display:block;text-align:left;overflow-wrap:break-word}
+    #tabla td.txt::before{content:none}
+    #tabla td.txt .etqs{display:flex;flex-wrap:wrap;margin:6px 0 0}
+  }
   .term{font-size:12px;color:var(--c-verde)}
   td.ok-flash{animation:flash .9s ease}
   @keyframes flash{from{background:color-mix(in srgb,var(--ok) 30%,transparent)}to{background:transparent}}
@@ -871,6 +967,30 @@
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0 16px}
   .grid .todo{grid-column:1/-1}
   .pie{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+
+  /* ---- Formularios de actividad y de hito: títulos con ícono y opciones como botones ---- */
+  .campo-tit{display:flex;flex-wrap:wrap;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+  .campo-tit svg{flex-shrink:0;opacity:.85}
+  .campo-tit b{color:var(--danger);font-weight:600;margin-left:-2px}
+  .f-subs-cab{display:flex;align-items:center;gap:5px}
+  dialog h2:has(>svg){display:flex;align-items:center;gap:8px}
+  dialog h2 .nd{font-weight:400;font-size:14px}
+  .campo{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .opc{display:flex;flex-wrap:wrap;gap:5px}
+  .opc label.opc-it{position:relative;flex:1 0 auto;cursor:pointer;gap:0}
+  .opc input{position:absolute;opacity:0;width:1px;height:1px;margin:0;pointer-events:none}
+  .opc .opc-it>span{display:flex;align-items:center;justify-content:center;gap:5px;min-width:34px;min-height:34px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:13px;white-space:nowrap}
+  .opc .opc-it:hover>span{border-color:var(--line2)}
+  .opc .opc-it>input:checked+span{border-color:currentColor;box-shadow:inset 0 0 0 1px currentColor;background:color-mix(in srgb,currentColor 13%,var(--card));font-weight:700}
+  .opc .opc-it>input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+  .opc .tam-XS,.opc .tam-S{color:var(--c-verde)} .opc .tam-M{color:var(--c-azul)} .opc .tam-L{color:var(--warn)} .opc .tam-XL{color:var(--danger)}
+  .nota-tam{display:flex;align-items:center;gap:6px;font-size:12px}
+  #dlgAct{width:min(760px,calc(100vw - 24px))}
+  .pie-act .ayuda{flex-basis:100%}
+  .pie-act .pie-sec{margin-right:auto}
+  .pie-act .barra{flex-wrap:wrap;gap:8px}
+  .pie-act button{padding-left:10px;padding-right:10px}
+  .pie-act button.solo{min-width:40px;min-height:38px}
   #dlgVar ol{margin:0 0 16px;max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:10px 10px 10px 32px}
   #dlgVar li{padding:2px 0}
   .grande{width:min(1040px,calc(100vw - 24px));height:calc(100vh - 24px);padding:0;display:none;flex-direction:column}
@@ -916,7 +1036,7 @@
   .manual nav{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;margin:12px 0}
   .manual nav a{color:var(--accent)}
 
-  #toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.2s;z-index:10}
+  #toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.2s;z-index:50}
   #toast.ver{opacity:1;transform:translate(-50%,0)}
 
   @media (max-width:900px){
@@ -989,6 +1109,43 @@
   .m-hito-nom{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .m-hito .bar{display:block;height:6px}.m-hito .bar span{display:block;height:100%}
   @media (max-width:700px){.m-hito{grid-template-columns:minmax(0,1fr) auto auto}.m-hito .bar,.m-hito .bar+.nd{display:none}}
+  /* ---- Meta compacta: tres líneas ---- */
+  .meta-plegar{padding:5px 11px;font-size:13px}
+  #metaCard.compacta{padding-top:10px;padding-bottom:10px}
+  .mc-cab{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+  .mc-cab .rango{font-size:14px}
+  .mc-cab .nd{font-size:13px}
+  .mc-der{margin-left:auto;display:inline-flex;gap:8px;align-items:center}
+  .mc-der .ritmo{margin-top:0}
+  .mc-der .meta-plegar{padding:3px 10px;font-size:12.5px}
+  .mc-barras{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 14px;align-items:center;margin-top:8px;font-size:12.5px}
+  .mc-barras .bar{height:8px}
+  .mc-tiempo{position:relative;height:18px;display:flex;flex-direction:column;justify-content:center}
+  .mc-hoy{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--text);border-radius:1px;pointer-events:none}
+  .mc-marca{position:absolute;top:0;width:18px;height:18px;margin-left:-9px;padding:0;border:0;background:transparent}
+  .mc-marca:hover{filter:brightness(1.15)}
+  .mc-marca i{display:flex;align-items:center;justify-content:center;width:11px;height:11px;transform:rotate(45deg);background:var(--hc);border:2px solid var(--card);box-sizing:content-box;border-radius:2px}
+  .mc-marca.h-color.h-Vencido i{outline:2px solid var(--c-rojo)}
+  .mc-marca.h-color.h-En-riesgo i{outline:2px solid var(--c-amar)}
+  .mc-marca.varios i{width:13px;height:13px}
+  .mc-marca b{transform:rotate(-45deg);font-size:9.5px;line-height:1;color:#fff}
+  .mc-marca.fuera{opacity:.6}
+  .mc-val{white-space:nowrap;text-align:right}
+  .mc-val .nd{font-size:12px}
+  .mc-sig{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;margin-top:8px;font-size:12.5px}
+  .mc-prox,.mc-mas{padding:2px 6px;border:0;border-radius:6px;background:transparent;font-size:12.5px;min-width:0}
+  .mc-prox{max-width:100%;gap:0}
+  .mc-prox>*+*{margin-left:6px}
+  .mc-prox .hito-punto{margin-right:2px;flex:none}
+  .mc-prox:hover,.mc-mas:hover{background:var(--bg)}
+  .mc-nom{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}
+  .mc-mas{color:var(--accent)}
+  @media (max-width:700px){
+    .mc-barras{gap:6px 8px}
+    .mc-val .nd{display:none}
+    .mc-sig{flex-direction:column;align-items:flex-start}
+    .mc-prox{flex-wrap:wrap;justify-content:flex-start;text-align:left}
+  }
 </style>
 <style id="repEstilo"></style>
 </head>
@@ -1017,18 +1174,19 @@
         <div class="archivo" id="infoArchivo"></div>
       </div>
     </div>
+    <div class="estado libre" id="banner" role="status"></div>
     <div class="barra">
-      <button id="btnAbrir">Abrir .md</button>
-      <button id="btnRefrescar" title="Volver a leer el archivo">Refrescar</button>
-      <button id="btnNovedades" title="Cambios desde tu última visita">Novedades<span class="nov-badge" id="novBadge" hidden></span></button>
-      <button id="btnBitacora" title="Quién cambió qué y cuándo">Bitácora</button>
-      <button id="btnHitos" title="Hitos y fases: fechas, avance y estado">Hitos</button>
-      <button id="btnReporte">Reporte</button>
-      <button id="btnManual" title="Manual de uso">Manual</button>
+      <button id="btnAbrir" class="cede" title="Abrir .md" aria-label="Abrir .md"><span class="t">Abrir .md</span></button>
+      <button id="btnRefrescar" class="solo-ico" title="Refrescar: volver a leer el archivo" aria-label="Refrescar"><span class="t">Refrescar</span></button>
+      <button id="btnNovedades" class="solo-ico" title="Novedades: cambios desde tu última visita" aria-label="Novedades"><span class="t">Novedades</span><span class="nov-badge" id="novBadge" hidden></span></button>
+      <button id="btnBitacora" class="solo-ico" title="Bitácora: quién cambió qué y cuándo" aria-label="Bitácora"><span class="t">Bitácora</span></button>
+      <button id="btnHitos" class="cede" title="Hitos y fases: fechas, avance y estado" aria-label="Hitos"><span class="t">Hitos</span></button>
+      <button id="btnReporte" class="cede" title="Reporte" aria-label="Reporte"><span class="t">Reporte</span></button>
+      <button id="btnManual" class="solo-ico" title="Manual de uso" aria-label="Manual"><span class="t">Manual</span></button>
       <button id="btnTema" class="btn-tema" aria-label="Tema"></button>
       <button id="btnPantalla" class="btn-tema" aria-label="Pantalla completa" title="Pantalla completa (tecla F)"></button>
       <div class="menu-wrap">
-        <button id="btnMas" aria-haspopup="true" aria-expanded="false">Más</button>
+        <button id="btnMas" class="cede" title="Más opciones" aria-label="Más" aria-haspopup="true" aria-expanded="false"><span class="t">Más</span></button>
         <div class="menu" id="menuMas" hidden>
           <button id="btnNuevo"><span><b>Nuevo .md</b><span class="menu-desc">Archivo vacío para un proyecto nuevo</span></span></button>
           <button id="btnSprint"><span><b>Nuevo sprint</b><span class="menu-desc">Copia actividades elegidas a un archivo nuevo</span></span></button>
@@ -1047,8 +1205,6 @@
     </div>
   </header>
 
-  <div class="banner" id="banner"></div>
-
   <div class="layout sin-lateral" id="layout">
   <aside class="card lateral" id="lateral" hidden></aside>
   <main>
@@ -1057,17 +1213,26 @@
   <div class="card">
     <div class="filtros">
       <div class="f-sec">
-        <div class="seg" id="segVista" role="tablist">
-          <button data-vista="lista" data-ico="lista" title="Vista de lista (tecla 1)">Lista</button>
-          <button data-vista="gantt" data-ico="gantt" title="Vista de línea de tiempo (tecla 2)">Línea de tiempo</button>
-          <button data-vista="kanban" data-ico="tablero" title="Tablero por estado (tecla 3)">Tablero</button>
-          <button data-vista="cal" data-ico="calendario" title="Calendario mensual por fecha fin (tecla 4)">Calendario</button>
-          <button data-vista="mias" data-ico="usuario" title="Las actividades asignadas a ti (tecla 5)">Mis actividades</button>
-          <button data-vista="carga" data-ico="carga" title="Carga de trabajo por persona y semana (tecla 6)">Carga</button>
+        <div class="f-linea">
+          <div class="seg" id="segVista" role="tablist">
+            <button data-vista="lista" data-ico="lista" title="Vista de lista (tecla 1)" aria-label="Lista"><span>Lista</span></button>
+            <button data-vista="gantt" data-ico="gantt" title="Vista de línea de tiempo (tecla 2)" aria-label="Línea de tiempo"><span>Línea de tiempo</span></button>
+            <button data-vista="kanban" data-ico="tablero" title="Tablero por estado (tecla 3)" aria-label="Tablero"><span>Tablero</span></button>
+            <button data-vista="cal" data-ico="calendario" title="Calendario mensual por fecha fin (tecla 4)" aria-label="Calendario"><span>Calendario</span></button>
+            <button data-vista="mias" data-ico="usuario" title="Las actividades asignadas a ti (tecla 5)" aria-label="Mis actividades"><span>Mis actividades</span></button>
+            <button data-vista="carga" data-ico="carga" title="Carga de trabajo por persona y semana (tecla 6)" aria-label="Carga"><span>Carga</span></button>
+          </div>
+          <div class="buscar"><i data-ico="buscar"></i><input id="qTexto" placeholder="Buscar…  ( / )" title="Busca en el nombre, negocio, responsable, etiquetas, subtareas, notas y #número. Varias palabras: deben estar todas."></div>
+          <label class="check" id="lblPersona" title="Ver actividades de" hidden><select id="qPersona" aria-label="Ver actividades de"></select></label>
+          <select id="qZoom" title="Escala de la línea de tiempo" hidden><option value="dia">Día</option><option value="semana">Semana</option><option value="mes">Mes</option></select>
+          <label class="check" id="lblBacklog" title="Mostrar u ocultar las actividades en Backlog"><input type="checkbox" id="qBacklog" checked> <span>Backlog</span></label>
+          <div class="msel cols" id="colsWrap"><button type="button" class="msel-btn" id="btnCols" title="Columnas visibles en la lista" aria-label="Columnas" aria-haspopup="true"></button><div class="msel-pop" id="colsPop" hidden></div></div>
+          <button type="button" id="btnPresentar" class="f-ico" title="Presentar: modo presentación para juntas (tecla P)" aria-label="Presentar"></button>
+          <label class="check" id="lblAgrupar" title="Agrupar por"><i data-ico="capas" data-ico-tam="15"></i><select id="qAgrupar" class="sel-agrupar" aria-label="Agrupar por" title="Agrupar la lista, el tablero y la línea de tiempo por…">
+            <option value="negocio">Negocio</option><option value="responsable">Responsable</option><option value="prioridad">Prioridad</option>
+            <option value="estado">Estado</option><option value="etiqueta">Etiqueta</option><option value="hito">Hito</option><option value="">Sin agrupar</option></select></label>
+          <button class="prim f-fin" id="btnNuevaAct" hidden title="Nueva actividad (tecla N)">Nueva</button>
         </div>
-        <label class="check" id="lblPersona" hidden>Ver actividades de <select id="qPersona" style="width:auto"></select></label>
-        <select id="qZoom" title="Escala de la línea de tiempo" hidden><option value="dia">Por día</option><option value="semana">Por semana</option><option value="mes">Por mes</option></select>
-        <div class="buscar"><i data-ico="buscar"></i><input id="qTexto" placeholder="Buscar en actividades, notas, subtareas…  ( / )" title="Busca en el nombre, negocio, responsable, etiquetas, subtareas, notas y #número. Varias palabras: deben estar todas."></div>
       </div>
       <div class="f-sec">
         <div id="qNeg"></div>
@@ -1077,15 +1242,6 @@
         <div id="qPri"></div>
         <div id="qEtq"></div>
         <div id="qHito"></div>
-      </div>
-      <div class="f-sec">
-        <label class="check" id="lblBacklog" title="Mostrar u ocultar las actividades en Backlog"><input type="checkbox" id="qBacklog" checked> <span>Mostrar backlog</span></label>
-        <div class="msel cols" id="colsWrap"><button type="button" class="msel-btn" id="btnCols" aria-haspopup="true"></button><div class="msel-pop" id="colsPop" hidden></div></div>
-        <button id="btnPresentar" title="Modo presentación para juntas (tecla P)">Presentar</button>
-        <label class="check" id="lblAgrupar">Agrupar por <select id="qAgrupar" class="sel-agrupar">
-          <option value="negocio">Negocio</option><option value="responsable">Responsable</option><option value="prioridad">Prioridad</option>
-          <option value="estado">Estado</option><option value="etiqueta">Etiqueta</option><option value="hito">Hito</option><option value="">Sin agrupar</option></select></label>
-        <button class="prim f-fin" id="btnNuevaAct" hidden title="Nueva actividad (tecla N)">Nueva actividad</button>
       </div>
     </div>
     <div id="vistaLista">
@@ -1111,40 +1267,43 @@
   <form id="form" novalidate>
     <h2 id="formTitulo">Nueva actividad</h2>
     <div class="grid">
-      <label><span>Negocio <b>*</b></span><input id="fNeg" list="listaNeg" placeholder="Ej. Tienda Centro"></label>
-      <label>Responsable<input id="fResp" list="listaResp" placeholder="Opcional"></label>
-      <label>Fecha inicio<input type="date" id="fIni"></label>
-      <label>Fecha fin<input type="date" id="fFin"></label>
-      <label class="todo"><span>Actividad <b>*</b></span>
-        <textarea id="fAct" rows="4" placeholder="Escribe una actividad, o pega varias, una por línea"></textarea>
+      <label class="todo"><span class="campo-tit"><i data-ico="lista" data-ico-tam="14"></i>Actividad<b>*</b></span>
+        <textarea id="fAct" rows="3" placeholder="Escribe una actividad, o pega varias, una por línea"></textarea>
       </label>
-      <label>Tamaño
-        <select id="fTam"></select>
+      <label><span class="campo-tit"><i data-ico="tienda" data-ico-tam="14"></i>Negocio<b>*</b></span><input id="fNeg" list="listaNeg" placeholder="Ej. Tienda Centro"></label>
+      <label><span class="campo-tit"><i data-ico="usuario" data-ico-tam="14"></i>Responsable</span><input id="fResp" list="listaResp" placeholder="Opcional"></label>
+      <div class="campo todo"><span class="campo-tit"><i data-ico="tablero" data-ico-tam="14"></i>Estado</span><div class="opc" id="fEst" role="radiogroup" aria-label="Estado"></div></div>
+      <div class="campo"><span class="campo-tit"><i data-ico="prioridad" data-ico-tam="14"></i>Prioridad</span><div class="opc" id="fPri" role="radiogroup" aria-label="Prioridad"></div></div>
+      <div class="campo"><span class="campo-tit"><i data-ico="carga" data-ico-tam="14"></i>Tamaño</span><div class="opc" id="fTam" role="radiogroup" aria-label="Tamaño"></div>
+        <span class="nota-tam" id="notaTam" hidden></span>
         <span class="nota-xl" id="notaXL" hidden>Una actividad XL debería partirse. Puedes escribir sus partes una por línea y elegir "Son varias actividades".</span>
-      </label>
-      <label>Estado<select id="fEst"></select></label>
-      <label>Prioridad<select id="fPri"></select></label>
-      <label>Se repite<select id="fRep"></select><span class="nota-dep" id="notaRep"></span></label>
-      <label id="lblTerm" hidden>Fecha en que se terminó<input type="date" id="fTerm"></label>
-      <div class="todo f-subs"><span class="f-subs-cab">Subtareas <span class="nd" id="fSubsAv"></span></span>
+      </div>
+      <label><span class="campo-tit"><i data-ico="calendario" data-ico-tam="14"></i>Fecha inicio</span><input type="date" id="fIni"></label>
+      <label><span class="campo-tit"><i data-ico="calendario" data-ico-tam="14"></i>Fecha fin</span><input type="date" id="fFin"></label>
+      <label><span class="campo-tit"><i data-ico="repetir" data-ico-tam="14"></i>Se repite</span><select id="fRep"></select><span class="nota-dep" id="notaRep"></span></label>
+      <label id="lblTerm" hidden><span class="campo-tit"><i data-ico="check" data-ico-tam="14"></i>Fecha en que se terminó</span><input type="date" id="fTerm"></label>
+      <div class="todo f-subs"><span class="f-subs-cab"><i data-ico="checklist" data-ico-tam="14"></i> Subtareas <span class="nd" id="fSubsAv"></span></span>
         <div id="fSubsLista" class="sub-lista"></div>
         <input id="fSubTxt" placeholder="Agregar subtarea y presionar Enter (puedes pegar varias, una por línea)" autocomplete="off">
       </div>
-      <label class="todo">Depende de
+      <label class="todo"><span class="campo-tit"><i data-ico="cadena" data-ico-tam="14"></i>Depende de</span>
         <div class="etq-input" id="fDep"><span id="fDepChips"></span><input id="fDepTxt" list="listaActs" placeholder="Escribe #número o el nombre de la actividad y presiona Enter" autocomplete="off"></div>
         <span class="nota-dep" id="notaDep"></span>
       </label>
-      <label class="todo">Etiquetas
+      <label class="todo"><span class="campo-tit"><i data-ico="etiqueta" data-ico-tam="14"></i>Etiquetas</span>
         <div class="etq-input" id="fEtq"><span id="fEtqChips"></span><input id="fEtqTxt" list="listaEtq" placeholder="Escribe una etiqueta y presiona Enter" autocomplete="off"></div>
       </label>
     </div>
-    <div class="pie">
+    <div class="pie pie-act">
       <span class="ayuda">* Obligatorio · <kbd>Ctrl</kbd>+<kbd>Enter</kbd> para guardar</span>
-      <div class="barra">
-        <button type="button" class="peligro" id="btnEliminarForm" hidden>Eliminar</button>
+      <div class="barra pie-sec">
+        <button type="button" class="peligro solo" id="btnEliminarForm" title="Eliminar" aria-label="Eliminar" hidden></button>
+        <button type="button" id="btnDuplicarForm" hidden>Duplicar</button>
         <button type="button" id="btnNotasForm" hidden>Notas</button>
         <button type="button" id="btnImgsForm" hidden>Imágenes</button>
         <button type="button" id="btnHistForm" hidden>Historial</button>
+      </div>
+      <div class="barra">
         <button type="button" id="btnCancelar">Cancelar</button>
         <button type="submit" id="btnOtra">Guardar y agregar otra</button>
         <button type="submit" class="prim" id="btnGuardarForm">Guardar</button>
@@ -1359,19 +1518,19 @@
   <form id="formHito" novalidate>
     <h2 id="hitoFormTit">Nuevo hito</h2>
     <div class="grid">
-      <label><span>Nombre <b>*</b></span><input id="hNom" placeholder="Ej. Diseño aprobado"></label>
-      <label><span>Fecha <b>*</b></span><input type="date" id="hFecha"></label>
-      <label class="todo">Descripción<textarea id="hDesc" rows="2" placeholder="Qué se entrega y cómo se sabe que está cumplido"></textarea></label>
-      <div class="todo"><span class="hito-cab"><span>Color</span></span><div class="hito-colores" id="hColores" role="group" aria-label="Color del hito"></div></div>
-      <div class="todo"><span class="hito-cab"><span>Negocios <b>*</b></span></span><div class="hito-negs" id="hNegs"></div></div>
+      <label><span class="campo-tit"><i data-ico="bandera" data-ico-tam="14"></i>Nombre<b>*</b></span><input id="hNom" placeholder="Ej. Diseño aprobado"></label>
+      <label><span class="campo-tit"><i data-ico="calendario" data-ico-tam="14"></i>Fecha<b>*</b></span><input type="date" id="hFecha"></label>
+      <label class="todo"><span class="campo-tit"><i data-ico="nota" data-ico-tam="14"></i>Descripción</span><textarea id="hDesc" rows="2" placeholder="Qué se entrega y cómo se sabe que está cumplido"></textarea></label>
+      <div class="todo"><span class="hito-cab"><span class="campo-tit"><i data-ico="sol" data-ico-tam="14"></i>Color</span></span><div class="hito-colores" id="hColores" role="group" aria-label="Color del hito"></div></div>
+      <div class="todo"><span class="hito-cab"><span class="campo-tit"><i data-ico="tienda" data-ico-tam="14"></i>Negocios<b>*</b></span></span><div class="hito-negs" id="hNegs"></div></div>
       <div class="todo">
-        <span class="hito-cab"><span>Actividades incluidas <span class="nd" id="hCuenta"></span></span>
+        <span class="hito-cab"><span class="campo-tit"><i data-ico="lista" data-ico-tam="14"></i>Actividades incluidas <span class="nd" id="hCuenta"></span></span>
           <span id="hTodasNinguna"><button type="button" data-hmarcar="1">Todas</button> <button type="button" data-hmarcar="">Ninguna</button></span></span>
         <div id="hArbol"></div>
       </div>
-      <div class="todo" id="hDepsBloque" hidden><span class="hito-cab"><span>Depende de <span class="nd">(hitos que deben cumplirse antes)</span></span></span><div class="hito-negs" id="hDeps"></div></div>
+      <div class="todo" id="hDepsBloque" hidden><span class="hito-cab"><span class="campo-tit"><i data-ico="cadena" data-ico-tam="14"></i>Depende de <span class="nd">(hitos que deben cumplirse antes)</span></span></span><div class="hito-negs" id="hDeps"></div></div>
       <div class="todo hito-hist" id="hHist" hidden></div>
-      <label>Cumplido el<input type="date" id="hCumplido"><span class="nota-dep">Opcional: se cumple solo cuando terminan sus actividades.</span></label>
+      <label><span class="campo-tit"><i data-ico="check" data-ico-tam="14"></i>Cumplido el</span><input type="date" id="hCumplido"><span class="nota-dep">Opcional: se cumple solo cuando terminan sus actividades.</span></label>
     </div>
     <div class="pie"><span class="ayuda">* Obligatorio</span><div class="barra"><button type="button" id="hitoCancelar">Cancelar</button><button type="submit" class="prim" id="hitoGuardar">Guardar hito</button></div></div>
   </form>
@@ -1522,35 +1681,23 @@
 
 <!-- Barra de acciones para varias actividades -->
 <div class="masiva" id="masiva" hidden role="toolbar" aria-label="Acciones para las actividades seleccionadas">
+  <button type="button" id="masCerrar" title="Quitar la selección (Esc)" aria-label="Quitar la selección"></button>
   <span class="ms-n"><b id="masN">0</b> <span id="masTxt">seleccionadas</span></span>
-  <button id="masTodas" title="Seleccionar todas las actividades visibles en esta vista">Todas las visibles</button>
+  <button type="button" id="masTodas" class="ms-todas" title="Seleccionar todas las actividades visibles en esta vista">Todas</button>
   <span class="ms-sep"></span>
-  <select id="masEst" title="Cambiar el estado"></select>
-  <select id="masTam" title="Cambiar el tamaño"></select>
-  <select id="masPri" title="Cambiar la prioridad"></select>
-  <button id="masEtq">Etiquetas</button>
-  <button data-mas="responsable">Responsable</button>
-  <button data-mas="negocio">Negocio</button>
-  <button data-mas="fechas">Fechas</button>
-  <button id="masFav">Favoritas</button>
-  <button class="peligro" id="masElim">Eliminar</button>
-  <button class="ico-btn" id="masCerrar" title="Quitar la selección (Esc)" aria-label="Quitar la selección"></button>
+  <button type="button" class="ms-menu" data-mas="estado" data-ico="tablero" title="Cambiar estado" aria-label="Estado" aria-haspopup="true" aria-expanded="false"><span class="t">Estado</span><span class="ms-car">▴</span></button>
+  <button type="button" class="ms-menu" data-mas="prioridad" data-ico="prioridad" title="Cambiar prioridad" aria-label="Prioridad" aria-haspopup="true" aria-expanded="false"><span class="t">Prioridad</span><span class="ms-car">▴</span></button>
+  <button type="button" class="ms-menu" data-mas="tamano" data-ico="carga" title="Cambiar tamaño" aria-label="Tamaño" aria-haspopup="true" aria-expanded="false"><span class="t">Tamaño</span><span class="ms-car">▴</span></button>
+  <button type="button" class="ms-menu" data-mas="responsable" data-ico="usuario" title="Cambiar responsable" aria-label="Responsable" aria-haspopup="true" aria-expanded="false"><span class="t">Responsable</span><span class="ms-car">▴</span></button>
+  <button type="button" class="ms-menu" data-mas="negocio" data-ico="tienda" title="Cambiar negocio" aria-label="Negocio" aria-haspopup="true" aria-expanded="false"><span class="t">Negocio</span><span class="ms-car">▴</span></button>
+  <button type="button" class="ms-menu" data-mas="fechas" data-ico="calendario" title="Cambiar fechas" aria-label="Fechas" aria-haspopup="true" aria-expanded="false"><span class="t">Fechas</span><span class="ms-car">▴</span></button>
+  <button type="button" class="ms-menu" data-mas="etiquetas" data-ico="etiqueta" title="Cambiar etiquetas" aria-label="Etiquetas" aria-haspopup="true" aria-expanded="false"><span class="t">Etiquetas</span><span class="ms-car">▴</span></button>
+  <span class="ms-sep"></span>
+  <button type="button" class="ms-menu" data-mas="duplicar" data-ico="copiar" title="Duplicar las seleccionadas" aria-label="Duplicar" aria-haspopup="true" aria-expanded="false"><span class="t">Duplicar</span></button>
+  <button type="button" id="masFav" class="ms-fav" title="Agregar a favoritas" aria-label="Agregar a favoritas" aria-pressed="false"></button>
+  <button type="button" class="peligro" id="masElim" title="Eliminar las seleccionadas" aria-label="Eliminar"></button>
 </div>
-
-<!-- Ventana: cambio a varias actividades -->
-<dialog id="dlgMas">
-  <form id="formMas" novalidate>
-    <h2 id="masTitulo"></h2>
-    <p id="masSub"></p>
-    <div class="grid" id="masCampos"></div>
-    <div class="pie"><span></span>
-      <div class="barra">
-        <button type="button" id="masCancelar">Cancelar</button>
-        <button type="submit" class="prim" id="masAplicar">Aplicar</button>
-      </div>
-    </div>
-  </form>
-</dialog>
+<div class="ms-pop" id="msPop" hidden role="dialog"></div>
 
 <div id="toast"></div>
 <input type="file" id="inputArchivo" accept=".md,text/markdown,text/plain" hidden>
@@ -1581,7 +1728,7 @@ const colorEstado = v => (ESTADOS.find(e => e.v === (ALIAS_ESTADO[normaliza(v ||
 // sólo sube cuando cambia lo que se guarda en el .md. VERSION_TXT es la versión que se muestra.
 // Nombre que se muestra (mdexa-config.js): sin caracteres de HTML ni de control y no demasiado largo
 const limpiaMarca = v => (typeof v === 'string' ? v.replace(/[<>"`\u0000-\u001f]/g, '').trim().slice(0, 40).trim() : '') || 'MDexa';
-const NOMBRE_APP = limpiaMarca(window.MDEXA_CONFIG?.nombre), VERSION_MDEXA = 19, VERSION_TXT = '1.36.1', VERSION_FECHA = '27 nov 2026';
+const NOMBRE_APP = limpiaMarca(window.MDEXA_CONFIG?.nombre), VERSION_MDEXA = 19, VERSION_TXT = '1.37.0', VERSION_FECHA = '27 nov 2026';
 const VERSION_SIN_HITOS = 18, SIN_HITO = 'Sin hito';   // sin hitos el archivo se guarda como 18, para que las versiones anteriores lo sigan editando
 const verTxt = n => n >= 14 ? `v1.${n}.0` : `v${n}`;
 let versionArchivo = 0, versionArchivoTxt = '';
@@ -2630,9 +2777,15 @@ async function editarMeta() {
 }
 
 /* ============ Ventana de actividad ============ */
-$('fTam').innerHTML = `<option value="">Sin tamaño</option>` + ORDEN_TAM.map(t => `<option value="${t}">${t} · ${TAMANOS[t].txt}</option>`).join('');
-$('fEst').innerHTML = ESTADOS.map(e => `<option>${e.v}</option>`).join('');
-$('fPri').innerHTML = '<option value="">Sin prioridad</option>' + ORDEN_PRI.map(p => `<option>${p}</option>`).join('');
+// Estado, prioridad y tamaño se eligen con botones de colores (son radios: las flechas del teclado funcionan)
+function opciones(id, lista, inicial) {
+  $(id).innerHTML = lista.map(o => `<label class="opc-it" ${o.t ? `title="${o.t}"` : ''}><input type="radio" name="${id}" value="${o.v}" ${o.v === inicial ? 'checked' : ''} ${o.v ? '' : `aria-label="${o.t}"`}><span class="${o.c}">${o.n}</span></label>`).join('');
+}
+const valorOpc = id => $(id).querySelector('input:checked')?.value ?? '';
+const ponerOpc = (id, v) => $(id).querySelectorAll('input').forEach(i => { i.checked = i.value === v; });
+opciones('fEst', ESTADOS.map(e => ({ v: e.v, c: 'es-' + e.c, n: e.v })), 'Backlog');
+opciones('fPri', [{ v: '', c: 'nd', n: '—', t: 'Sin prioridad' }, ...ORDEN_PRI.map(p => ({ v: p, c: 'pri-' + p, n: icoPri(p) + p, t: PRIORIDADES[p].d }))], '');
+opciones('fTam', [{ v: '', c: 'nd', n: '—', t: 'Sin tamaño' }, ...ORDEN_TAM.map(t => ({ v: t, c: 'tam-' + t, n: t, t: TAMANOS[t].txt }))], '');
 $('fRep').innerHTML = '<option value="">No se repite</option>' + Object.entries(REPITE).map(([k, t]) => `<option value="${k}">${t}</option>`).join('');
 function notaRepite() {
   const r = $('fRep').value, f = $('fFin').value || $('fIni').value;
@@ -2724,14 +2877,25 @@ function preguntarUnaOVarias(lineas, negocio, responsable, editando) {
 }
 
 function actualizarForm() {
-  const term = $('fEst').value === 'Terminado';
+  const term = valorOpc('fEst') === 'Terminado', tam = valorOpc('fTam'), nt = $('notaTam');
   $('lblTerm').hidden = !term;
   if (term && !$('fTerm').value) $('fTerm').value = hoy();
-  $('notaXL').hidden = $('fTam').value !== 'XL';
+  $('notaXL').hidden = tam !== 'XL';
+  nt.hidden = !tam || tam === 'XL';
+  if (!nt.hidden) { nt.className = 'nota-tam tam-' + tam; nt.innerHTML = `${icoTam(tam)} <span class="nd">${TAMANOS[tam].txt}</span>`; }
 }
 $('fEst').onchange = actualizarForm; $('fTam').onchange = actualizarForm;
+// Ctrl+Enter guarda desde cualquier campo; Enter sobre un botón de opción no envía el formulario
+$('form').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (e.ctrlKey || e.metaKey) { e.preventDefault(); $('form').requestSubmit($('btnGuardarForm')); } else if (e.target.type === 'radio') e.preventDefault();
+});
 
+let fCopia = null, fotoInicial = '';
+// Para avisar si se va a duplicar con cambios sin guardar
+const fotoForm = () => JSON.stringify([['fAct', 'fNeg', 'fResp', 'fIni', 'fFin', 'fTerm', 'fRep', 'fSubTxt', 'fDepTxt', 'fEtqTxt'].map(i => $(i).value), ['fEst', 'fPri', 'fTam'].map(valorOpc), fEtqs, fDeps, fSubs]);
 function limpiarForm({ negocio = '', responsable = '' } = {}) {
+  fCopia = null;
   $('form').reset(); $('fNeg').value = negocio; $('fResp').value = responsable; fEtqs = []; pintarFEtq(); fDeps = []; pintarFDep(); fSubs = []; pintarFSubs(); $('fRep').value = ''; actualizarForm();
 }
 // Subtareas en la ventana de la actividad
@@ -2802,42 +2966,46 @@ $('fEtqChips').addEventListener('click', e => { const x = e.target.closest('.etq
 function abrirForm(id = null, preset = {}) {
   if (modo !== 'edicion') return;
   editId = id; const a = id ? actividades.find(x => x.id === id) : null;
-  $('formTitulo').textContent = a ? 'Editar actividad' : 'Nueva actividad';
+  $('formTitulo').innerHTML = a ? `${ico('lapiz', 20)} Editar actividad <span class="nd">#${a.id}</span>` : `${ico('mas', 20)} Nueva actividad`;
   if (a) {
-    $('fNeg').value = a.negocio; $('fAct').value = a.actividad; $('fResp').value = a.responsable; $('fTam').value = a.tamano || '';
-    $('fIni').value = a.inicio; $('fFin').value = a.fin; $('fEst').value = EST(a); $('fTerm').value = a.terminada;
-    $('fPri').value = a.prioridad || ''; $('fRep').value = a.repite || ''; fEtqs = [...etqs(a)]; pintarFEtq(); fDeps = [...deps(a)]; pintarFDep(); fSubs = subtareasDe(a).map(x => ({ ...x })); pintarFSubs();
+    $('fNeg').value = a.negocio; $('fAct').value = a.actividad; $('fResp').value = a.responsable; ponerOpc('fTam', a.tamano || '');
+    $('fIni').value = a.inicio; $('fFin').value = a.fin; ponerOpc('fEst', EST(a)); $('fTerm').value = a.terminada;
+    ponerOpc('fPri', a.prioridad || ''); $('fRep').value = a.repite || ''; fEtqs = [...etqs(a)]; pintarFEtq(); fDeps = [...deps(a)]; pintarFDep(); fSubs = subtareasDe(a).map(x => ({ ...x })); pintarFSubs();
+  } else if (preset.copia) {
+    const c = preset.copia; limpiarForm(c);
+    fCopia = c; $('fAct').value = c.actividad; ponerOpc('fTam', c.tamano); ponerOpc('fPri', c.prioridad); ponerOpc('fEst', 'Planeado');
+    $('fIni').value = c.inicio; $('fFin').value = c.fin; $('fRep').value = c.repite;
+    fEtqs = [...c.etiquetas]; pintarFEtq(); fDeps = [...deps({ ...c, id: -1 })]; pintarFDep(); fSubs = c.subtareas.map(x => ({ ...x })); pintarFSubs();
+    $('formTitulo').innerHTML = `${ico('mas', 20)} Nueva actividad <span class="nd">copia de #${c.de}</span>`;
   } else {
     const filtro = fUno('qNeg');
     limpiarForm({ negocio: filtro && filtro !== SIN_NEGOCIO ? filtro : '' });
     if (preset.fin) $('fFin').value = preset.fin;
   }
   actualizarForm(); notaRepite();
-  $('btnOtra').hidden = !!a; $('btnEliminarForm').hidden = !a; $('btnNotasForm').hidden = !a; $('btnHistForm').hidden = !a; $('btnImgsForm').hidden = !a;
+  $('btnOtra').hidden = !!a; $('btnDuplicarForm').hidden = !a; $('btnEliminarForm').hidden = !a; $('btnNotasForm').hidden = !a; $('btnHistForm').hidden = !a; $('btnImgsForm').hidden = !a;
   if (a) { const n = notas.filter(x => x.act === a.id).length; $('btnNotasForm').lastChild.textContent = n ? `Notas (${n})` : 'Notas';
     const ni = imagenes.filter(x => x.act === a.id).length; $('btnImgsForm').lastChild.textContent = ni ? `Imágenes (${ni})` : 'Imágenes'; }
+  fotoInicial = fotoForm();
   $('dlgAct').showModal();
-  (a || $('fNeg').value ? $('fAct') : $('fNeg')).focus();
+  $('fAct').focus();
 }
 $('btnCancelar').onclick = () => $('dlgAct').close();
 $('dlgAct').addEventListener('close', () => { editId = null; });
 $('btnEliminarForm').onclick = () => { if (editId) eliminar(editId); };
-$('fAct').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $('form').requestSubmit($('btnGuardarForm')); }
-});
 
 $('form').onsubmit = async e => {
   e.preventDefault();
   if (modo !== 'edicion') return;
-  const seguir = e.submitter?.id === 'btnOtra';
+  const seguir = !editId && e.submitter?.id === 'btnOtra';   // al editar, Enter sólo guarda
   const negocio = $('fNeg').value.trim(), texto = $('fAct').value.trim();
   if (!negocio) { alert('El negocio es obligatorio.'); $('fNeg').focus(); return; }
   if (!texto) { alert('Escribe al menos una actividad.'); $('fAct').focus(); return; }
   agregarFEtq(); if (!agregarFDep()) return;
   if ($('fSubTxt').value.trim()) { agregarFSubs($('fSubTxt').value); $('fSubTxt').value = ''; }
   const subsForm = fSubs.map(x => ({ t: limpiaSub(x.t), ok: !!x.ok })).filter(x => x.t);
-  const comunes = { negocio, responsable: $('fResp').value.trim(), inicio: $('fIni').value, fin: $('fFin').value, tamano: $('fTam').value, prioridad: $('fPri').value, repite: $('fRep').value };
-  const estado = $('fEst').value, terminada = $('fTerm').value;
+  const comunes = { negocio, responsable: $('fResp').value.trim(), inicio: $('fIni').value, fin: $('fFin').value, tamano: valorOpc('fTam'), prioridad: valorOpc('fPri'), repite: $('fRep').value };
+  const estado = valorOpc('fEst'), terminada = $('fTerm').value;
   { const base = editId ? actPorId(editId) : { id: -1, actividad: texto, estado: 'Backlog' };
     if (!avisoDeps({ ...base, depende: fDeps }, estado)) return; }
   if (comunes.inicio && comunes.fin && comunes.fin < comunes.inicio) { alert('La fecha fin no puede ser anterior a la fecha inicio.'); return; }
@@ -2850,11 +3018,14 @@ $('form').onsubmit = async e => {
     if (r === 'varias') textos = lineas;
   }
 
+  // La copia que se cambió de negocio no necesita el «(copia)» que se le puso en el original
+  if (fCopia && textos.length === 1 && negocio !== fCopia.negocioOrigen && texto === fCopia.actividad.trim()) textos = [fCopia.nombreOrigen];
+  const hitoCopia = fCopia?.hito && hitos.find(h => h.id === fCopia.hito && hitoCompatible(h, negocio))?.id;
   let siguiente = siguienteId();
   textos.forEach((t, i) => {
     let a;
     if (i === 0 && editId) { a = actividades.find(x => x.id === editId); Object.assign(a, comunes, { actividad: t, etiquetas: [...fEtqs], depende: [...fDeps], subtareas: subsForm.map(x => ({ ...x })) }); }
-    else { a = { id: siguiente++, ...comunes, actividad: t, etiquetas: [...fEtqs], depende: [...fDeps], subtareas: subsForm.map(x => ({ ...x })) }; actividades.push(a); }
+    else { a = { id: siguiente++, ...comunes, actividad: t, etiquetas: [...fEtqs], depende: [...fDeps], subtareas: subsForm.map(x => ({ ...x })), ...(hitoCopia ? { hito: hitoCopia } : {}) }; actividades.push(a); }
     setEstado(a, estado, terminada);
   });
 
@@ -2862,9 +3033,49 @@ $('form').onsubmit = async e => {
   render(); guardar();
   if (seguir) {
     const mantener = [...fEtqs], pri = comunes.prioridad;
-    limpiarForm({ negocio, responsable: comunes.responsable }); fEtqs = mantener; pintarFEtq(); $('fPri').value = pri; $('fAct').focus();
+    limpiarForm({ negocio, responsable: comunes.responsable }); fEtqs = mantener; pintarFEtq(); ponerOpc('fPri', pri); $('fAct').focus();
     aviso(textos.length === 1 ? 'Actividad agregada' : `${textos.length} actividades agregadas`);
   } else $('dlgAct').close();
+};
+
+/* ---- Duplicar ---- */
+// En el mismo negocio la copia se distingue con «(copia)» al final de su primera línea
+function nombreCopia(texto) {
+  const [primera = '', ...resto] = String(texto).split('\n');
+  return [/\(copia\)\s*$/i.test(primera) ? primera : `${primera.trimEnd()} (copia)`, ...resto].join('\n');
+}
+// Empieza en Planeado, con las subtareas sin marcar y sin notas, imágenes ni historial; el hito sólo si sigue abierto e incluye su negocio
+function datosCopia(a, negocio = a.negocio, desp = 0, repetir = true) {
+  const h = hitos.find(x => x.id === a.hito), mover = f => (f && desp ? addDias(f, desp) : f);
+  return { negocio, actividad: negocio === a.negocio ? nombreCopia(a.actividad) : a.actividad, tamano: a.tamano || '', prioridad: a.prioridad || '',
+    etiquetas: [...etqs(a)], depende: [...(a.depende || [])], repite: repetir ? a.repite || '' : '', responsable: a.responsable, inicio: mover(a.inicio), fin: mover(a.fin),
+    subtareas: subtareasDe(a).map(x => ({ t: x.t, ok: false })), ...(h && !hitoCumplido(h) && hitoCompatible(h, negocio) ? { hito: h.id } : {}) };
+}
+// Copia las seleccionadas una vez por negocio destino; las que dependían entre sí quedan dependiendo unas de otras
+function duplicarLote(origen, { negocios, desp, estado }) {
+  const nuevas = [];
+  const planes = (negocios || [null]).map(destino => origen.map(a => ({ a, c: datosCopia(a, destino ?? a.negocio, desp, origen.length === 1) })));
+  for (const plan of planes) {
+    const base = siguienteId(), nuevoId = new Map(plan.map(({ a }, i) => [a.id, base + i]));
+    for (const { a, c } of plan) {
+      const n = { id: nuevoId.get(a.id), ...c, depende: c.depende.map(x => nuevoId.get(x) ?? x) };
+      actividades.push(n); setEstado(n, estado, ''); nuevas.push(n.id);
+    }
+  }
+  return nuevas;
+}
+// Con una sola se abre «Nueva actividad» ya llena: nada se crea hasta guardar
+function duplicar(id) {
+  const a = actividades.find(x => x.id === id);
+  if (!a || modo !== 'edicion') return;
+  if ($('dlgAct').open) $('dlgAct').close();
+  const c = datosCopia(a);
+  abrirForm(null, { copia: { ...c, de: a.id, negocioOrigen: a.negocio, nombreOrigen: a.actividad } });
+}
+$('btnDuplicarForm').onclick = () => {
+  if (!editId) return;
+  if (fotoForm() !== fotoInicial && !confirm(`Los cambios sin guardar de #${editId} no se copiarán y se perderán. ¿Duplicar de todos modos?`)) return;
+  duplicar(editId);
 };
 
 function eliminar(id) {
@@ -2906,7 +3117,7 @@ $('tabla').addEventListener('click', e => {
   if (f) { e.stopPropagation(); toggleFav(+f.dataset.fav); return; }
   const b = e.target.closest('button[data-acc]'); if (!b) return;
   const id = +b.dataset.id;
-  if (b.dataset.acc === 'editar') abrirForm(id); else eliminar(id);
+  if (b.dataset.acc === 'editar') abrirForm(id); else if (b.dataset.acc === 'duplicar') duplicar(id); else eliminar(id);
 });
 
 /* ============ Vista ============ */
@@ -2917,55 +3128,59 @@ function renderEstado() {
   $('infoArchivo').innerHTML = info.join(' · ');
   $('lnkUsuario').onclick = e => { e.preventDefault(); cambiarUsuario(); };
 
-  const b = $('banner'); let cls = '', html = '';
+  // El estado vive en la barra superior: la clase (libre, mio, otro, solo) le da color; la explicación larga sale al pasar el cursor
+  const b = $('banner'); let cls = 'libre', titulo = '', detalle = '', ayuda = '', acciones = '';
   if (!nombreArchivo && ultimoPendiente) {
-    cls = 'libre';
-    html = `<div>Último archivo consultado: <b>${esc(ultimoPendiente.name)}</b>${ultimoPendiente.proyecto ? ' · ' + esc(ultimoPendiente.proyecto) : ''}
-              <div class="det">Abierto ${fmtHora(ultimoPendiente.abierto)}. El navegador pide confirmar el permiso para leerlo.</div></div>
-            <div class="barra"><button data-acc="recientes">Otros recientes…</button><button class="prim" data-acc="reabrir">Abrir ${esc(ultimoPendiente.name)}</button></div>`;
+    titulo = `Último consultado: <b>${esc(ultimoPendiente.name)}</b>`;
+    detalle = `${ultimoPendiente.proyecto ? esc(ultimoPendiente.proyecto) + ' · ' : ''}abierto ${fmtHora(ultimoPendiente.abierto)}`;
+    ayuda = 'El navegador pide confirmar el permiso para volver a leerlo.';
+    acciones = `<button class="prim" data-acc="reabrir" title="Abrir ${esc(ultimoPendiente.name)}">Reabrir</button>`;
   } else if (nombreArchivo && archivoMasNuevo()) {
-    cls = 'otro';
-    html = `<div><b>Solo lectura: tu versión de MDexa es más vieja que el archivo.</b> Lo guardó la ${versionArchivoTxt ? 'v' + versionArchivoTxt : verTxt(versionArchivo)} y tú tienes la v${VERSION_TXT}.
-              <div class="det">Para no borrar información que esta versión no conoce, no se permite editar, comentar ni restaurar. Pide al equipo el HTML más reciente.</div></div>`;
+    cls = 'solo'; titulo = '<b>Solo lectura: versión más nueva</b>';
+    detalle = `Archivo ${versionArchivoTxt ? 'v' + versionArchivoTxt : verTxt(versionArchivo)} · tienes la v${VERSION_TXT}`;
+    ayuda = 'Tu versión de MDexa es más vieja que el archivo. Para no borrar información que esta versión no conoce, no se permite editar, comentar ni restaurar. Pide al equipo el HTML más reciente.';
   } else if (!nombreArchivo) {
-    html = `<div>Abre el <b>.md</b> compartido o crea uno nuevo para empezar. <span class="det">¿Primera vez? Consulta el <a href="#" data-acc="manual">manual de uso</a>.</span></div>`;
+    titulo = 'Abre o crea un <b>.md</b> para empezar';
+    detalle = '¿Primera vez? Consulta el <a href="#" data-acc="manual">manual de uso</a>';
   } else if (!soportaFS) {
-    cls = modo === 'edicion' ? 'mio' : 'libre';
-    const nota = copiaLocal ? '<b>Copia guardada en este navegador</b>; puede no ser la más reciente. ' : '';
-    html = modo === 'edicion'
-      ? `<div>Editando una copia local.${sucio ? ' <b>Hay cambios sin descargar.</b>' : ''}<div class="det">Este navegador no puede escribir ni bloquear el archivo compartido. Usa Chrome o Edge para trabajo en equipo; aquí guarda con "Más → Descargar copia .md".</div></div>
-         <div class="barra"><button data-acc="soltar">Salir de edición</button></div>`
-      : `<div>${nota}Solo lectura.<div class="det">Este navegador no puede bloquear el archivo compartido; usa Chrome o Edge para trabajo en equipo.</div></div>
-         <div class="barra"><button class="prim" data-acc="tomar">Editar</button></div>`;
+    cls = modo === 'edicion' ? 'mio' : 'solo';
+    ayuda = 'Este navegador no puede escribir ni bloquear el archivo compartido. Usa Chrome o Edge para trabajo en equipo; aquí guarda con "Más → Descargar copia .md".';
+    if (modo === 'edicion') {
+      titulo = '<b>Editando una copia local</b>'; detalle = sucio ? '<b>Hay cambios sin descargar</b>' : 'Guarda con Más → Descargar copia .md';
+      acciones = '<button data-acc="soltar">Salir de edición</button>';
+    } else {
+      titulo = '<b>Solo lectura</b>'; detalle = copiaLocal ? 'Copia de este navegador; puede no ser la más reciente' : 'Usa Chrome o Edge para trabajo en equipo';
+      acciones = '<button class="prim" data-acc="tomar">Editar</button>';
+    }
   } else if (modo === 'edicion') {
-    cls = 'mio';
-    html = `<div><b>Estás editando.</b> Nadie más puede editar hasta que sueltes el archivo. Cada cambio se guarda al momento.
-              <div class="det">${ultimoGuardado ? 'Último guardado: ' + ultimoGuardado.toLocaleTimeString('es-MX') : ''}</div></div>
-            <div class="barra"><button data-acc="deshacer" class="ico-btn" ${pilaDeshacer.length ? '' : 'disabled'} title="${pilaDeshacer.length ? 'Deshacer ' + esc(pilaDeshacer[pilaDeshacer.length - 1].d) : 'Nada que deshacer'} (Ctrl+Z)" aria-label="Deshacer">${ico('deshacer', 16)}</button>
-              <button data-acc="rehacer" class="ico-btn" ${pilaRehacer.length ? '' : 'disabled'} title="${pilaRehacer.length ? 'Rehacer ' + esc(pilaRehacer[pilaRehacer.length - 1].d) : 'Nada que rehacer'} (Ctrl+Y)" aria-label="Rehacer">${ico('rehacer', 16)}</button>
-              <button class="prim" data-acc="soltar">Soltar archivo</button></div>`;
+    cls = 'mio'; titulo = '<b>Estás editando</b>';
+    detalle = ultimoGuardado ? 'Guardado ' + ultimoGuardado.toLocaleTimeString('es-MX') : 'Cada cambio se guarda al momento';
+    ayuda = 'Nadie más puede editar hasta que sueltes el archivo. Cada cambio se guarda al momento.';
+    acciones = `<button data-acc="deshacer" class="ico-btn" ${pilaDeshacer.length ? '' : 'disabled'} title="${pilaDeshacer.length ? 'Deshacer ' + esc(pilaDeshacer[pilaDeshacer.length - 1].d) : 'Nada que deshacer'} (Ctrl+Z)" aria-label="Deshacer">${ico('deshacer', 16)}</button>
+      <button data-acc="rehacer" class="ico-btn" ${pilaRehacer.length ? '' : 'disabled'} title="${pilaRehacer.length ? 'Rehacer ' + esc(pilaRehacer[pilaRehacer.length - 1].d) : 'Nada que rehacer'} (Ctrl+Y)" aria-label="Rehacer">${ico('rehacer', 16)}</button>
+      <button class="prim" data-acc="soltar">Soltar archivo</button>`;
   } else if (candado && esMio(candado)) {
-    cls = 'mio';
-    html = `<div>El archivo sigue tomado a tu nombre desde ${fmtHora(candado.desde)}. <div class="det">Probablemente recargaste la página mientras editabas.</div></div>
-            <div class="barra"><button data-acc="liberar">Soltar archivo</button><button class="prim" data-acc="tomar">Continuar editando</button></div>`;
+    cls = 'mio'; titulo = '<b>Tomado a tu nombre</b>'; detalle = `Desde ${fmtHora(candado.desde)}`;
+    ayuda = 'El archivo sigue tomado a tu nombre. Probablemente recargaste la página mientras editabas.';
+    acciones = '<button data-acc="liberar">Soltar</button><button class="prim" data-acc="tomar">Continuar editando</button>';
   } else if (candado && candadoVigente(candado)) {
-    cls = 'otro';
-    html = `<div><b>${esc(candado.usuario)}</b> está editando desde ${fmtHora(candado.desde)} (activo ${hace(candado.latido)}). Puedes ver, pero no editar.
-              <div class="det">La vista se actualiza sola cada 15 segundos.</div></div>
-            <div class="barra"><button disabled data-ico="candado">Tomar para editar</button></div>`;
+    cls = 'otro'; titulo = `<b>${esc(candado.usuario)}</b> está editando`; detalle = `Desde ${fmtHora(candado.desde)} · activo ${hace(candado.latido)}`;
+    ayuda = 'Puedes ver, pero no editar. La vista se actualiza sola cada 15 segundos.';
+    acciones = '<button disabled data-ico="candado">Tomar para editar</button>';
   } else if (candado) {
-    cls = 'otro';
-    html = `<div><b>${esc(candado.usuario)}</b> tomó el archivo pero no tiene actividad desde ${fmtHora(candado.latido)}. Probablemente cerró sin soltarlo.</div>
-            <div class="barra"><button class="prim" data-acc="tomar">Tomar de todos modos</button></div>`;
+    cls = 'otro'; titulo = `<b>${esc(candado.usuario)}</b> tomó el archivo`; detalle = `Sin actividad desde ${fmtHora(candado.latido)}`;
+    ayuda = 'No tiene actividad: probablemente cerró sin soltarlo.';
+    acciones = '<button class="prim" data-acc="tomar">Tomar de todos modos</button>';
   } else {
-    cls = 'libre';
-    html = `<div>Solo lectura. Nadie está editando el archivo.<div class="det">La vista se actualiza sola cada 15 segundos.</div></div>
-            <div class="barra"><button class="prim" data-acc="tomar">Tomar para editar</button></div>`;
+    titulo = '<b>Libre para editar</b>'; detalle = 'Nadie lo está editando';
+    ayuda = 'Solo lectura. La vista se actualiza sola cada 15 segundos.';
+    acciones = '<button class="prim" data-acc="tomar">Tomar para editar</button>';
   }
   const icB = !nombreArchivo ? 'carpeta' : archivoMasNuevo() ? 'alerta' : modo === 'edicion' ? 'lapiz'
             : candado && !esMio(candado) ? (candadoVigente(candado) ? 'candado' : 'alerta') : candado ? 'lapiz' : 'ojo';
-  b.className = 'banner ' + cls; b.innerHTML = `<span class="b-ico">${ico(icB, 22)}</span>` + html;
-  const icoAcc = { tomar: 'lapiz', soltar: 'abierto', liberar: 'abierto', reabrir: 'carpeta', recientes: 'reloj' };
+  b.className = 'estado ' + cls;
+  b.innerHTML = `<span class="b-ico">${ico(icB, 20)}</span><div class="est-txt" ${ayuda ? `title="${esc(ayuda)}"` : ''}><span>${titulo}</span>${detalle ? `<span class="det">${detalle}</span>` : ''}</div>${acciones ? `<div class="est-acc">${acciones}</div>` : ''}`;
+  const icoAcc = { tomar: 'lapiz', soltar: 'abierto', liberar: 'abierto', reabrir: 'carpeta' };
   b.querySelectorAll('button[data-acc]').forEach(x => { if (icoAcc[x.dataset.acc]) x.dataset.ico = icoAcc[x.dataset.acc]; });
   iconizar(b);
   $('btnNuevaAct').hidden = modo !== 'edicion';
@@ -2974,7 +3189,7 @@ function renderEstado() {
 $('banner').addEventListener('click', e => {
   const b = e.target.closest('[data-acc]'); if (!b) return;
   e.preventDefault();
-  ({ tomar, soltar, liberar: liberarPropio, reabrir: reabrirUltimo, recientes: abrir, manual: abrirManual, deshacer, rehacer })[b.dataset.acc]?.();
+  ({ tomar, soltar, liberar: liberarPropio, reabrir: reabrirUltimo, manual: abrirManual, deshacer, rehacer })[b.dataset.acc]?.();
 });
 
 function bloqueHitos() {
@@ -2987,14 +3202,41 @@ function bloqueHitos() {
       <span class="bar"><span class="f-verde" style="width:${info.pct}%"></span></span><span class="nd">${info.hechas}/${info.total}</span><b class="${color[info.estado]}" title="${esc(info.detalle)}">${info.estado}</b></button>`).join('') : `<div class="nd">${hitos.length ? 'Todos los hitos están cumplidos.' : 'Todavía no hay hitos.'}</div>`}
     ${prox.length > 4 ? `<div class="nd">y ${prox.length - 4} más</div>` : ''}</div>`;
 }
+// Tres líneas: encabezado, tiempo (con los hitos en su fecha) contra actividades terminadas, y los dos hitos que siguen
+function metaCompactaHTML(x) {
+  const t = x.t, prox = proximosHitos(), color = { Cumplido: 'es-verde', 'En tiempo': 'es-gris', 'En riesgo': 'es-amar', Vencido: 'es-rojo' };
+  const marca = k => {
+    const uno = k.hitos.length === 1 ? k.hitos[0] : null;
+    const texto = k.hitos.map(({ h, info }) => `${h.nombre} · ${fmtTxt(h.fecha)} · ${info.estado} (${info.hechas}/${info.total})`).join('\n') + (k.fuera ? `\n(${k.fuera} del periodo de la meta)` : '');
+    return `<button type="button" class="mc-marca ${uno ? claseHito(uno.h, k.estado) : claseHito({}, k.estado) + ' varios'} ${k.fuera ? 'fuera' : ''}" style="left:${k.x}%" data-marca="${uno ? uno.h.id : ''}" title="${esc(texto)}" aria-label="${esc(texto)}"><i>${uno ? '' : `<b>${k.hitos.length}</b>`}</i></button>`;
+  };
+  const dia = !t ? '' : !t.iniciada ? 'aún no inicia' : t.terminada ? 'terminó' : `día ${t.trans} de ${t.totalD}`;
+  return `<div class="mc-cab"><span class="etq">${ico('bandera', 13)} Meta</span>
+      ${t ? `<span class="rango">${fmtTxt(meta.inicio)} → ${fmtTxt(meta.fin)}</span><span class="nd">· ${plazoMeta()}</span>` : '<span class="nd">Sin meta definida</span>'}
+      <span class="mc-der">${x.ritmo ? `<span class="ritmo ${x.ritmo.cls}" title="${esc(x.ritmo.det)}">${x.ritmo.txt}</span>` : ''}<button type="button" class="meta-plegar" data-acc="plegar" data-ico="expandir" aria-expanded="false" title="Ver el bloque completo">Expandir</button></span></div>
+    ${t ? `<div class="mc-barras">
+      <span>Tiempo</span>
+      <div class="mc-tiempo"><div class="bar"><div class="f-azul" style="width:${t.pct}%"></div></div>${t.iniciada && !t.terminada ? `<i class="mc-hoy" style="left:${t.pct}%" title="Hoy"></i>` : ''}${marcasMeta().map(marca).join('')}</div>
+      <span class="mc-val" title="${dia.charAt(0).toUpperCase() + dia.slice(1)}"><b>${t.pct}%</b> <span class="nd">${dia}</span></span>
+      <span title="No cuentan las actividades en Backlog ni las canceladas">Terminadas</span>
+      <div class="bar"><div class="f-verde" style="width:${x.pctAv}%"></div></div>
+      <span class="mc-val"><b>${x.pctAv}%</b> <span class="nd">${x.comp.length} de ${x.medibles.length}</span></span></div>` : ''}
+    ${hitos.length ? `<div class="mc-sig"><span class="etq">Siguen</span>${prox.length ? '' : '<span class="nd">Todos los hitos están cumplidos.</span>'}
+      ${prox.slice(0, 2).map(({ h, info }) => `<button type="button" class="mc-prox" data-hito="${h.id}" title="${esc(info.detalle)}"><i class="hito-punto ${claseHito(h, info.estado)}"></i><span class="mc-nom">${esc(h.nombre)}</span><span class="nd">${fmtTxt(h.fecha)}${h.fecha ? ` (${cuandoEs(h.fecha)})` : ''} · ${info.hechas}/${info.total}</span><b class="${color[info.estado]}">${info.estado}</b></button>`).join('')}
+      <button type="button" class="mc-mas" data-acc="hitos" title="Ver todos los hitos (${hitos.length})">${prox.length > 2 ? `+${prox.length - 2}` : 'Ver todos'}</button></div>` : ''}`;
+}
 function renderMeta(x) {
-  $('titulo').textContent = meta.proyecto || (nombreArchivo ? nombreArchivo.replace(/\.md$/i, '') : 'Sin proyecto abierto');
+  $('titulo').textContent = $('titulo').title = meta.proyecto || (nombreArchivo ? nombreArchivo.replace(/\.md$/i, '') : 'Sin proyecto abierto');
   document.title = (meta.proyecto ? meta.proyecto + ' · ' : '') + NOMBRE_APP;
   const card = $('metaCard');
   if (!nombreArchivo) { card.hidden = true; return; }
   card.hidden = false;
-  const btn = modo === 'edicion' ? `<button data-acc="meta" data-ico="calendario">${meta.inicio ? 'Editar meta' : 'Definir meta'}</button>` : '';
-  if (!x.t) {
+  const btn = (modo === 'edicion' ? `<button data-acc="meta" data-ico="calendario">${meta.inicio ? 'Editar meta' : 'Definir meta'}</button>` : '')
+    + '<button type="button" class="meta-plegar" data-acc="plegar" data-ico="contraer" aria-expanded="true" title="Reducir este bloque; se conservan el avance y los próximos hitos">Compactar</button>';
+  card.classList.toggle('compacta', metaCompacta);
+  if (metaCompacta) {
+    card.innerHTML = metaCompactaHTML(x);
+  } else if (!x.t) {
     card.innerHTML = `<div class="meta-top"><div><div class="etq">${ico('bandera', 13)} Meta del proyecto</div><div class="rango nd">Sin meta definida</div></div><div class="barra">${btn}</div></div>${bloqueHitos()}`;
   } else {
     const t = x.t;
@@ -3019,11 +3261,14 @@ function renderMeta(x) {
   const bm = card.querySelector('[data-acc="meta"]'); if (bm) bm.onclick = () => editarMeta();
   const bh = card.querySelector('[data-acc="hitos"]'); if (bh) bh.onclick = () => abrirHitos();
   const bn = card.querySelector('[data-acc="nuevo-hito"]'); if (bn) bn.onclick = () => abrirFormHito();
-  card.querySelectorAll('.m-hito').forEach(b => b.onclick = () => abrirHito(+b.dataset.hito));
+  card.querySelectorAll('.m-hito,.mc-prox').forEach(b => b.onclick = () => abrirHito(+b.dataset.hito));
+  card.querySelectorAll('.mc-marca').forEach(b => b.onclick = () => (b.dataset.marca ? abrirHito(+b.dataset.marca) : abrirHitos()));
+  const bp = card.querySelector('[data-acc="plegar"]');
+  if (bp) bp.onclick = () => { metaCompacta = !metaCompacta; try { localStorage.setItem('mdexa.metaCompacta', metaCompacta ? '1' : '0'); } catch {} render(); };
   const ba = card.querySelector('[data-acc="avance"]');
   if (ba) ba.onclick = () => { verAvance = !verAvance; try { localStorage.setItem('mdexa.verAvance', verAvance ? '1' : '0'); } catch {} render(); };
   card.querySelectorAll('[data-av-u]').forEach(b => b.onclick = () => { unidadAvance = b.dataset.avU; try { localStorage.setItem('mdexa.avanceUnidad', unidadAvance); } catch {} render(); });
-  if (verAvance) activarHoverAvance(card);
+  if (verAvance && !metaCompacta) activarHoverAvance(card);
 }
 
 function llenarSelect(id, valores, etiquetaTodos) {
@@ -3064,6 +3309,7 @@ function fila(a, conNegocio, tagNegocio = false) {
     <td data-t="Fin" class="${campoNov(a, 'fin')}">${ed ? `<input type="date" ${attrs('fin')} value="${a.fin || ''}">` : fmt(a.fin)}</td>
     <td data-t="Estado" class="${campoNov(a, 'estado')}"><div class="celda-est">${celdaEstado}${chipVenc}${term}</div></td>
     ${ed ? `<td class="acc"><button class="ico-btn" data-acc="editar" data-id="${a.id}" title="Editar" aria-label="Editar">${ico('lapiz')}</button>
+      <button class="ico-btn" data-acc="duplicar" data-id="${a.id}" title="Duplicar" aria-label="Duplicar">${ico('copiar')}</button>
       <button class="ico-btn peligro" data-acc="eliminar" data-id="${a.id}" title="Eliminar" aria-label="Eliminar">${ico('basura')}</button></td>` : ''}
   </tr>`;
 }
@@ -3129,7 +3375,7 @@ function render() {
   const n = fsel('qNeg'), r = enM ? new Set() : fsel('qResp'), s = fsel('qEst'), tm = fsel('qTam'), pr = fsel('qPri'), et = fsel('qEtq'), fh = fsel('qHito');
   const pasaEtq = a => !et.size || [...et].some(v => v === SIN_ETQ ? !etqs(a).length : tieneEtq(a, v));
   const ocultaBk = backlogOculto(), nBk = actividades.filter(a => EST(a) === 'Backlog').length;
-  $('lblBacklog').querySelector('span').textContent = `Mostrar backlog${nBk ? ` (${nBk})` : ''}`;
+  $('lblBacklog').querySelector('span').textContent = `Backlog${nBk ? ` (${nBk})` : ''}`;
   const pasaEst = a => !s.size || [...s].some(v => v === 'Vencida' ? vencida(a) : v === 'Bloqueada' ? bloqueada(a) : v === 'Recurrente' ? !!REPITE[a.repite] : v === 'Con novedades' ? novIds.has(a.id) : EST(a) === v);
   const valor = (a, k) => k === 'estado' ? String(ESTADOS.findIndex(e => e.v === EST(a)))
                         : k === 'tamano' ? (a.tamano ? String(ORDEN_TAM.indexOf(a.tamano)) : '')
@@ -3871,7 +4117,8 @@ window.addEventListener('scroll', () => { if (!spyRaf) spyRaf = requestAnimation
 window.addEventListener('resize', () => { if (!spyRaf) spyRaf = requestAnimationFrame(actualizarSpy); });
 
 /* ============ Avance acumulado contra la meta (burn-up) ============ */
-let unidadAvance = 'act', verAvance = false;
+let unidadAvance = 'act', verAvance = false, metaCompacta = false;
+try { metaCompacta = localStorage.getItem('mdexa.metaCompacta') === '1'; } catch {}
 try { unidadAvance = localStorage.getItem('mdexa.avanceUnidad') === 'h' ? 'h' : 'act'; verAvance = localStorage.getItem('mdexa.verAvance') === '1'; } catch {}
 const etqUnidad = (v, u) => u === 'h' ? `${Math.round(v)} h` : `${Math.round(v * 10) / 10}`;
 function datosAvance(unidad = 'act') {
@@ -4745,7 +4992,7 @@ const estiloCols = document.createElement('style'); document.head.appendChild(es
 function aplicarCols() {
   estiloCols.textContent = COLS_OPC.filter(([k]) => colsOcultas.has(k)).map(([k, t]) => `#vistaLista th[data-k="${k}"],#tabla td[data-t="${t}"]{display:none}`).join('\n');
   const n = COLS_OPC.filter(([k]) => colsOcultas.has(k)).length;
-  $('btnCols').innerHTML = `${ico('columnas', 15)}<span class="msel-txt">${n ? `Columnas · ${n} oculta${n === 1 ? '' : 's'}` : 'Columnas'}</span><span class="msel-car">▾</span>`;
+  $('btnCols').innerHTML = `${ico('columnas', 15)}${n ? `<span class="msel-txt">${n} oculta${n === 1 ? '' : 's'}</span>` : ''}<span class="msel-car">▾</span>`;
   $('colsWrap').classList.toggle('activo', n > 0);
   $('colsPop').innerHTML = `<div class="msel-sep">Mostrar en la lista</div>` + `<label class="msel-op"><input type="checkbox" checked disabled><span>Actividad</span></label>` +
     COLS_OPC.map(([k, t]) => `<label class="msel-op"><input type="checkbox" data-col="${k}" ${colsOcultas.has(k) ? '' : 'checked'}><span>${t}${k === 'negocio' ? ' <span class="nd">(si no agrupas por negocio)</span>' : ''}</span></label>`).join('') +
@@ -4795,6 +5042,31 @@ function hitosVisibles() {
   return hitosOrdenados().filter(h => h.fecha && (!negs.length || !h.negocios.length || h.negocios.some(n => negs.includes(n))) && (!el.length || el.includes(h.nombre)));
 }
 const proximosHitos = () => hitosOrdenados().map(h => ({ h, info: infoHito(h) })).filter(x => x.info.estado !== 'Cumplido');
+// Meta compacta: «en 5 días», lo que le queda a la meta y los hitos colocados en su escala de tiempo
+function cuandoEs(fecha) { const n = dias(hoy(), fecha); return n === 0 ? 'hoy' : n === 1 ? 'mañana' : n === -1 ? 'ayer' : n > 0 ? `en ${n} días` : `hace ${-n} días`; }
+function plazoMeta() {
+  if (hoy() < meta.inicio) return `inicia ${cuandoEs(meta.inicio)}`;
+  if (hoy() > meta.fin) return `terminó ${cuandoEs(meta.fin)}`;
+  const n = dias(hoy(), meta.fin);
+  return n === 0 ? 'termina hoy' : n === 1 ? 'queda 1 día' : `quedan ${n} días`;
+}
+// Los que quedan a menos de `juntar` puntos comparten marca (con el estado más grave); los de fuera, en el extremo
+function marcasMeta(juntar = 2) {
+  const { inicio, fin } = meta;
+  if (!inicio || !fin || fin < inicio) return [];
+  const total = dias(inicio, fin) + 1, marcas = [], gravedad = ['Vencido', 'En riesgo', 'En tiempo', 'Cumplido'];
+  for (const h of hitosOrdenados().filter(x => x.fecha)) {
+    const fuera = h.fecha < inicio ? 'antes' : h.fecha > fin ? 'después' : '';
+    const x = fuera === 'antes' ? 0 : fuera === 'después' ? 100 : Math.round((dias(inicio, h.fecha) + 1) * 1000 / total) / 10;
+    const info = infoHito(h), u = marcas[marcas.length - 1];
+    if (u && x - u.desde < juntar) {
+      if (u.fuera !== fuera) u.fuera = '';
+      u.hitos.push({ h, info }); u.x = Math.round((u.desde + x) * 5) / 10;
+      if (gravedad.indexOf(info.estado) < gravedad.indexOf(u.estado)) u.estado = info.estado;
+    } else marcas.push({ x, desde: x, hitos: [{ h, info }], fuera, estado: info.estado });
+  }
+  return marcas;
+}
 function carrilesHitos(xs, ancho) { const fin = []; return xs.map(x => { let i = fin.findIndex(f => f <= x); if (i < 0) i = fin.length; fin[i] = x + ancho; return i; }); }
 // Clases CSS: el estado y, si se le eligió, su color (que sustituye al del estado)
 const claseHito = (h, estado) => 'h-' + estado.replace(' ', '-') + (h.color ? ` h-color etq-${h.color}` : '');
@@ -4982,7 +5254,7 @@ function pintarDepsHito() {
   }).join('');
   const previo = hitos.find(x => x.id === hf.id), r = previo && recorridoHito(previo);
   $('hHist').hidden = !r;
-  $('hHist').innerHTML = r ? `<span class="hito-cab"><span>Historial de fechas <span class="nd">(recorrido ${pl(r.veces, 'vez', 'veces')} · ${conSigno(r.dias)} desde el ${fmtTxt(r.original)})</span></span></span>
+  $('hHist').innerHTML = r ? `<span class="hito-cab"><span class="campo-tit">${ico('reloj', 14)}Historial de fechas <span class="nd">(recorrido ${pl(r.veces, 'vez', 'veces')} · ${conSigno(r.dias)} desde el ${fmtTxt(r.original)})</span></span></span>
     <ul>${[...previo.cambios].reverse().map(c => `<li>${fmtTxt(c.antes)} → <b>${fmtTxt(c.despues)}</b> <span class="nd">· ${esc(c.autor)} · ${new Date(c.cuando).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}</span></li>`).join('')}</ul>` : '';
 }
 $('hDeps').addEventListener('change', () => { if (hf) hf.depende = [...$('hDeps').querySelectorAll('input:checked')].map(i => +i.value); });
@@ -5264,7 +5536,7 @@ $('etqBuscar').addEventListener('keydown', e => {
   const acts = actividades.filter(a => etqIds.includes(a.id));
   $('etqBuscar').value = ''; ponerEtq(t, !acts.every(a => tieneEtq(a, t)));
 });
-document.addEventListener('pointerdown', e => { if (!$('etqPop').hidden && !e.target.closest('#etqPop, [data-etqs], #masEtq')) cerrarEtq(); });
+document.addEventListener('pointerdown', e => { if (!$('etqPop').hidden && !e.target.closest('#etqPop, [data-etqs], [data-mas=etiquetas]')) cerrarEtq(); });
 // En cualquier vista: el botón abre las etiquetas; clic en una etiqueta filtra por ella
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-etqs]');
@@ -5469,11 +5741,13 @@ function pintarSeleccion() {
   });
   const n = selec.size, bar = $('masiva');
   bar.hidden = !n || modo !== 'edicion';
+  if (bar.hidden) cerrarMsMenu();
   document.body.classList.toggle('con-masiva', !bar.hidden);
   $('masN').textContent = n; $('masTxt').textContent = n === 1 ? 'seleccionada' : 'seleccionadas';
-  const vis = idsVisibles(); $('masTodas').hidden = !vis.length || vis.every(x => selec.has(x));
+  const vis = idsVisibles(); $('masTodas').hidden = !vis.length || vis.every(x => selec.has(x)); $('masTodas').textContent = `Todas (${vis.length})`;
   const todasFav = n && [...selec].every(id => favs.has(id));
-  $('masFav').lastChild.textContent = todasFav ? 'Quitar de favoritas' : 'Favoritas';
+  const bf = $('masFav'), tf = todasFav ? 'Quitar de favoritas' : 'Agregar a favoritas';
+  bf.title = tf; bf.setAttribute('aria-label', tf); bf.setAttribute('aria-pressed', !!todasFav); bf.classList.toggle('on', !!todasFav);
 }
 // Cualquier casilla de selección, en cualquier vista (sin activar el clic de la fila, tarjeta o grupo)
 document.addEventListener('click', e => {
@@ -5500,21 +5774,114 @@ document.addEventListener('dragstart', e => { if (e.target.closest?.('input.sel'
 function seleccionadas() { return actividades.filter(a => selec.has(a.id)); }
 function aplicarMasivo(fn, desc) {
   const l = seleccionadas(); if (!l.length || modo !== 'edicion') return;
-  l.forEach(fn); render(); guardar();
+  cerrarMsMenu(); l.forEach(fn); render(); guardar();
   aviso(`${desc} · ${pl(l.length, 'actividad', 'actividades')}`);
 }
-$('masEst').innerHTML = '<option value="">Estado…</option>' + ESTADOS.map(e => `<option>${e.v}</option>`).join('');
-$('masTam').innerHTML = '<option value="">Tamaño…</option>' + ORDEN_TAM.map(t => `<option value="${t}" title="${TAMANOS[t].txt}">${t}</option>`).join('') + '<option value="__sin">Sin tamaño</option>';
-$('masEst').onchange = () => { const v = $('masEst').value; $('masEst').value = ''; if (!v) return;
+// Menús de la barra de selección: se abren hacia arriba y un clic aplica el cambio a todas
+let msTipo = '';
+function cerrarMsMenu() {
+  if (!msTipo) return;
+  msTipo = ''; $('msPop').hidden = true; $('msPop').innerHTML = '';
+  document.querySelectorAll('#masiva [aria-expanded]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+}
+function cambiarEstadoMasivo(v) {
   if (['En progreso', 'Terminado'].includes(v)) {
     const bl = seleccionadas().filter(a => EST(a) !== v && pendientesDe(a).length);
     if (bl.length && !confirm(`${pl(bl.length, 'de las actividades elegidas depende', 'de las actividades elegidas dependen')} de otras que aún no terminan:\n\n${bl.slice(0, 8).map(a => `• #${a.id} ${nomCorto(a)} (espera a ${pendientesDe(a).map(d => '#' + d.id).join(', ')})`).join('\n')}\n\n¿Pasarlas a ${v} de todos modos?`)) return;
   }
-  aplicarMasivo(a => setEstado(a, v), `Estado: ${v}`); };
-$('masTam').onchange = () => { const v = $('masTam').value; $('masTam').value = ''; if (v) aplicarMasivo(a => { a.tamano = v === '__sin' ? '' : v; }, v === '__sin' ? 'Sin tamaño' : `Tamaño: ${v}`); };
-$('masPri').innerHTML = '<option value="">Prioridad…</option>' + ORDEN_PRI.map(p => `<option>${p}</option>`).join('') + '<option value="__sin">Sin prioridad</option>';
-$('masPri').onchange = () => { const v = $('masPri').value; $('masPri').value = ''; if (v) aplicarMasivo(a => { a.prioridad = v === '__sin' ? '' : v; }, v === '__sin' ? 'Sin prioridad' : `Prioridad: ${v}`); };
-$('masEtq').onclick = e => abrirEtq([...selec], e.currentTarget);
+  aplicarMasivo(a => setEstado(a, v), `Estado: ${v}`);
+}
+const msOp = (v, contenido, comun, extra = '') => `<button type="button" class="ms-op ${extra}" data-v="${esc(v)}">${contenido}${comun === v ? `<span class="ms-ok">${ico('check', 14)}</span>` : ''}</button>`;
+// Lista de nombres existentes con buscador; lo que se escriba puede usarse como nombre nuevo
+function pintarMsNombres(comun) {
+  const q = $('msBuscar').value.trim(), n = normaliza(q), lista = unicos(actividades.map(a => a[msTipo])), igual = lista.find(x => normaliza(x) === n);
+  $('msLista').innerHTML = lista.filter(x => !q || normaliza(x).includes(n)).map(x => msOp(x, `<span>${esc(x)}</span>`, comun)).join('')
+    + (q && !igual ? `<button type="button" class="ms-op ms-nuevo" data-v="${esc(q)}">${ico('mas', 14)} <span>Usar «${esc(q)}»</span></button>` : '')
+    + (msTipo === 'responsable' && !q ? msOp('', '<span class="nd">Sin responsable</span>', comun) : '');
+}
+function abrirMsMenu(tipo, ancla) {
+  const abierto = msTipo; cerrarMsMenu(); cerrarEtq();
+  if (abierto === tipo || modo !== 'edicion') return;
+  msTipo = tipo;
+  const sel = seleccionadas(), campo = tipo, titulos = { estado: 'Estado', prioridad: 'Prioridad', tamano: 'Tamaño', responsable: 'Responsable', negocio: 'Mover al negocio', fechas: 'Fechas', duplicar: 'Duplicar' };
+  const comun = tipo === 'fechas' || tipo === 'duplicar' || !sel.length ? null : sel.every(a => (a[campo] || '') === (sel[0][campo] || '')) ? sel[0][campo] || '' : null;
+  const fila = (t, campos, boton, op) => `<form class="ms-fecha" novalidate data-op="${op}"><span>${t}</span>${campos}<button type="submit">${boton}</button></form>`;
+  const dup = () => `<form id="msDup" class="ms-dup" novalidate><div class="ms-dup-tit">Negocio destino</div>
+    <label class="ms-dup-op"><input type="radio" name="dupNeg" value="mismo" checked> El mismo de cada una</label><label class="ms-dup-op"><input type="radio" name="dupNeg" value="estos"> Estos:</label>
+    <div class="ms-dup-negs">${unicos(actividades.map(a => a.negocio)).map(x => `<label class="ms-dup-op"><input type="checkbox" value="${esc(x)}"> ${esc(x)}</label>`).join('')}</div>
+    <div class="ms-fecha"><span>Mover fechas</span><input type="number" id="msDupDias" aria-label="Días que se mueven las fechas" value="0"> <span class="nd">días</span></div>
+    <div class="ms-fecha"><span>Estado</span><select id="msDupEst" aria-label="Estado de las copias">${ESTADOS.map(e => `<option ${e.v === 'Planeado' ? 'selected' : ''}>${e.v}</option>`).join('')}</select></div>
+    <button type="submit" class="prim" id="msDupCrear"></button></form>`;
+  const cuerpo = tipo === 'duplicar' ? dup() : tipo === 'estado' ? ESTADOS.map(e => msOp(e.v, `<span class="chip es-${e.c}">${e.v}</span>`, comun)).join('')
+    : tipo === 'prioridad' ? ORDEN_PRI.map(p => msOp(p, `<span class="pri pri-${p}">${icoPri(p)}<b>${p}</b></span>`, comun)).join('') + msOp('', '<span class="nd">Sin prioridad</span>', comun)
+    : tipo === 'tamano' ? ORDEN_TAM.map(t => msOp(t, `<span class="tam tam-${t}">${icoTam(t)}<b>${t}</b></span><span class="nd">${TAMANOS[t].txt}</span>`, comun)).join('') + msOp('', '<span class="nd">Sin tamaño</span>', comun)
+    : tipo === 'fechas' ? fila('Mover', '<input type="number" id="msDias" aria-label="Días a mover" value="7"> <span class="nd">días</span>', 'Mover', 'mover') + '<div class="ms-ayuda">Un número negativo adelanta las fechas.</div>'
+      + fila('Inicio', '<input type="date" id="msIni" aria-label="Fecha de inicio">', 'Fijar', 'ini') + fila('Fin', '<input type="date" id="msFin" aria-label="Fecha fin">', 'Fijar', 'fin')
+      + '<button type="button" class="ms-op" data-quitar><span class="nd">Quitar fechas de inicio y fin</span></button>'
+    : '<form id="msForm" novalidate><input id="msBuscar" placeholder="Buscar o escribir uno nuevo…" autocomplete="off"></form><div class="ms-lista" id="msLista"></div>';
+  const pop = $('msPop');
+  pop.innerHTML = `<div class="ms-pop-tit">${titulos[tipo]} · ${pl(sel.length, 'actividad', 'actividades')}</div>${cuerpo}`;
+  pop.setAttribute('aria-label', titulos[tipo]); pop.hidden = false;
+  if (tipo === 'responsable' || tipo === 'negocio') { pintarMsNombres(comun); $('msBuscar').oninput = () => pintarMsNombres(comun); }
+  if (tipo === 'duplicar') { $('msDup').onchange = e => { if (e.target.type === 'checkbox') $('msDup').querySelector('[value=estos]').checked = true; pintarMsDup(); }; pintarMsDup(); }
+  ancla.setAttribute('aria-expanded', 'true');
+  const r = ancla.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+  pop.style.left = Math.max(8, Math.min(r.left, innerWidth - w - 8)) + 'px';
+  pop.style.top = Math.max(8, r.top - 6 - h) + 'px';
+  pop.querySelector('input')?.focus();
+}
+const msDupDestinos = () => ($('msDup').querySelector('[value=mismo]').checked ? null : [...$('msDup').querySelectorAll('input[type=checkbox]:checked')].map(i => i.value));
+function pintarMsDup() {
+  const d = msDupDestinos(), n = selec.size * (d ? d.length : 1), b = $('msDupCrear');
+  b.disabled = !n; b.innerHTML = `${ico('copiar', 16)} ${n ? `Crear ${pl(n, 'copia', 'copias')}` : 'Elige un negocio'}`;
+}
+function crearCopias() {
+  const o = { negocios: msDupDestinos(), desp: parseInt($('msDupDias').value, 10) || 0, estado: $('msDupEst').value };
+  const origen = seleccionadas().sort((a, b) => a.id - b.id); if (!origen.length || (o.negocios && !o.negocios.length) || modo !== 'edicion') return;
+  cerrarMsMenu();
+  const nuevas = duplicarLote(origen, o); (o.negocios || []).forEach(n => colapsados.delete(n));
+  selec.clear(); nuevas.forEach(i => selec.add(i)); render(); guardar();
+  aviso(pl(nuevas.length, 'copia creada', 'copias creadas'));
+}
+function elegirMs(v) {
+  const t = msTipo; cerrarMsMenu();
+  if (t === 'estado') cambiarEstadoMasivo(v);
+  else if (t === 'tamano') aplicarMasivo(a => { a.tamano = v; }, v ? `Tamaño: ${v}` : 'Sin tamaño');
+  else if (t === 'prioridad') aplicarMasivo(a => { a.prioridad = v; }, v ? `Prioridad: ${v}` : 'Sin prioridad');
+  else if (t === 'responsable') aplicarMasivo(a => { a.responsable = v; }, v ? `Responsable: ${v}` : 'Sin responsable');
+  else if (t === 'negocio') { colapsados.delete(v); aplicarMasivo(a => { a.negocio = v; }, `Negocio: ${v}`); }
+}
+$('msPop').addEventListener('click', e => {
+  const b = e.target.closest('.ms-op'); if (!b) return;
+  if (b.hasAttribute('data-quitar')) aplicarMasivo(a => { a.inicio = ''; a.fin = ''; }, 'Fechas quitadas'); else elegirMs(b.dataset.v);
+});
+$('msPop').addEventListener('submit', e => {
+  e.preventDefault();
+  if (e.target.id === 'msDup') { crearCopias(); return; }
+  if (e.target.id === 'msForm') {
+    const q = $('msBuscar').value.trim(), n = normaliza(q), lista = unicos(actividades.map(a => a[msTipo]));
+    if (q) elegirMs(lista.find(x => normaliza(x) === n) ?? lista.find(x => normaliza(x).includes(n)) ?? q);
+    return;
+  }
+  const op = e.target.dataset.op;
+  if (op === 'mover') {
+    const d = parseInt($('msDias').value, 10); if (!d) { alert('Escribe cuántos días mover (por ejemplo 7 o -3).'); return; }
+    aplicarMasivo(a => { if (a.inicio) a.inicio = addDias(a.inicio, d); if (a.fin) a.fin = addDias(a.fin, d); }, `Fechas movidas ${d > 0 ? '+' : ''}${d} días`);
+  } else if (op === 'ini') {
+    const v = $('msIni').value; if (!v) { alert('Elige la fecha de inicio.'); return; }
+    aplicarMasivo(a => { a.inicio = v; if (a.fin && a.fin < v) a.fin = v; }, `Inicio: ${fmtTxt(v)}`);
+  } else {
+    const v = $('msFin').value; if (!v) { alert('Elige la fecha fin.'); return; }
+    aplicarMasivo(a => { a.fin = v; if (a.inicio && a.inicio > v) a.inicio = v; }, `Fin: ${fmtTxt(v)}`);
+  }
+});
+document.addEventListener('pointerdown', e => { if (msTipo && !e.target.closest('#msPop, #masiva [data-mas]')) cerrarMsMenu(); });
+// Escape cierra primero el menú, sin quitar la selección
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && msTipo) { e.stopPropagation(); cerrarMsMenu(); } }, true);
+document.querySelectorAll('#masiva [data-mas]').forEach(b => b.onclick = () => {
+  if (b.dataset.mas !== 'etiquetas') return abrirMsMenu(b.dataset.mas, b);
+  cerrarMsMenu(); abrirEtq([...selec], b);
+});
 $('masTodas').onclick = () => { idsVisibles().forEach(x => selec.add(x)); pintarSeleccion(); };
 $('masCerrar').onclick = () => { selec.clear(); pintarSeleccion(); };
 $('masFav').onclick = () => {
@@ -5531,57 +5898,6 @@ $('masElim').onclick = () => {
   actividades = actividades.filter(a => !ids.has(a.id)); notas = notas.filter(n => !ids.has(n.act));
   selec.clear(); render(); guardar();
   aviso(`${pl(l.length, 'actividad eliminada', 'actividades eliminadas')}`);
-};
-// Ventana para responsable, negocio y fechas
-let masTipo = '';
-document.querySelectorAll('#masiva [data-mas]').forEach(b => b.onclick = () => abrirMasivo(b.dataset.mas));
-function abrirMasivo(tipo) {
-  masTipo = tipo; const n = selec.size;
-  const titulos = { responsable: 'Cambiar responsable', negocio: 'Mover a otro negocio', fechas: 'Cambiar fechas' };
-  $('masTitulo').innerHTML = `${ico({ responsable: 'usuario', negocio: 'tienda', fechas: 'calendario' }[tipo], 20)} ${titulos[tipo]}`;
-  $('masSub').textContent = `Se aplicará a ${pl(n, 'actividad seleccionada', 'actividades seleccionadas')}.`;
-  $('masCampos').innerHTML = tipo === 'responsable'
-    ? `<label class="todo">Nuevo responsable<input id="mResp" list="listaResp" placeholder="Nombre"></label>
-       <label class="check todo"><input type="checkbox" id="mRespQuitar"> Dejarlas sin responsable</label>`
-    : tipo === 'negocio'
-    ? `<label class="todo"><span>Negocio <b>*</b></span><input id="mNeg" list="listaNeg" placeholder="Ej. Tienda Centro"></label>`
-    : `<div class="todo m-opciones">
-        <label class="check"><input type="radio" name="mF" value="mover" checked> Mover las fechas
-          <input type="number" id="mDias" value="7" style="width:80px;margin:0 6px"> días <span class="nd">(negativo para adelantar)</span></label>
-        <label class="check"><input type="radio" name="mF" value="ini"> Fijar fecha de inicio <input type="date" id="mIni" style="width:auto;margin-left:6px"></label>
-        <label class="check"><input type="radio" name="mF" value="fin"> Fijar fecha fin <input type="date" id="mFin" style="width:auto;margin-left:6px"></label>
-        <label class="check"><input type="radio" name="mF" value="quitar"> Quitar fechas de inicio y fin</label>
-      </div>`;
-  $('dlgMas').showModal();
-  $('masCampos').querySelector('input:not([type=radio]):not([type=checkbox])')?.focus();
-}
-$('masCampos').addEventListener('focusin', e => {          // al escribir en un campo de fecha, se elige su opción
-  const r = e.target.closest('label')?.querySelector('input[type=radio]'); if (r && e.target.type !== 'radio') r.checked = true;
-});
-$('masCancelar').onclick = () => $('dlgMas').close();
-$('formMas').onsubmit = e => {
-  e.preventDefault();
-  if (masTipo === 'responsable') {
-    const quitar = $('mRespQuitar').checked, v = $('mResp').value.trim();
-    if (!quitar && !v) { alert('Escribe el nombre del responsable, o marca "Dejarlas sin responsable".'); return; }
-    aplicarMasivo(a => { a.responsable = quitar ? '' : v; }, quitar ? 'Sin responsable' : `Responsable: ${v}`);
-  } else if (masTipo === 'negocio') {
-    const v = $('mNeg').value.trim(); if (!v) { alert('El negocio es obligatorio.'); return; }
-    aplicarMasivo(a => { a.negocio = v; }, `Negocio: ${v}`); colapsados.delete(v);
-  } else {
-    const op = document.querySelector('input[name=mF]:checked').value;
-    if (op === 'mover') {
-      const d = parseInt($('mDias').value, 10); if (!d) { alert('Escribe cuántos días mover (por ejemplo 7 o -3).'); return; }
-      aplicarMasivo(a => { if (a.inicio) a.inicio = addDias(a.inicio, d); if (a.fin) a.fin = addDias(a.fin, d); }, `Fechas movidas ${d > 0 ? '+' : ''}${d} días`);
-    } else if (op === 'ini') {
-      const v = $('mIni').value; if (!v) { alert('Elige la fecha de inicio.'); return; }
-      aplicarMasivo(a => { a.inicio = v; if (a.fin && a.fin < v) a.fin = v; }, `Inicio: ${fmtTxt(v)}`);
-    } else if (op === 'fin') {
-      const v = $('mFin').value; if (!v) { alert('Elige la fecha fin.'); return; }
-      aplicarMasivo(a => { a.fin = v; if (a.inicio && a.inicio > v) a.inicio = v; }, `Fin: ${fmtTxt(v)}`);
-    } else aplicarMasivo(a => { a.inicio = ''; a.fin = ''; }, 'Fechas quitadas');
-  }
-  $('dlgMas').close();
 };
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && selec.size && !document.querySelector('dialog[open]') && !arrastre) { selec.clear(); pintarSeleccion(); }
@@ -5885,7 +6201,7 @@ function pintarNovedadesBoton() {
   const n = novedades.total, b = $('novBadge'), m = novedades.menciones?.length || 0;
   b.hidden = !n; b.textContent = (m ? '@ ' : '') + (n > 99 ? '99+' : n); b.classList.toggle('con-men', !!m);
   $('btnNovedades').classList.toggle('hay', !!n);
-  $('btnNovedades').title = n ? `${pl(n, 'novedad', 'novedades')} desde tu última visita${m ? ` · te mencionaron ${m === 1 ? 'una vez' : m + ' veces'}` : ''}` : 'Sin cambios desde tu última visita';
+  $('btnNovedades').title = n ? `${pl(n, 'novedad', 'novedades')} desde tu última visita${m ? ` · te mencionaron ${m === 1 ? 'una vez' : m + ' veces'}` : ''}` : 'Novedades: sin cambios desde tu última visita';
 }
 function avisarNovedades() {
   if (novedades.total && !novedades.menciones?.length) aviso(`${pl(novedades.total, 'novedad', 'novedades')} desde tu última visita · revisa el botón Novedades`);
@@ -5988,6 +6304,7 @@ function manualBase() {
   </ol>
 
   <h2 id="man-2">Trabajo en equipo: tomar y soltar el archivo</h2>
+  <p>El estado del archivo está en la <b>barra superior</b>, que cambia de color: <b>azul</b> si está libre, <b>verde</b> si lo tienes tú, <b>naranja</b> si lo tiene otra persona (con su nombre, desde cuándo y su última actividad) y <b>gris</b> si solo puedes leerlo (archivo de una versión más nueva o navegador sin permiso de escritura). Pasa el cursor sobre el estado para ver la explicación. Algunos botones de la barra muestran solo su ícono; su nombre aparece al pasar el cursor.</p>
   <p>Para evitar que dos personas editen al mismo tiempo, el archivo funciona con un <b>candado</b>:</p>
   <ul>
     <li><b>Solo lectura</b> (al abrir): puedes ver todo, filtrar y sacar reportes. La vista se actualiza sola cada 15 segundos; también puedes usar <b>Refrescar</b>.</li>
@@ -6000,7 +6317,7 @@ function manualBase() {
   <p class="nota">Toma el archivo solo mientras vayas a editar y suéltalo al terminar. Si la carpeta compartida tarda en sincronizar, dos personas podrían alcanzar a tomarlo casi al mismo tiempo.</p>
 
   <h2 id="man-3">Actividades</h2>
-  <p>Con el archivo tomado, usa <b>+ Nueva actividad</b>. Se abre una ventana con estos campos:</p>
+  <p>Con el archivo tomado, usa <b>+ Nueva</b>. Se abre una ventana con estos campos (<b>estado</b>, <b>prioridad</b> y <b>tamaño</b> se eligen con un clic en su botón; con el teclado, usa las flechas; <kbd>Ctrl</kbd>+<kbd>Enter</kbd> guarda desde cualquier campo):</p>
   <table><tbody>
     <tr><td><b>Negocio</b> <span class="es-rojo">*</span></td><td>Obligatorio. Agrupa las actividades. Se autocompleta con los negocios existentes.</td></tr>
     <tr><td><b>Actividad</b> <span class="es-rojo">*</span></td><td>Obligatorio. Descripción de lo que hay que hacer.</td></tr>
@@ -6012,6 +6329,14 @@ function manualBase() {
   <h3>Varias actividades a la vez</h3>
   <p>Escribe o pega una lista en el campo Actividad, una por línea. Al guardar te preguntará si es <b>una sola</b> actividad con varias líneas o <b>varias actividades</b>. Si son varias, todas comparten negocio, responsable, tamaño, fechas y estado. Las viñetas y números al inicio (<code>-</code>, <code>*</code>, <code>1.</code>) se quitan solos.</p>
   <p><b>Guardar y agregar otra</b> mantiene el negocio y el responsable para seguir capturando.</p>
+  <h3>Duplicar actividades</h3>
+  <p>Con el archivo tomado, el botón <b>Duplicar</b> de una actividad (en la lista o en su ventana) abre <b>Nueva actividad</b> ya llena: cambia lo necesario y guarda; si cancelas no se crea nada. Para varias, selecciónalas y pulsa <b>Duplicar</b> en la barra de abajo: elige el negocio destino (el mismo de cada una, o uno o varios), cuántos días mover las fechas y el estado, y pulsa <b>Crear copias</b>; quedan seleccionadas para seguir ajustándolas.</p>
+  <ul>
+    <li>Se copian nombre, negocio, responsable, tamaño, prioridad, etiquetas, fechas, dependencias y subtareas (sin marcar). No se copian notas, imágenes, historial ni la fecha en que se terminó.</li>
+    <li>Las copias empiezan en <b>Planeado</b>. En el mismo negocio su nombre termina en <b>(copia)</b>.</li>
+    <li>Si copias juntas actividades que dependen entre sí, las copias dependen unas de otras.</li>
+    <li>El hito se conserva solo si sigue abierto e incluye el negocio de la copia. La repetición solo se copia al duplicar una.</li>
+  </ul>
   <h3>Editar, cancelar o eliminar</h3>
   <p><b>Editar</b> abre la misma ventana con los datos de la actividad. Si una actividad ya no se hará, márcala como <b>Cancelado</b> en lugar de eliminarla: así queda registro en el reporte y no cuenta para el avance.</p>
 
@@ -6032,6 +6357,7 @@ function manualBase() {
 
   <h2 id="man-7">Meta del proyecto</h2>
   <p>Es el periodo en que debe completarse el desarrollo. Se define al crear el archivo y se puede cambiar con <b>Editar meta</b> (con el archivo tomado). Arriba de la tabla se compara el <b>tiempo transcurrido</b> contra las <b>actividades terminadas</b> y se muestra el ritmo: <span class="es-verde">Al día</span>, <span class="es-amar">Ligeramente atrasado</span> o <span class="es-rojo">Atrasado</span>.</p>
+  <p>Con <b>Compactar</b> el bloque se reduce a tres líneas: las barras de <b>tiempo</b> y de actividades <b>terminadas</b> quedan alineadas (si la verde va detrás de la azul, hay atraso); los <b>hitos</b> aparecen como rombos en su fecha sobre la barra de tiempo, con una línea en el día de hoy; y abajo se ven los dos hitos que siguen, empezando por los vencidos. Clic en un rombo o en un hito lo abre; un rombo con número agrupa varios cercanos y los atenuados en un extremo quedan fuera del periodo de la meta. Con <b>Expandir</b> vuelven la gráfica de avance, <b>Editar meta</b> y <b>Nuevo hito</b>. Tu elección se recuerda en este navegador.</p>
 
   <h2 id="man-8">Filtros y agrupación</h2>
   <p>Al <b>recargar la página</b> (F5) se conservan la vista, la búsqueda, los filtros y la agrupación. La búsqueda y los filtros se recuerdan por archivo en este navegador.</p>
@@ -6040,9 +6366,9 @@ function manualBase() {
   <ul>
     <li>Cada filtro permite <b>elegir varias opciones</b>: marca las casillas que quieras (por ejemplo, <i>Planeado</i> y <i>En progreso</i>, o dos responsables). Sin nada marcado se muestran todas.</li>
     <li>Pasa el cursor sobre una opción y usa <b>solo</b> para dejar únicamente esa. <b>Quitar filtro</b> vuelve a mostrar todas. Un filtro activo se ve resaltado en azul.</li>
-    <li>La casilla <b>Mostrar backlog</b> oculta o muestra las actividades en <b class="es-gris">Backlog</b> en todas las vistas (también su columna en el Tablero). El número indica cuántas hay. Se recuerda en tu navegador. Si eliges <i>Backlog</i> en el filtro de estado, se muestran aunque la casilla esté desmarcada.</li>
+    <li>La casilla <b>Backlog</b> oculta o muestra las actividades en <b class="es-gris">Backlog</b> en todas las vistas (también su columna en el Tablero). El número indica cuántas hay. Se recuerda en tu navegador. Si eliges <i>Backlog</i> en el filtro de estado, se muestran aunque la casilla esté desmarcada.</li>
   </ul>
-  <p><b>Agrupar por</b> (junto a los filtros) ordena la lista, el tablero y la línea de tiempo en grupos por <b>negocio</b>, <b>responsable</b>, <b>prioridad</b>, <b>estado</b> o <b>etiqueta</b>, o sin agrupar. Se recuerda en tu navegador. Al agrupar por etiqueta, una actividad con varias etiquetas aparece en cada una. En el tablero puedes arrastrar una tarjeta a otro carril para cambiarle el responsable o la prioridad (o el negocio, si agrupas por negocio). Si no agrupas por negocio, la lista muestra la columna Negocio y el panel de negocios funciona como filtro.</p>
+  <p><b>Agrupar por</b> (a la derecha del buscador) ordena la lista, el tablero y la línea de tiempo en grupos por <b>negocio</b>, <b>responsable</b>, <b>prioridad</b>, <b>estado</b> o <b>etiqueta</b>, o sin agrupar. Se recuerda en tu navegador. Al agrupar por etiqueta, una actividad con varias etiquetas aparece en cada una. En el tablero puedes arrastrar una tarjeta a otro carril para cambiarle el responsable o la prioridad (o el negocio, si agrupas por negocio). Si no agrupas por negocio, la lista muestra la columna Negocio y el panel de negocios funciona como filtro.</p>
   <p>Por omisión la tabla se agrupa por negocio; haz clic en el encabezado de un grupo para contraerlo. Elige <b>Sin agrupar</b> en <b>Agrupar por</b> para ver una lista plana. Haz clic en el título de una columna para ordenar.</p>
 
   <h2 id="man-9">Reporte</h2>
@@ -6104,7 +6430,7 @@ function manualBase() {
 
   <h2 id="man-13">Preguntas frecuentes</h2>
   <h3>No me deja tomar el archivo</h3>
-  <p>Otra persona lo tiene tomado; su nombre aparece en el aviso. Pídele que lo suelte, o espera 5 minutos si cerró sin soltarlo.</p>
+  <p>Otra persona lo tiene tomado; su nombre aparece en la barra superior (en naranja). Pídele que lo suelte, o espera 5 minutos si cerró sin soltarlo.</p>
   <h3>Funciona en Firefox o Safari?</h3>
   <p>Se puede ver y editar, pero esos navegadores no permiten escribir en el archivo ni usar el candado: al editar trabajas sobre una copia y la guardas con <b>Más → Descargar copia .md</b>. Para trabajo en equipo usa Chrome o Edge.</p>
   <h3>Dice que no puede abrir un archivo reciente</h3>
@@ -6151,7 +6477,7 @@ function manualBase() {
     <li>Los fines de semana se sombrean en gris.</li>
     <li>Una actividad con <b>una sola fecha</b> se muestra como un rombo; una <b>sin fechas</b> dice "Sin fechas".</li>
     <li>En cada grupo, una barra gris delgada muestra el periodo que abarcan todas sus actividades.</li>
-    <li>Cambia la escala con <b>Por día</b>, <b>Por semana</b> o <b>Por mes</b>. Al entrar, la vista se centra en hoy.</li>
+    <li>Cambia la escala con <b>Día</b>, <b>Semana</b> o <b>Mes</b>. Al entrar, la vista se centra en hoy.</li>
     <li>El panel de negocios también funciona aquí: resalta el negocio que estás viendo y al dar clic te lleva a él.</li>
   </ul>
   <h3>Mover fechas con el ratón (con el archivo tomado)</h3>
@@ -6183,7 +6509,7 @@ function manualBase() {
     <li><b class="es-verde">Terminadas en los últimos 7 días</b> aparece contraída; haz clic en su título para verla. Cualquier sección se puede contraer.</li>
     <li>Arriba ves un resumen: cuántas tienes por hacer, en progreso, vencidas, las que vencen esta semana, el esfuerzo máximo pendiente (según el tamaño) y tu porcentaje de terminadas.</li>
     <li>Con el archivo tomado, cada tarjeta tiene botones rápidos: <b>Iniciar</b> (pasa a En progreso) y <b>Terminar</b> (pasa a Terminado con la fecha de hoy). Clic en la tarjeta para editarla.</li>
-    <li>En <b>Ver actividades de</b> puedes elegir a otra persona del equipo para revisar su carga.</li>
+    <li>En el selector de <b>persona</b> (junto al buscador) puedes elegir a otra persona del equipo para revisar su carga.</li>
     <li>Se usa tu nombre (el que diste al abrir la página). El responsable de la actividad debe escribirse igual, sin importar mayúsculas o acentos.</li>
     <li>Los filtros de texto, negocio, estado y tamaño siguen aplicando; el panel de negocios funciona como filtro en esta vista.</li>
   </ul>
@@ -6283,16 +6609,16 @@ function manualBase() {
     <li>Cada actividad tiene una casilla en la <b>Lista</b>, la <b>Línea de tiempo</b>, el <b>Tablero</b> y <b>Mis actividades</b>. Marca las que quieras.</li>
     <li><b>Mayús + clic</b> en otra casilla selecciona todas las que están entre las dos.</li>
     <li>La casilla del <b>título de un grupo</b> (negocio, carril o sección) selecciona todo el grupo, aunque esté contraído. En la lista, la casilla del encabezado selecciona todas las visibles con los filtros actuales.</li>
-    <li>Al seleccionar aparece una barra abajo con:
+    <li>Al seleccionar aparece abajo una barra con tres partes. A la izquierda, ✕ para quitar la selección, cuántas llevas y <b>Todas (n)</b> para ampliarla a todo lo que se ve en la vista.</li>
+    <li>Al centro, menús que se abren hacia arriba y aplican el cambio con un clic (una palomita marca el valor que ya comparten):
       <ul>
-        <li><b>Estado…</b> y <b>Tamaño…</b>: se aplican al momento.</li>
-        <li><b>Responsable</b>: asigna a una persona, o deja las actividades sin responsable.</li>
-        <li><b>Negocio</b>: mueve las actividades a otro negocio (o a uno nuevo).</li>
+        <li><b>Estado</b>, <b>Prioridad</b> y <b>Tamaño</b>.</li>
+        <li><b>Responsable</b> y <b>Negocio</b>: elige uno de la lista, o escribe para buscar (<kbd>Enter</kbd> toma la primera coincidencia). Para uno nuevo, escríbelo y pulsa <b>Usar</b> (o <kbd>Enter</kbd> si nada coincide). En responsable también puedes dejarlas sin ninguno.</li>
         <li><b>Fechas</b>: mueve inicio y fin varios días (negativo para adelantar), fija una fecha de inicio o fin para todas, o quita las fechas.</li>
-        <li><b>Favoritas</b>: las agrega a tus favoritas (o las quita, si ya lo eran).</li>
-        <li><b>Eliminar</b>: pide confirmación y muestra cuáles se borrarán. Si te equivocas, recupéralas en Más → Respaldos.</li>
-        <li><b>Todas las visibles</b> amplía la selección a todo lo que se ve en la vista.</li>
+        <li><b>Etiquetas</b>: pone o quita etiquetas.</li>
       </ul></li>
+    <li>A la derecha, la <b>estrella</b> las agrega a tus favoritas (o las quita, si ya lo eran) y el <b>bote</b> las elimina: pide confirmación y muestra cuáles. Si te equivocas, usa Deshacer o Más → Respaldos.</li>
+    <li>En pantallas angostas los menús muestran solo su ícono.</li>
     <li>La selección se conserva mientras aplicas varios cambios; quítala con ${ico('x', 13)} o <kbd>Esc</kbd>. Se borra al soltar el archivo.</li>
     <li>Cada cambio queda en la bitácora, una entrada por actividad.</li>
   </ul>
@@ -6411,7 +6737,7 @@ function manualBase() {
   </ul>
   <h2 id="man-37">Columnas y negocios</h2>
   <ul>
-    <li><b>Columnas:</b> en la vista de lista, el botón ${ico('columnas', 14)} <b>Columnas</b> junto a los filtros muestra u oculta Prioridad, Tamaño, Responsable, Inicio, Fin, Estado y Negocio. Es solo para ti y se recuerda en tu navegador.</li>
+    <li><b>Columnas:</b> en la vista de lista, el botón ${ico('columnas', 14)} <b>Columnas</b> (solo el ícono, junto al buscador) muestra u oculta Prioridad, Tamaño, Responsable, Inicio, Fin, Estado y Negocio. Es solo para ti y se recuerda en tu navegador.</li>
     <li><b>Renombrar un negocio:</b> con el archivo tomado, pasa el cursor sobre el encabezado de un negocio en la lista o el tablero y usa ${ico('lapiz', 13)}, o ve a <b>Más → Renombrar negocio</b>. Cambia el nombre en todas sus actividades. Si escribes el nombre de otro negocio que ya existe, se juntan.</li>
   </ul>
   <h2 id="man-38">Reporte semanal</h2>
@@ -6447,7 +6773,7 @@ function manualBase() {
   <h2 id="man-42">Modo presentación</h2>
   <p>Para proyectar en la junta semanal: pantalla completa, letra grande y sin botones de edición.</p>
   <ul>
-    <li>Usa el botón ${ico('presentar', 14)} <b>Presentar</b> junto a los filtros, o la tecla <kbd>P</kbd>.</li>
+    <li>Usa el botón ${ico('presentar', 14)} <b>Presentar</b> (solo el ícono, junto al buscador), o la tecla <kbd>P</kbd>.</li>
     <li>Arriba queda una barra con el proyecto, la fecha, el avance, el ritmo y las vencidas, y botones para cambiar entre Lista, Línea de tiempo, Tablero y Calendario (también con <kbd>1</kbd> a <kbd>4</kbd>).</li>
     <li>Con <kbd>←</kbd> y <kbd>→</kbd> (o los botones ‹ ›) pasas de un negocio a otro para revisarlos uno por uno; al salir vuelven tus filtros.</li>
     <li><b>A−</b> y <b>A+</b> (o <kbd>−</kbd> y <kbd>+</kbd>) ajustan el tamaño; se recuerda para la próxima vez.</li>
@@ -6594,14 +6920,14 @@ $('manImprimir').onclick = () => imprimirHTML(`<!doctype html><html lang="es"><h
 
 /* ============ Arranque ============ */
 Object.entries({ btnAbrir: 'carpeta', btnNuevo: 'nuevo', btnRefrescar: 'refrescar', btnReporte: 'grafica', btnDescargar: 'descargar', btnManual: 'libro',
-  btnNuevaAct: 'mas', btnEliminarForm: 'basura', btnCancelar: 'x', btnOtra: 'mas', btnGuardarForm: 'check', mCancelar: 'x',
+  btnNuevaAct: 'mas', btnEliminarForm: 'basura', btnDuplicarForm: 'copiar', btnCancelar: 'x', btnOtra: 'mas', btnGuardarForm: 'check', mCancelar: 'x',
   abrirLimpiar: 'basura', abrirCancelar: 'x', abrirExplorar: 'buscar', repImprimir: 'impresora', repHtml: 'descargar', repMd: 'descargar',
   repCerrar: 'x', manImprimir: 'impresora', manCerrar: 'x', varVarias: 'lista',
   btnNovedades: 'campana', novTodo: 'check', novFiltrar: 'buscar', novCerrar: 'x',
   btnNotasForm: 'nota', btnImgsForm: 'imagen', imgElegir: 'subir', imgCerrar: 'x', imgDarAcceso: 'carpeta', visorAbrir: 'archivo', notaAgregar: 'mas', notasCerrar: 'x',
   btnBitacora: 'reloj', btnHistForm: 'reloj', novBit: 'reloj', bitCsv: 'descargar', bitCerrar: 'x',
   btnMas: 'puntos', btnSprint: 'sprint', btnIcs: 'calendario', icsHacer: 'descargar', icsCancelar: 'x', btnPresentar: 'presentar', btnHitos: 'bandera', hitoGuardar: 'check', hitoNuevo: 'mas', hitosCerrar: 'x', presSalir: 'salir', btnAtajos: 'teclado', atjCerrar: 'x', btnSemanal: 'correo', btnRenNeg: 'lapiz', btnEtqAdmin: 'etiqueta', repSemanal: 'correo', semCopiar: 'copiar', semCorreo: 'correo', semCerrar: 'x', negCancelar: 'x', negHacer: 'check', etqAdmCerrar: 'x', masEtq: 'etiqueta', btnRespaldos: 'capas', btnImportar: 'subir', btnExportar: 'descargar', impElegir: 'archivo', impPlantilla: 'descargar', impCerrar: 'x', impCancelar: 'x', impHacer: 'check', expHacer: 'descargar', expCancelar: 'x', respCerrar: 'x', sCrear: 'check', sCancelar: 'x',
-  masTodas: 'check', masFav: 'estrella', masElim: 'basura', masCerrar: 'x', masAplicar: 'check', masCancelar: 'x' }).forEach(([id, n]) => { const el = $(id); if (el) el.dataset.ico = n; });
+  masFav: 'estrella', masElim: 'basura', masCerrar: 'x', }).forEach(([id, n]) => { const el = $(id); if (el) el.dataset.ico = n; });
 document.querySelector('#formMeta button[type=submit]').dataset.ico = 'check';
 document.querySelector('#dlgVar button[data-r="una"]').dataset.ico = 'archivo';
 document.querySelectorAll('.rep-barra strong').forEach((s, i) => s.insertAdjacentHTML('afterbegin', ico(i ? 'libro' : 'grafica', 18) + ' '));
@@ -6780,7 +7106,7 @@ document.addEventListener('fullscreenchange', () => { if (!document.fullscreenEl
 // Esc sin nada abierto (y fuera del modo presentación): sale de la pantalla completa
 window.addEventListener('keydown', e => {                    // en captura: antes de que otra cosa cierre su ventana
   if (e.key !== 'Escape' || !document.fullscreenElement || presentando()) return;
-  if (document.querySelector('dialog[open]') || !$('menuMas').hidden || document.querySelector('.msel.abierto') || !$('etqPop').hidden || !$('subPop').hidden) return;
+  if (document.querySelector('dialog[open]') || !$('menuMas').hidden || document.querySelector('.msel.abierto') || !$('etqPop').hidden || !$('subPop').hidden || !$('msPop').hidden) return;
   if (e.target.closest?.('input, textarea, select')) return;
   document.exitFullscreen().catch(() => {});
 }, true);
@@ -6878,7 +7204,7 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (e.key === '?') { e.preventDefault(); $('dlgAtajos').open ? $('dlgAtajos').close() : (!document.querySelector('dialog[open]') && abrirAtajos()); return; }
-  if (document.querySelector('dialog[open]') || !$('etqPop').hidden || !$('subPop').hidden) return;
+  if (document.querySelector('dialog[open]') || !$('etqPop').hidden || !$('subPop').hidden || !$('msPop').hidden) return;
   if (e.key === '/') { e.preventDefault(); $('qTexto').focus(); $('qTexto').select(); return; }
   if (e.key === 'f' || e.key === 'F') { e.preventDefault(); alternarPantalla(); return; }
   if (e.key === 'p' || e.key === 'P') { e.preventDefault(); presentando() ? salirPresentacion() : entrarPresentacion(); return; }

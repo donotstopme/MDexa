@@ -92,7 +92,7 @@ describe('Reporte semanal', () => {
 import { BarraMasiva } from '../src/componentes/BarraMasiva';
 import { DialogoExportar } from '../src/componentes/DialogoExportar';
 import { DialogoImportar } from '../src/componentes/DialogoImportar';
-import { DialogoMasivo } from '../src/componentes/DialogoMasivo';
+import { MenuMasivo } from '../src/componentes/MenuMasivo';
 
 describe('CSV y selección múltiple', () => {
   const nada = () => {};
@@ -106,19 +106,23 @@ describe('CSV y selección múltiple', () => {
     expect(h).toContain('Exportar a CSV'); expect(h).toContain('(16)'); expect(h).toContain('disabled=""'); expect(h).toContain('Incluir el texto de las notas');
     expect(sin(renderToStaticMarkup(<DialogoExportar total={16} visibles={5} onExportar={nada} onCerrar={nada} />))).not.toContain('disabled=""');
   });
-  const acc = { estado: nada, tamano: nada, prioridad: nada, etiquetas: nada, cambio: nada, favoritas: nada, eliminar: nada, todas: nada, limpiar: nada };
-  it('barra masiva: oculta sin selección; con selección muestra el conteo y las acciones', () => {
-    expect(renderToStaticMarkup(<BarraMasiva n={0} todasFav={false} hayMasVisibles acc={acc} />)).toBe('');
-    const h = sin(renderToStaticMarkup(<BarraMasiva n={3} todasFav={false} hayMasVisibles acc={acc} />));
-    for (const s of ['<b>3</b>', 'seleccionadas', 'Todas las visibles', 'Estado…', 'Tamaño…', 'Prioridad…', 'Etiquetas', 'Responsable', 'Negocio', 'Fechas', 'Favoritas', 'Eliminar']) expect(h).toContain(s);
-    expect(sin(renderToStaticMarkup(<BarraMasiva n={1} todasFav hayMasVisibles={false} acc={acc} />))).toContain('Quitar de favoritas');
+  const acc = { menu: nada, etiquetas: nada, favoritas: nada, eliminar: nada, todas: nada, limpiar: nada };
+  it('barra masiva: oculta sin selección; con selección muestra el conteo, los menús y las acciones', () => {
+    expect(renderToStaticMarkup(<BarraMasiva n={0} todasFav={false} nVisibles={16} hayMasVisibles acc={acc} />)).toBe('');
+    const h = sin(renderToStaticMarkup(<BarraMasiva n={3} todasFav={false} nVisibles={16} hayMasVisibles acc={acc} />));
+    for (const s of ['<b>3</b>', 'seleccionadas', 'Todas (16)', 'Estado', 'Prioridad', 'Tamaño', 'Responsable', 'Negocio', 'Fechas', 'Etiquetas', 'Agregar a favoritas', 'Eliminar']) expect(h).toContain(s);
+    const una = sin(renderToStaticMarkup(<BarraMasiva n={1} todasFav nVisibles={1} hayMasVisibles={false} acc={acc} />));
+    expect(una).toContain('Quitar de favoritas'); expect(una).not.toContain('Todas (');
   });
-  it('ventana de cambio en lote: responsable (con lista), negocio y fechas', () => {
-    const r = sin(renderToStaticMarkup(<DialogoMasivo doc={doc} tipo="responsable" n={2} onAplicar={nada} onCerrar={nada} />));
-    expect(r).toContain('Cambiar responsable'); expect(r).toContain('Se aplicará a 2 actividades seleccionadas'); expect(r).toContain('Elige uno o escribe uno nuevo'); expect(r).toContain('Dejarlas sin responsable');
-    expect(sin(renderToStaticMarkup(<DialogoMasivo doc={doc} tipo="negocio" n={1} onAplicar={nada} onCerrar={nada} />))).toContain('Mover a otro negocio');
-    const f = sin(renderToStaticMarkup(<DialogoMasivo doc={doc} tipo="fechas" n={1} onAplicar={nada} onCerrar={nada} />));
-    expect(f).toContain('Mover las fechas'); expect(f).toContain('Fijar fecha de inicio'); expect(f).toContain('Quitar fechas de inicio y fin');
+  it('menús de cambio en lote: opciones, nombres existentes y fechas', () => {
+    const ancla = {} as HTMLElement, ids = new Set([1, 2]);
+    const menu = (tipo: 'estado' | 'prioridad' | 'responsable' | 'negocio' | 'fechas') => sin(renderToStaticMarkup(<MenuMasivo doc={doc} ids={ids} tipo={tipo} ancla={ancla} onAplicar={nada} onCerrar={nada} />));
+    expect(menu('estado')).toContain('En progreso'); expect(menu('prioridad')).toContain('Sin prioridad');
+    const r = menu('responsable');
+    expect(r).toContain('2 actividades'); expect(r).toContain('Buscar o escribir uno nuevo'); expect(r).toContain('Sin responsable');
+    expect(menu('negocio')).toContain('Mover al negocio'); expect(menu('negocio')).not.toContain('Sin responsable');
+    const f = menu('fechas');
+    expect(f).toContain('Días a mover'); expect(f).toContain('Fecha de inicio'); expect(f).toContain('Quitar fechas de inicio y fin');
   });
 });
 

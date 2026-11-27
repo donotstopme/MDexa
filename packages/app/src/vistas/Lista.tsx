@@ -16,7 +16,7 @@ export interface Props {
   doc: Documento; bloques: Bloque[]; texto: string; edicion?: Edicion; novIds?: Novedades['porId'];
   orden: Orden; onOrden(o: Orden): void; colsOcultas: Set<string>; agrupaPorNegocio: boolean; hayAgrupacion: boolean;
   colapsados: Set<string>; onGrupo(g: string): void; favs: Set<number>; onFav(id: number): void;
-  acc: Acciones; onEditar(id: number): void; onEliminar(id: number): void; onFiltrarEtq(t: string): void; msgVacio: string;
+  acc: Acciones; onEditar(id: number): void; onDuplicar?(id: number): void; onEliminar(id: number): void; onFiltrarEtq(t: string): void; msgVacio: string;
 }
 
 const COLS: [ClaveOrden, string][] = [['negocio', 'Negocio'], ['actividad', 'Actividad'], ['prioridad', 'Prioridad'], ['tamano', 'Tamaño'], ['responsable', 'Responsable'], ['inicio', 'Inicio'], ['fin', 'Fin'], ['estado', 'Estado']];
@@ -69,10 +69,10 @@ export function Lista(p: Props) {
     const nuevasN = 0;
     return (
       <tr key={a.id} className={`e-${color}${nov ? ' con-nov' : ''}${p.sel?.ids.has(a.id) ? ' seleccionada' : ''}`} data-id={a.id}>
-        {p.sel && <td className="col-sel"><CajaSel id={a.id} sel={p.sel} /></td>}
-        <td className="col-fav"><button className={`estrella ${fav ? 'on' : ''}`} title={fav ? 'Quitar de mis favoritas' : 'Marcar como favorita (sólo para ti)'} onClick={() => p.onFav(a.id)}><Estrella /></button></td>
+        {p.sel && <td className="col-sel" data-t="Seleccionar"><CajaSel id={a.id} sel={p.sel} /></td>}
+        <td className="col-fav" data-t="Favorita"><button className={`estrella ${fav ? 'on' : ''}`} title={fav ? 'Quitar de mis favoritas' : 'Marcar como favorita (sólo para ti)'} onClick={() => p.onFav(a.id)}><Estrella /></button></td>
         {conNegocio && <td>{a.negocio ? <span className="tag">{a.negocio}</span> : <Nd />}</td>}
-        <td className="txt">
+        <td className="txt" data-t="Actividad">
           <Resaltar texto={a.actividad} pals={pals} /> <MarcaNov nov={nov} />
           <BotonNotas a={a} doc={doc} nuevas={nuevasN} onClick={() => p.acc.notas(a.id)} /><BotonImgs a={a} doc={doc} onClick={() => p.acc.imgs(a.id)} />
           {!(a.subtareas?.length) && <BotonSubs a={a} onClick={el => p.acc.subs(a.id, el)} />}
@@ -80,23 +80,24 @@ export function Lista(p: Props) {
           {!!a.subtareas?.length && <BotonSubs a={a} onClick={el => p.acc.subs(a.id, el)} />}
           <ChipRepite a={a} /><ChipsDeps a={a} doc={doc} onIr={p.acc.ir} /><Etqs a={a} doc={doc} onFiltrar={p.onFiltrarEtq} onEditar={ed ? el => p.acc.etq(a.id, el) : undefined} />
         </td>
-        {mostrar('prioridad') && <td>{ed
+        {mostrar('prioridad') && <td data-t="Prioridad">{ed
           ? <div className="celda-tam"><PriBadge p={a.prioridad} corto /><select className="ed" title={a.prioridad ? 'Prioridad ' + a.prioridad : 'Sin prioridad'} value={a.prioridad} onChange={e => cambiar(a, { prioridad: e.target.value as Prioridad | '' })}>
             <option value="">—</option>{Object.keys(PRIORIDADES).map(x => <option key={x}>{x}</option>)}</select></div>
           : <PriBadge p={a.prioridad} />}</td>}
-        {mostrar('tamano') && <td>{ed
+        {mostrar('tamano') && <td data-t="Tamaño">{ed
           ? <div className="celda-tam">{a.tamano && <span className={`tam tam-${a.tamano}`} title={TAMANOS[a.tamano].txt}><IcoTam t={a.tamano} /></span>}
             <select className="ed" title={a.tamano ? TAMANOS[a.tamano].txt : 'Sin tamaño'} value={a.tamano} onChange={e => cambiar(a, { tamano: e.target.value as Tamano | '' })}>
               <option value="">—</option>{Object.keys(TAMANOS).map(x => <option key={x}>{x}</option>)}</select>{a.tamano === 'XL' && <span className="tam tam-XL" title="Debería partirse">⚠</span>}</div>
           : <TamBadge t={a.tamano} />}</td>}
-        {mostrar('responsable') && <td>{ed ? <CampoEd a={a} campo="responsable" lista="listaResp" onGuardar={v => guardarCampo(a, 'responsable', v)} /> : a.responsable || <Nd />}</td>}
-        {mostrar('inicio') && <td>{ed ? <CampoEd a={a} campo="inicio" tipo="date" onGuardar={v => guardarCampo(a, 'inicio', v)} /> : <Fecha d={a.inicio} />}</td>}
-        {mostrar('fin') && <td>{ed ? <CampoEd a={a} campo="fin" tipo="date" onGuardar={v => guardarCampo(a, 'fin', v)} /> : <Fecha d={a.fin} />}</td>}
-        {mostrar('estado') && <td><div className="celda-est">
+        {mostrar('responsable') && <td data-t="Responsable">{ed ? <CampoEd a={a} campo="responsable" lista="listaResp" onGuardar={v => guardarCampo(a, 'responsable', v)} /> : a.responsable || <Nd />}</td>}
+        {mostrar('inicio') && <td data-t="Inicio">{ed ? <CampoEd a={a} campo="inicio" tipo="date" onGuardar={v => guardarCampo(a, 'inicio', v)} /> : <Fecha d={a.inicio} />}</td>}
+        {mostrar('fin') && <td data-t="Fin">{ed ? <CampoEd a={a} campo="fin" tipo="date" onGuardar={v => guardarCampo(a, 'fin', v)} /> : <Fecha d={a.fin} />}</td>}
+        {mostrar('estado') && <td data-t="Estado"><div className="celda-est">
           {ed ? <select className={`ed est es-${color}`} value={est} onChange={e => cambiarEstado(a, e.target.value as Estado)}>{ESTADOS.map(e => <option key={e}>{e}</option>)}</select> : <ChipEstado e={est} />}
           {venc && <span className="chip venc" title="La fecha fin ya pasó">Vencida</span>}
           {a.terminada && <span className="term">✓ {fmtTxt(a.terminada)}</span>}</div></td>}
         {ed && <td className="acc"><button className="ico-btn" title="Editar" aria-label="Editar" onClick={() => p.onEditar(a.id)}><Ico n="lapiz" /></button>
+          <button className="ico-btn" title="Duplicar" aria-label="Duplicar" onClick={() => p.onDuplicar?.(a.id)}><Ico n="copiar" /></button>
           <button className="ico-btn peligro" title="Eliminar" aria-label="Eliminar" onClick={() => p.onEliminar(a.id)}><Ico n="basura" /></button></td>}
       </tr>
     );

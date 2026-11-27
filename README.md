@@ -62,11 +62,11 @@ Para equipos de 2 a 15 personas que llevan sus pendientes en Excel, en notas sue
 | **Ver el trabajo de seis maneras** | Lista · Línea de tiempo (Gantt con dependencias) · Tablero (Kanban) · Calendario · Mis actividades · Carga por persona y semana |
 | **Describir cada actividad** | Negocio, responsable, tamaño, prioridad, fechas, estado, etiquetas de color, subtareas, notas con `@menciones`, imágenes, dependencias entre actividades y repetición automática |
 | **Planear por hitos y fases** | Entregables con fecha y descripción, de uno o varios negocios; sus actividades entran solas, con avance y estado (en tiempo, en riesgo, vencido o cumplido) |
-| **Trabajar en equipo sin servidor** | Quien edita "toma" el archivo y los demás lo ven en solo lectura; los cambios ajenos aparecen solos y se resumen en **Novedades** |
+| **Trabajar en equipo sin servidor** | Quien edita "toma" el archivo y los demás lo ven en solo lectura; la barra superior cambia de color según quién lo tiene; los cambios ajenos aparecen solos y se resumen en **Novedades** |
 | **Dar seguimiento** | Avance contra la meta del proyecto con gráfica y proyección de la fecha de término, bitácora de quién cambió qué, respaldos restaurables, deshacer y rehacer |
 | **Reportar** | Reporte completo (pantalla, PDF, `.html` o `.md`), reporte semanal listo para pegar en un correo y modo **Presentar** para las juntas |
 | **Mover datos** | Importar desde Excel o CSV, exportar a CSV, exportar fechas al calendario (`.ics` para Outlook, Google o Apple), crear un sprint nuevo a partir del actual |
-| **Trabajar en volumen** | Selección múltiple con cambios en lote, filtros múltiples, agrupar por negocio, responsable, prioridad, estado, etiqueta o hito, renombrar negocios y etiquetas |
+| **Trabajar en volumen** | Selección múltiple con cambios en lote, **duplicar** actividades (también hacia varios negocios), filtros múltiples, agrupar por negocio, responsable, prioridad, estado, etiqueta o hito, renombrar negocios y etiquetas |
 
 <table>
   <tr>
@@ -96,7 +96,7 @@ npm run dev          # abre http://localhost:5173
 
 Para empezar un proyecto propio: **Más → Nuevo .md** (te pide el nombre y las fechas de la meta) o **Más → Importar desde Excel o CSV**.
 
-> ¿Prefieres no instalar nada? [mdexa.html](mdexa.html) es la primera versión del proyecto, de un solo archivo: se abre con doble clic en Chrome o Edge. Las funciones nuevas y las correcciones van en la aplicación de este repositorio.
+> ¿Prefieres no instalar nada? [mdexa.html](mdexa.html) es la versión de un solo archivo: se abre con doble clic en Chrome o Edge y recibe las mismas funciones.
 
 ## Aplicación de escritorio (macOS, Windows y Linux)
 
@@ -133,7 +133,7 @@ El repositorio incluye un flujo de GitHub Actions ([.github/workflows/escritorio
 
 ### Hitos y fases
 
-1. Con el archivo tomado, pulsa **Nuevo hito** (en **Próximos hitos**, debajo de la meta): nombre, fecha, descripción y color (opcionales) y uno o varios negocios.
+1. Con el archivo tomado, pulsa **Nuevo hito** (en **Próximos hitos**, en el bloque de la meta): nombre, fecha, descripción y color (opcionales) y uno o varios negocios.
 2. Las actividades de esos negocios que siguen abiertas y terminan a tiempo **entran solas**; desmarca las excepciones y guarda.
 3. La selección queda fija: si una actividad se atrasa, el hito aparece **En riesgo**.
 
@@ -155,19 +155,38 @@ Los hitos se ven en la **Línea de tiempo** y el **Calendario** (arrástralos pa
   </tr>
 </table>
 
+### La meta, compacta
+
+Con **Compactar**, el bloque de la meta se reduce a tres líneas: el tiempo transcurrido y las actividades terminadas, alineados para ver el atraso; los hitos como rombos en su fecha, y los dos que siguen.
+
+![Meta compacta con los hitos sobre la barra de tiempo](docs/capturas/meta-compacta.png)
+
+### Crear, duplicar y cambiar varias
+
+- En la ventana de la actividad, **estado**, **prioridad** y **tamaño** se eligen con un clic; `Ctrl/Cmd + Enter` guarda.
+- **Duplicar** (en la fila o en la ventana) abre una actividad nueva ya llena. Las copias empiezan en *Planeado*.
+- Al **seleccionar** varias aparece abajo una barra para cambiarlas juntas o duplicarlas, incluso en otros negocios.
+
+<table>
+  <tr>
+    <td><img src="docs/capturas/formulario.png" alt="Ventana de nueva actividad con botones de estado, prioridad y tamaño"><br><sub>Actividad: todo a un clic</sub></td>
+    <td><img src="docs/capturas/seleccion.png" alt="Barra de selección múltiple con el panel para duplicar"><br><sub>Selección múltiple: duplicar hacia varios negocios</sub></td>
+  </tr>
+</table>
+
 ### Día a día
 
 1. **Abrir .md** y elegir el archivo del equipo. Si nadie lo está editando, verás "Solo lectura".
-2. **Tomar para editar** para agregar o cambiar actividades. Se guardan solas; **Deshacer** (Ctrl/Cmd+Z) y **Respaldos** están a la mano. **Soltar archivo** al terminar.
+2. **Tomar para editar** (en la barra superior) para agregar o cambiar actividades. Se guardan solas; **Deshacer** (Ctrl/Cmd+Z) y **Respaldos** están a la mano. **Soltar archivo** al terminar.
 3. Para comentar sin editar, abre una actividad y escribe una **nota**; las notas, subtareas e imágenes se pueden agregar sin tomar el archivo (mientras nadie más lo esté editando). Usa `@Nombre` para mencionar a alguien: lo verá en sus **Novedades**.
-4. Cambia de vista con las pestañas o las teclas `1`–`6`; busca con `/`; filtra y agrupa con la barra de arriba. Al recargar la página se conserva lo que estabas viendo.
+4. Cambia de vista con sus íconos o las teclas `1`–`6`; busca con `/`; filtra y agrupa en la barra que está sobre la lista. Al recargar la página se conserva lo que estabas viendo.
 5. En la junta: **Presentar** (tecla `P`) oculta todo salvo la vista y avanza de negocio con ← →. Después, **Reporte** o **Más → Reporte semanal** para mandar el resumen.
 
 ### Ayuda dentro de la aplicación
 
 - **Manual** (botón en la barra de arriba): la guía completa con buscador (escribe una palabra y solo quedan las secciones que hablan de ella; Enter salta a la siguiente coincidencia) y botón para imprimirla. Cubre todo lo que se describe aquí y más: vistas, filtros, notas y menciones, dependencias, respaldos, importar y exportar, sprints, reportes…
 - **Atajos de teclado**: tecla `?`.
-- Los botones y los íconos tienen una descripción al pasar el cursor encima, y el aviso de la parte superior siempre explica en qué estado está el archivo y qué puedes hacer.
+- Los botones y los íconos tienen una descripción al pasar el cursor encima, y la barra superior siempre dice en qué estado está el archivo: **azul** libre, **verde** lo editas tú, **naranja** lo edita otra persona y **gris** solo lectura.
 
 ### Atajos de teclado
 
@@ -180,6 +199,7 @@ Los hitos se ven en la **Línea de tiempo** y el **Calendario** (arrástralos pa
 | `F` | Pantalla completa |
 | `Ctrl/Cmd + Z` · `Ctrl/Cmd + Y` | Deshacer · rehacer |
 | `Ctrl/Cmd + S` | Guardar ahora |
+| `Ctrl/Cmd + Enter` | Guardar la actividad que se está escribiendo |
 | `?` | Ver todos los atajos |
 
 ## Trabajar en equipo

@@ -1,5 +1,5 @@
 import { JUNTAR_BIT, SIN_HITO, TAMANOS } from './constantes';
-import type { Actividad, CambioHito, Documento, Hito } from './tipos';
+import type { Actividad, CambioHito, Documento, Hito, Meta } from './tipos';
 import { EST, cerrada, dias, hoy as hoyDe, normaliza, pl } from './utilidades';
 
 /*
@@ -292,4 +292,53 @@ export function hitosSemana(d: Documento, lunes: string, domingo: string, pFin: 
   const dentro = (f: string) => !!f && f >= lunes && f <= domingo;
   return hitosOrdenados(d.hitos).map(h => ({ h, info: infoHito(d, h, hoyStr) }))
     .filter(({ h, info }) => (info.estado !== 'Cumplido' && !!h.fecha && h.fecha <= pFin) || dentro(h.fecha) || dentro(h.cumplido));
+}
+
+/* ============ Meta compacta ============ */
+
+/** Cuántos días faltan o pasaron: «hoy», «mañana», «en 5 días», «hace 2 días» */
+export function cuandoEs(fecha: string, hoyStr: string = hoyDe()): string {
+  const n = dias(hoyStr, fecha);
+  return n === 0 ? 'hoy' : n === 1 ? 'mañana' : n === -1 ? 'ayer' : n > 0 ? `en ${n} días` : `hace ${-n} días`;
+}
+
+/** Lo que le queda a la meta, para el encabezado compacto */
+export function plazoMeta(inicio: string, fin: string, hoyStr: string = hoyDe()): string {
+  if (hoyStr < inicio) return `inicia ${cuandoEs(inicio, hoyStr)}`;
+  if (hoyStr > fin) return `terminó ${cuandoEs(fin, hoyStr)}`;
+  const n = dias(hoyStr, fin);
+  return n === 0 ? 'termina hoy' : n === 1 ? 'queda 1 día' : `quedan ${n} días`;
+}
+
+export interface MarcaMeta {
+  /** Posición en la barra de tiempo, de 0 a 100 */
+  x: number;
+  hitos: { h: Hito; info: InfoHito }[];
+  /** Todos sus hitos caen antes o después del periodo de la meta */
+  fuera: '' | 'antes' | 'después';
+  /** Estado que la colorea: el más grave de los que agrupa */
+  estado: EstadoHito;
+}
+
+const GRAVEDAD: EstadoHito[] = ['Vencido', 'En riesgo', 'En tiempo', 'Cumplido'];
+
+/**
+ * Hitos colocados sobre la barra de tiempo de la meta, en la misma escala que el tiempo transcurrido.
+ * Los que quedan a menos de `juntar` puntos se agrupan en una sola marca; los de fuera, en el extremo.
+ */
+export function marcasMeta(d: ParaEstado & { meta: Meta; hitos: Hito[] }, hoyStr: string = hoyDe(), juntar = 2): MarcaMeta[] {
+  const { inicio, fin } = d.meta;
+  if (!inicio || !fin || fin < inicio) return [];
+  const total = dias(inicio, fin) + 1, marcas: (MarcaMeta & { desde: number })[] = [];
+  for (const h of hitosOrdenados(d.hitos).filter(x => x.fecha)) {
+    const fuera = h.fecha < inicio ? 'antes' as const : h.fecha > fin ? 'después' as const : '' as const;
+    const x = fuera === 'antes' ? 0 : fuera === 'después' ? 100 : Math.round((dias(inicio, h.fecha) + 1) * 1000 / total) / 10;
+    const info = infoHito(d, h, hoyStr), u = marcas[marcas.length - 1];
+    if (u && x - u.desde < juntar) {
+      if (u.fuera !== fuera) u.fuera = '';
+      u.hitos.push({ h, info }); u.x = Math.round((u.desde + x) * 5) / 10;
+      if (GRAVEDAD.indexOf(info.estado) < GRAVEDAD.indexOf(u.estado)) u.estado = info.estado;
+    } else marcas.push({ x, desde: x, hitos: [{ h, info }], fuera, estado: info.estado });
+  }
+  return marcas.map(({ desde: _d, ...m }) => m);
 }
